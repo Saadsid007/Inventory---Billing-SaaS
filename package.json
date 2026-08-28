@@ -1,0 +1,32 @@
+{
+  "name": "bahikhata",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Multi-tenant inventory + billing SaaS for Indian small businesses, with a public product catalog per business.",
+  "packageManager": "pnpm@11.18.0",
+  "engines": {
+    "node": ">=20.0.0"
+  },
+  "scripts": {
+    "dev": "turbo run dev",
+    "build": "turbo run build",
+    "lint": "turbo run lint",
+    "typecheck": "turbo run typecheck",
+    "test": "turbo run test",
+    "format": "prettier --write \"**/*.{ts,tsx,mjs,json,md,css,yaml,yml}\"",
+    "format:check": "prettier --check \"**/*.{ts,tsx,mjs,json,md,css,yaml,yml}\"",
+    "db:generate": "pnpm --filter @bahikhata/db run db:generate",
+    "db:migrate": "pnpm --filter @bahikhata/db run db:migrate",
+    "db:studio": "pnpm --filter @bahikhata/db run db:studio",
+    "clean": "turbo run clean"
+  },
+  "devDependencies": {
+    "@eslint/js": "catalog:",
+    "eslint": "catalog:",
+    "globals": "catalog:",
+    "prettier": "catalog:",
+    "turbo": "^2.10.12",
+    "typescript": "catalog:",
+    "typescript-eslint": "catalog:"
+  }
+}

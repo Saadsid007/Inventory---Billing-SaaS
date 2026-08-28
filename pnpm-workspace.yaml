@@ -1,0 +1,52 @@
+packages:
+  - "apps/*"
+  - "packages/*"
+
+# Native-binary toolchain packages. Each of these downloads or compiles a
+# platform binary in a postinstall script and is non-functional without it.
+# Nothing here is an application dependency — all four are build tooling.
+allowBuilds:
+  esbuild: true # vitest / tsx bundler
+  "@tailwindcss/oxide": true # Tailwind v4 engine
+  unrs-resolver: true # ESLint import resolver
+  sharp: true # next/image optimisation
+
+# Single source of truth for dependency versions across every workspace package.
+# Packages reference these with "catalog:" instead of a literal version range.
+catalog:
+  # --- language / tooling ---
+  # TypeScript stays on 5.x: the 7.x native port is too new to bet a monorepo's
+  # lint/build toolchain on.
+  typescript: ^5.9.3
+  "@types/node": ^24.13.3
+  vitest: ^4.1.11
+  eslint: ^10.9.1
+  "@eslint/js": ^10.0.1
+  typescript-eslint: ^8.68.0
+  globals: ^17.11.0
+  prettier: ^3.6.2
+
+  # --- runtime ---
+  zod: ^4.4.3
+  "decimal.js": ^10.6.0
+
+  # --- data ---
+  "drizzle-orm": ^0.45.2
+  "drizzle-kit": ^0.31.10
+  postgres: ^3.4.9
+
+  # --- web ---
+  next: ^16.3.3
+  react: ^19.2.8
+  react-dom: ^19.2.8
+  "@types/react": ^19.2.18
+  "@types/react-dom": ^19.2.5
+  tailwindcss: ^4.3.3
+  "@tailwindcss/postcss": ^4.3.3
+  clsx: ^2.1.1
+  "tailwind-merge": ^3.6.0
+  "class-variance-authority": ^0.7.1
+  "lucide-react": ^1.30.0
+
+  # --- api (kept scaffolded, unused in Option A) ---
+  hono: ^4.13.5

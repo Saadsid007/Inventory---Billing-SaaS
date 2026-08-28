@@ -1,0 +1,33 @@
+{
+  "name": "@bahikhata/core",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts",
+    "./money": "./src/money.ts",
+    "./tax": "./src/tax/index.ts",
+    "./gst": "./src/gst/index.ts",
+    "./numbering": "./src/numbering/index.ts",
+    "./stock": "./src/stock/index.ts",
+    "./services": "./src/services/index.ts"
+  },
+  "scripts": {
+    "lint": "eslint .",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run --passWithNoTests"
+  },
+  "dependencies": {
+    "@bahikhata/shared": "workspace:*",
+    "decimal.js": "catalog:"
+  },
+  "devDependencies": {
+    "@eslint/js": "catalog:",
+    "@types/node": "catalog:",
+    "eslint": "catalog:",
+    "globals": "catalog:",
+    "typescript": "catalog:",
+    "typescript-eslint": "catalog:",
+    "vitest": "catalog:"
+  }
+}

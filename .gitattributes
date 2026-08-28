@@ -1,0 +1,10 @@
+# Normalise to LF in the repository. Without this, a Windows checkout rewrites
+# every file to CRLF and the first Linux/CI contributor sees the whole tree as
+# modified.
+* text=auto eol=lf
+
+# Generated — collapse in diffs and don't count toward language stats.
+pnpm-lock.yaml linguist-generated=true -diff
+
+# Applied migrations are a historical record, not editable source.
+packages/db/drizzle/**/*.sql linguist-generated=true
