@@ -207,3 +207,73 @@ Earlier screens were written in Hinglish. Changed to English on request
 
 Keep new copy in English. Product vocabulary that has no natural English
 equivalent for this audience — *khata*, *GSTIN*, *HSN* — stays as-is.
+
+---
+
+## D13. Numbering uses an upsert, not SELECT … FOR UPDATE
+
+Spec §5.1 sketches: lock the series row with `SELECT … FOR UPDATE`, insert one
+if it is missing, increment, commit.
+
+The insert path races. On the very first invoice of a series two concurrent
+transactions both find nothing and both try to create the row. One fails on the
+unique constraint — and under READ COMMITTED the loser cannot see the winner's
+uncommitted row when it re-selects, so a naive retry loop spins.
+
+Replaced with one atomic statement:
+
+```sql
+insert into invoice_series (business_id, kind, fy, prefix, padding, next_number)
+values (..., 2)
+on conflict (business_id, kind, fy)
+  do update set next_number = invoice_series.next_number + 1
+returning (invoice_series.next_number - 1) as allocated, prefix, padding
+```
+
+`RETURNING` gives the post-update row, so the allocated number is
+`next_number - 1` on **both** paths — the insert path (1 → 2) and the update
+path (n → n+1). It takes the same row lock, so concurrent issues serialise
+exactly as intended.
+
+**Still not a Postgres SEQUENCE, and never will be.** Sequences do not roll
+back: a failed transaction burns its number and leaves a permanent gap, which
+in a GST series is a compliance problem. An ordinary row rolls back with
+everything else. There is a test for precisely this.
+
+**Caller's obligation:** `allocateInvoiceNumber` must run inside the same
+transaction that writes `invoice_no` and `status = 'issued'`. Outside one, a
+later failure advances the counter and leaves the number unused — recreating
+the gap the whole design exists to prevent.
+
+`packages/db` does not format the number. It returns the raw counter and the
+series shape, and `formatInvoiceNumber()` in core turns that into `INV-007` —
+partly because `db → core` is not an allowed dependency (§2.5), and partly
+because string formatting has no business being untestable behind a database.
+
+---
+
+## D14. Three tax behaviours that look like bugs and are not
+
+Each of these will look wrong to someone reading the code cold. They are all
+deliberate and all tested.
+
+**CGST and SGST are halves of the already-rounded total.** Not two independent
+roundings of `taxable × rate/2`. On ₹0.05 of tax, independent rounding gives
+0.03 + 0.03 = 0.06 and the invoice does not add up. Halving the rounded total
+and giving the remainder to SGST guarantees `cgst + sgst === tax`.
+
+**Tax is rounded per line, then summed — never computed on the subtotal.**
+200 lines of ₹0.99 at 5% come to ₹10.00 of tax, not the ₹9.90 you get from 5%
+of the ₹198 subtotal. GST is charged per line, the invoice prints per-line tax,
+and the total must be the sum of the column a customer can add up themselves.
+Anyone "fixing" this to match tax-on-subtotal breaks that reconciliation.
+
+**A discount larger than its line clamps the line to zero.** It does not go
+negative. Negative GST on a sale is not a thing — that is what a credit note is
+for, and credit notes are a separate document type in Phase 2.
+
+One genuine generalisation of the spec: for **inclusive** pricing the divisor is
+`(100 + rate + cess)`, where the spec writes `(100 + rate)`. The two agree
+whenever cess is zero, which is nearly always. With a cess, the spec's version
+leaves the grand total short of the price the shopkeeper typed — defeating the
+entire point of inclusive mode.

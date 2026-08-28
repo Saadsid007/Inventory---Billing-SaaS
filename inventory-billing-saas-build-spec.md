@@ -819,14 +819,16 @@ Feed one section at a time. Do not paste this whole file as a single prompt.
 Each step names the package it lands in. Do not start a step until the previous one typechecks and its tests pass.
 
 ```
- 1. Phase 0a — monorepo scaffold                        → root + all packages
- 2. Phase 0b — auth, tenancy, trial gating               → db, web
- 3. §4 schema → Drizzle schema + migration (review before applying)
-                                                         → packages/db/src/schema
- 4. §5.3 tax engine, pure fns + full test suite          → packages/core/src/tax
- 5. §5.2 place of supply + GSTIN/FY helpers + tests      → packages/core/src/gst
- 6. §5.1 invoice numbering + concurrency test            → packages/core/src/numbering
-                                                            + packages/db (locking repo fn)
+ 1. [x] Phase 0a — monorepo scaffold                    → root + all packages
+ 2. [x] Phase 0b — auth, tenancy, trial gating          → db, web
+ 3. [x] §4 schema → Drizzle schema + migration          → packages/db/src/schema
+        17 tables, 47 indexes, applied.
+ 4. [x] §5.3 tax engine, pure fns + full test suite     → packages/core/src/tax
+ 5. [x] §5.2 place of supply + GSTIN/FY + tests         → packages/core/src/gst
+ 6. [x] §5.1 invoice numbering + concurrency test       → packages/core/src/numbering
+                                                           + packages/db (locking repo fn)
+        Gaplessness proven against the real database with 40 parallel
+        transactions, plus a rollback test.
  7. Repositories for products, parties, invoices         → packages/db/src/repositories
  8. Phase 1a + 1b — masters, products                    → web
  9. Phase 1c — parties + ledger                          → core (balance calc), web

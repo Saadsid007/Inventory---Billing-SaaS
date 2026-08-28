@@ -1,3 +1,9 @@
-// Tax engine — build spec §5.3. Filled in at build-order step 4.
-// Pure functions only: line totals, CGST/SGST/IGST split, cess, invoice rounding.
-export {};
+// Tax engine — build spec §5.3. Pure functions: line totals, CGST/SGST/IGST
+// split, cess, inclusive mode and invoice-level rupee rounding.
+export { computeInvoice, computeLine } from './engine';
+export type {
+  InvoiceTaxInput,
+  InvoiceTaxResult,
+  TaxLineInput,
+  TaxLineResult,
+} from './types';

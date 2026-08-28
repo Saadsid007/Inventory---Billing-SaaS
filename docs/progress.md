@@ -78,6 +78,70 @@ Also green: typecheck 6/6, lint 6/6, **57 tests**, production build clean.
 
 ---
 
+## Build-order steps 3–6 ✅ done (2026-08-28)
+
+Spec §9 calls steps 4–6 *"the highest-leverage work in this entire project"* —
+pure functions with no database and no UI, so they can be tested exhaustively in
+minutes, and everything downstream assumes they are correct.
+
+### Step 3 — full §4 schema
+
+17 tables, 47 indexes, migrations `0002` generated and applied. The four
+non-negotiables from spec §3 are all in place: `business_id` everywhere,
+`numeric(12,2)` money and `numeric(12,3)` quantity, snapshot columns on
+`invoice_lines`, and `tax_rates` as rows with `effective_from`.
+
+Two partial unique indexes worth knowing about:
+`products (business_id, sku) WHERE sku IS NOT NULL` — SKU is optional but must
+be unique when present; and
+`invoices (business_id, kind, fy, invoice_no) WHERE invoice_no IS NOT NULL` —
+drafts share a NULL number, issued invoices cannot share anything.
+
+### Step 4 — tax engine (`packages/core/src/tax`)
+
+29 tests covering everything spec §8.1 demands. Three behaviours that are easy
+to "fix" into being wrong later:
+
+- **CGST/SGST are halves of the already-rounded total**, not two independent
+  roundings. On ₹0.05 of tax, rounding each half separately gives 0.03 + 0.03
+  and the invoice stops adding up. This way `cgst + sgst === tax`, exactly.
+- **Tax is rounded per line, then summed** — never computed on the subtotal.
+  200 lines of ₹0.99 at 5% total ₹10.00 of tax, not the ₹9.90 you get from 5%
+  of ₹198. The printed column must be one a reader can add up themselves.
+- **A discount larger than its line clamps to zero.** Negative GST on a sale is
+  not a thing; that is what a credit note is for (Phase 2).
+
+### Step 5 — place of supply and GSTIN (`packages/core/src/gst`)
+
+28 tests. Real mod-36 GSTIN checksum, verified against known-valid GSTINs — so
+a transposed PAN or an altered last character is caught, which a shape-only
+regex waves straight through. Retired state codes (25, 28) validate on read, so
+an old customer record does not block billing.
+
+Financial year takes a date **string**, never a `Date`: 1 April 00:30 IST is
+31 March in UTC, and a `Date` would file the year's first invoice under the
+previous year's series.
+
+### Step 6 — gapless numbering
+
+Pure half in `packages/core/src/numbering` (14 tests), locking half in
+`packages/db/src/repositories/numbering.ts` (9 integration tests against the
+real database).
+
+**Deviation from the spec, deliberate:** the spec's pseudocode is
+`SELECT … FOR UPDATE` then `INSERT` if missing, which races on the first invoice
+of a series. Replaced with a single atomic `INSERT … ON CONFLICT DO UPDATE`.
+See [decisions.md D13](./decisions.md#d13-numbering-uses-an-upsert-not-select-for-update).
+
+Proven against Neon, not asserted: 40 parallel transactions produce exactly
+1–40 with no duplicates and no gaps; a failed transaction rolls the counter
+back so the number is reused; each kind and each financial year keeps its own
+sequence; a foreign `business_id` cannot advance someone else's series.
+
+**137 tests** across the workspace. typecheck 6/6, lint 6/6.
+
+---
+
 ## Not started
 
 Phase 1 (core billing), Phase 2 (compliance), Phase 3 (scale). The spec's
