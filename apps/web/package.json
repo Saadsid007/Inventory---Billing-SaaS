@@ -16,12 +16,17 @@
     "@bahikhata/db": "workspace:*",
     "@bahikhata/shared": "workspace:*",
     "@bahikhata/ui": "workspace:*",
+    "bcryptjs": "^3.0.3",
     "dotenv": "^17.4.2",
+    "lucide-react": "catalog:",
     "next": "catalog:",
+    "next-auth": "5.0.0-beta.32",
     "react": "catalog:",
-    "react-dom": "catalog:"
+    "react-dom": "catalog:",
+    "server-only": "^0.0.1"
   },
   "devDependencies": {
+    "@auth/core": "0.41.3",
     "@eslint/js": "catalog:",
     "@next/eslint-plugin-next": "^16.3.3",
     "@tailwindcss/postcss": "catalog:",

@@ -1,14 +1,15 @@
 /**
- * Drizzle schema. Build spec §4.
+ * Drizzle schema. Build spec §4. One file per domain.
  *
- * One file per domain — users.ts, businesses.ts, products.ts, invoices.ts …
- * Landed at build-order step 3, after Phase 0b establishes the tenancy tables.
- *
- * Non-negotiables when these files get written (spec §3):
+ * Non-negotiables (spec §3), to check against on every new table:
  *   1. every business-owned table carries `business_id`, indexed
  *   2. money is numeric(12,2), quantity is numeric(12,3)
  *   3. invoice lines store snapshots, not just a product_id
  *   4. tax rates live in a table with effective_from — never hardcoded
+ *
+ * Column names are written camelCase and mapped to snake_case by Drizzle's
+ * `casing: 'snake_case'` setting.
  */
 
-export {};
+export * from './users';
+export * from './businesses';

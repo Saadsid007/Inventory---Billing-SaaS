@@ -5,8 +5,10 @@
  * function takes `TenantCtx` as its first argument — reads included. The
  * business id always comes from that context, never from a request parameter.
  *
- * Landed at build-order step 7; businesses.ts arrives earlier, in Phase 0b, as
- * the reference example.
+ * `businesses.ts` is the reference shape; copy it. `auth.ts` is the one
+ * documented exception, because it is the code that establishes a context in
+ * the first place.
  */
 
-export {};
+export * from './auth';
+export * from './businesses';

@@ -1,14 +1,15 @@
 import { money, percentOf } from '@bahikhata/core';
 import { GST_STATES, INVOICE_KIND_LABELS, SEED_TAX_RATES } from '@bahikhata/shared';
-import { Button } from '@bahikhata/ui';
+import { Button, ThemeToggle } from '@bahikhata/ui';
+import Link from 'next/link';
 
 /**
- * Phase 0a scaffold check.
+ * Scaffold status page.
  *
- * Deliberately temporary: this page exists to prove the workspace is wired —
- * that apps/web really can resolve @bahikhata/core, @bahikhata/shared and
- * @bahikhata/ui, and that Tailwind picks up the design tokens from a package
- * outside this app. Phase 1g replaces it with the marketing home page.
+ * Deliberately temporary: it proves the workspace is wired — that apps/web
+ * really can resolve @bahikhata/core, @bahikhata/shared and @bahikhata/ui, and
+ * that Tailwind picks up design tokens from a package outside this app.
+ * Phase 1g replaces it with the real marketing home page.
  */
 export default function ScaffoldCheckPage() {
   const wiring = [
@@ -37,12 +38,29 @@ export default function ScaffoldCheckPage() {
   return (
     <main className="mx-auto flex min-h-dvh max-w-3xl flex-col justify-center gap-10 px-6 py-16">
       <header className="space-y-3">
-        <p className="text-sm font-medium text-muted-foreground">Phase 0a · scaffold</p>
+        <div className="flex items-start justify-between gap-4">
+          <p className="text-sm font-medium text-muted-foreground">Phase 0b · foundation</p>
+          <ThemeToggle />
+        </div>
         <h1 className="text-4xl font-semibold tracking-tight">Bahikhata</h1>
         <p className="text-balance text-muted-foreground">
-          Inventory aur billing, Indian small businesses ke liye. Workspace wired up hai — ab
-          Phase 0b: auth, tenancy aur business approval.
+          Inventory and billing for Indian small businesses. Auth, tenancy and trials are working
+          — next up is the tax engine and invoice numbering.
         </p>
+        <div className="flex gap-2 pt-1">
+          <Link
+            href="/register"
+            className="inline-flex h-9 items-center rounded-md bg-primary px-4 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
+          >
+            Start free trial
+          </Link>
+          <Link
+            href="/login"
+            className="inline-flex h-9 items-center rounded-md border px-4 text-sm font-medium transition-colors hover:bg-accent"
+          >
+            Login
+          </Link>
+        </div>
       </header>
 
       <section className="space-y-3">

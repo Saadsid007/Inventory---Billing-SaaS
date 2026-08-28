@@ -36,7 +36,9 @@ Read this section before writing any code.
 
 **Differentiator:** #5. Har business ko ek public, SEO-friendly catalog page + QR code milta hai jo apne aap inventory se sync hota hai. Baaki features table stakes hain.
 
-**Business model:** Manual approval. User signup karta hai → trial mein product use karta hai → super admin approve karta hai → paid access. Payment offline/Razorpay link se, tool ke andar checkout nahi.
+**Business model:** Self-serve trial. User signup karta hai → turant 10 din ka free trial (koi approval nahi, koi card nahi) → uske baad ₹299/mahina subscription. Payment offline/Razorpay link se, tool ke andar checkout nahi.
+>
+> **Changed 2026-08-28:** pehle yahan manual super-admin approval tha. Signup par intezaar karwana friction hai, isliye hata diya gaya. Trial expiry `trial_ends_at` se *derive* hoti hai — koi stored 'expired' status nahi, koi cron nahi.
 
 ---
 
@@ -189,7 +191,7 @@ export type TenantCtx = { businessId: string; userId: string; role: 'owner' | 's
 
 // apps/web/lib/auth/require-business.ts   (and apps/api/src/middleware/tenant.ts)
 export async function requireBusiness(): Promise<TenantCtx> {
-  // read session, resolve active business, throw if none / not approved
+  // read session, resolve active business, throw if none / no access
 }
 
 // packages/db/src/repositories/products.ts
@@ -240,10 +242,12 @@ CREATE TABLE businesses (
   phone           text,
   email           text,
   logo_url        text,
-  status          business_status NOT NULL DEFAULT 'pending',
-  approved_at     timestamptz,
+  -- 'pending' aur 'rejected' legacy hain; ab kuch inhe produce nahi karta.
+  -- Naya business seedha 'trial' par shuru hota hai.
+  status          business_status NOT NULL DEFAULT 'trial',
+  trial_ends_at   timestamptz,             -- signup + 10 din
+  approved_at     timestamptz,             -- payment record hone par set
   approved_by     uuid REFERENCES users(id),
-  trial_ends_at   timestamptz,
   created_at      timestamptz NOT NULL DEFAULT now()
 );
 
@@ -628,7 +632,7 @@ Public
   /login
   /register
 
-App (auth required, business approved)
+App (auth required, trial open or subscribed)
   /app                          Dashboard
   /app/invoices                 List + filters
   /app/invoices/new             Create invoice
@@ -642,12 +646,13 @@ App (auth required, business approved)
   /app/catalog                  Catalog settings + QR download
   /app/settings                 Business profile, units, categories, custom fields, series
 
-Pending approval
-  /app/pending                  Only page reachable when status = 'pending'
+No access
+  /app/subscribe                Only page reachable when the trial has expired,
+                                or the business is suspended
 
 Super admin
   /admin                        Stats: businesses, users, invoice count
-  /admin/businesses             Approve / reject / suspend
+  /admin/businesses             Mark paid (→ active) / suspend
   /admin/businesses/[id]        Metadata only — NEVER business transaction data
 ```
 
@@ -672,19 +677,19 @@ Use the separate scaffold prompt for this. Deliverable is an empty but wired-up 
 
 ---
 
-### Phase 0b — Foundation (3–4 days)
+### Phase 0b — Foundation (3–4 days) ✅ DONE
 
-- [ ] Neon connection in `packages/db`, Drizzle config, first migration
-- [ ] `users`, `businesses`, `business_members`, `business_settings` schema in `packages/db/src/schema/`
-- [ ] NextAuth with credentials provider, bcrypt password hashing (in `apps/web`)
-- [ ] `TenantCtx` type in `shared`, `requireBusiness()` in `apps/web/lib/auth/`
-- [ ] Repository pattern established: `packages/db/src/repositories/businesses.ts` as the reference example
-- [ ] Registration flow: create user → create business (`status = 'pending'`) → redirect to `/app/pending`
-- [ ] Middleware: block `/app/*` when status is `pending` or `rejected`; allow `/app/pending`
-- [ ] App shell in `packages/ui`: sidebar, topbar, business switcher stub
-- [ ] Light/dark theme toggle (cheap now, expensive to retrofit)
+- [x] Neon connection in `packages/db`, Drizzle config, first migration
+- [x] `users`, `businesses`, `business_members`, `business_settings` schema in `packages/db/src/schema/`
+- [x] NextAuth with credentials provider, bcrypt password hashing (in `apps/web`)
+- [x] `TenantCtx` type in `shared`, `requireBusiness()` in `apps/web/lib/auth/`
+- [x] Repository pattern established: `packages/db/src/repositories/businesses.ts` as the reference example
+- [x] Registration flow: create user → create business (`status = 'trial'`, `trial_ends_at = now + 10d`) → straight into `/app`
+- [x] Access gate: block `/app/*` when the trial has expired or the business is suspended; allow `/app/subscribe`
+- [x] App shell in `packages/ui`: sidebar, topbar, business switcher stub
+- [x] Light/dark theme toggle (cheap now, expensive to retrofit)
 
-**Done when:** a user can register, sees the pending screen, and a manually-flipped DB status lets them into an empty dashboard.
+**Done when:** a user can register and land straight in an empty dashboard on a 10-day trial; an expired trial sends them to `/app/subscribe`; and marking the business paid lets them back in on the next request.
 
 ---
 
@@ -742,7 +747,7 @@ Use the separate scaffold prompt for this. Deliverable is an empty but wired-up 
 - [ ] Reports: sales summary (date range), stock summary, outstanding by party
 - [ ] CSV export for products, parties, invoices
 - [ ] Simple Stock In / Stock Out form (this is **not** a purchase bill — just quantity + reason + note)
-- [ ] Super admin: business list, approve/reject/suspend, aggregate counts only
+- [ ] Super admin: business list, mark-paid/suspend, aggregate counts only
 - [ ] Marketing home page + pricing page
 
 **Done when:** a real shopkeeper can bill for a full day, print it, see their stock go down, check who owes money, and share their catalog QR.
@@ -774,7 +779,7 @@ Use the separate scaffold prompt for this. Deliverable is an empty but wired-up 
 - [ ] Batch + expiry tracking — `products.type = 'batch'`
 - [ ] Catalog analytics dashboard (views, top products, enquiry clicks)
 - [ ] Catalog enquiry/order form with lead capture
-- [ ] Razorpay subscription automation replacing manual approval
+- [ ] Razorpay subscription automation replacing the manual mark-paid step
 - [ ] Custom invoice templates (2–3 designs)
 
 ---
@@ -815,7 +820,7 @@ Each step names the package it lands in. Do not start a step until the previous 
 
 ```
  1. Phase 0a — monorepo scaffold                        → root + all packages
- 2. Phase 0b — auth, tenancy, business approval          → db, web
+ 2. Phase 0b — auth, tenancy, trial gating               → db, web
  3. §4 schema → Drizzle schema + migration (review before applying)
                                                          → packages/db/src/schema
  4. §5.3 tax engine, pure fns + full test suite          → packages/core/src/tax
