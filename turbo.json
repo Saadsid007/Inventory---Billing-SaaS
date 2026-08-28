@@ -1,8 +1,14 @@
 {
   "$schema": "https://turborepo.com/schema.json",
   "ui": "stream",
-  "globalDependencies": ["tsconfig.base.json", ".env"],
-  "globalEnv": ["NODE_ENV", "SKIP_ENV_VALIDATION"],
+  "globalDependencies": [
+    "tsconfig.base.json",
+    ".env"
+  ],
+  "globalEnv": [
+    "NODE_ENV",
+    "SKIP_ENV_VALIDATION"
+  ],
   "globalPassThroughEnv": [
     "DATABASE_URL",
     "AUTH_SECRET",
@@ -17,18 +23,28 @@
   ],
   "tasks": {
     "build": {
-      "dependsOn": ["^build"],
-      "outputs": [".next/**", "!.next/cache/**", "dist/**"]
+      "dependsOn": [
+        "^build"
+      ],
+      "outputs": [
+        ".next/**",
+        "!.next/cache/**",
+        "dist/**"
+      ]
     },
     "dev": {
       "cache": false,
       "persistent": true
     },
     "lint": {
-      "dependsOn": ["^lint"]
+      "dependsOn": [
+        "^lint"
+      ]
     },
     "typecheck": {
-      "dependsOn": ["^typecheck"]
+      "dependsOn": [
+        "^typecheck"
+      ]
     },
     "test": {},
     "db:generate": {
@@ -42,6 +58,9 @@
       "persistent": true
     },
     "clean": {
+      "cache": false
+    },
+    "test:integration": {
       "cache": false
     }
   }

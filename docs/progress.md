@@ -142,6 +142,53 @@ sequence; a foreign `business_id` cannot advance someone else's series.
 
 ---
 
+## Step 7 — repositories ✅ done (2026-08-28)
+
+`masters`, `products`, `stock`, `parties`, `invoices`, `numbering`. Every
+function takes `TenantCtx` first and pins `business_id` to `ctx.businessId`;
+`businesses.ts` remains the reference shape.
+
+Choices worth not undoing:
+
+- **`purchase_price` is blanked in the repository for staff**, not in the UI. A
+  component that forgets to hide a field leaks it, and so does any JSON built
+  from the raw row. The value never leaves the data layer.
+- **`current_stock` can only be changed through `stock.ts`.** `updateProduct`
+  deliberately cannot touch it. Stock moves by writing to the ledger and
+  updating the rollup in the same transaction, with `SET current_stock =
+  current_stock + $x` in SQL — a read-modify-write in JS loses one of two
+  concurrent sales.
+- **Deletes are soft, everywhere.** Invoice lines reference `product_id` and
+  last year's report has to keep resolving.
+- **The catalog query returns a bucketed stock status**, never the number.
+  Competitors read catalogs too.
+- **Party outstanding is computed in Postgres `numeric`**, not JavaScript.
+  Summing money in floats is how a ledger ends up a rupee out.
+- **`issueInvoice` takes `formatNumber` as a callback.** `packages/db` may only
+  depend on `@bahikhata/shared`, so core's formatter is injected rather than
+  imported — the dependency rule stays intact without duplicating logic.
+- **Cancellation reverses the movements that were actually recorded**, not the
+  invoice lines. If a line was somehow skipped on issue, un-skipping it now
+  would put back stock that never left.
+
+### Spec §8.3 and §8.4, proven not asserted
+
+`pnpm test:integration`, against the real database:
+
+- one business cannot read, update, deactivate or cancel another's products,
+  parties, categories or invoices — using **real, valid ids**, so isolation has
+  to come from the `WHERE` clause rather than from ids being hard to guess
+- a stock movement against a foreign product is rejected outright
+- after 120 randomised stock operations across 5 products,
+  `sum(stock_movements.qty_change) === products.current_stock` for every one
+- issue → cancel restores stock exactly, keeps the invoice number, and leaves
+  both the `sale` and `sale_cancelled` rows in the ledger
+
+Integration tests moved behind their own script so `pnpm test` stays fast.
+**148 tests** total: 128 unit, 20 integration.
+
+---
+
 ## Not started
 
 Phase 1 (core billing), Phase 2 (compliance), Phase 3 (scale). The spec's

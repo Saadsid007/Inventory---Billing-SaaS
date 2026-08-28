@@ -18,9 +18,11 @@ message naming every missing variable, which is intentional.
 | `pnpm build` | Whole workspace |
 | `pnpm typecheck` | `tsc --noEmit` everywhere |
 | `pnpm lint` | ESLint per package, via Turbo |
-| `pnpm test` | Vitest per package |
+| `pnpm test` | Vitest per package — **unit tests only**, fast |
+| `pnpm test:integration` | The database-backed suites. Slow (~2 min), and not optional |
 | `pnpm db:generate` | Writes a migration from schema changes into `packages/db/drizzle/` |
 | `pnpm db:migrate` | Applies pending migrations over the **direct** URL |
+| `pnpm db:seed` | Idempotent global reference data (GST slabs). Run after migrating |
 | `pnpm db:studio` | Drizzle Studio |
 
 Never edit the database by hand, and never edit a migration that has been
@@ -78,3 +80,20 @@ role `neondb_owner`.
 
 `gen_random_uuid()` is built into Postgres 13+ — the `pgcrypto` extension is
 **not** required and is not installed.
+
+---
+
+## Tests
+
+`pnpm test` runs unit tests only, so the inner loop stays fast. The suites that
+spec §8 calls non-negotiable need a real database and live behind
+`pnpm test:integration`:
+
+| Suite | Proves |
+|---|---|
+| `numbering.integration.test.ts` | §8.2 — 40 parallel transactions produce no duplicate and no gap; a failed transaction rolls the counter back |
+| `isolation.integration.test.ts` | §8.3 — business A cannot read or mutate any row of business B; §8.4 — `sum(stock_movements) === products.current_stock` after randomised operations |
+
+They create a throwaway tenant, use financial years in the 2090s so they can
+never collide with real data, and delete everything in `afterAll`. **CI must run
+them**; skipping them because they are slow defeats the point of having them.

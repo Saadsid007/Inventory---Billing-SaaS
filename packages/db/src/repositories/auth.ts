@@ -1,6 +1,7 @@
 import { type BusinessStatus, type TenantCtx, slugify, trialEndsAt } from '@bahikhata/shared';
 import { and, eq } from 'drizzle-orm';
 import { getDb } from '../client';
+import { seedBusinessMasters } from './masters';
 import { businessMembers, businessSettings, businesses, users } from '../schema/index';
 
 /**
@@ -173,6 +174,10 @@ export async function registerOwner(input: RegisterOwnerInput): Promise<Register
 
     await tx.insert(businessMembers).values({ businessId, userId, role: 'owner' });
     await tx.insert(businessSettings).values({ businessId });
+
+    // Give them a usable set of units immediately, so the first product can be
+    // added without a detour through settings.
+    await seedBusinessMasters(tx, businessId);
 
     return { userId, businessId, slug, trialEndsAt: trialEnd };
   });

@@ -829,7 +829,9 @@ Each step names the package it lands in. Do not start a step until the previous 
                                                            + packages/db (locking repo fn)
         Gaplessness proven against the real database with 40 parallel
         transactions, plus a rollback test.
- 7. Repositories for products, parties, invoices         → packages/db/src/repositories
+ 7. [x] Repositories for products, parties, invoices     → packages/db/src/repositories
+        Tenant isolation (§8.3) and stock reconciliation (§8.4) both
+        proven against the real database.
  8. Phase 1a + 1b — masters, products                    → web
  9. Phase 1c — parties + ledger                          → core (balance calc), web
 10. Phase 1d — invoices (split over several sessions)    → core/services, web

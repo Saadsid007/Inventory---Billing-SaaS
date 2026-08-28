@@ -18,7 +18,9 @@
     "db:generate": "pnpm --filter @bahikhata/db run db:generate",
     "db:migrate": "pnpm --filter @bahikhata/db run db:migrate",
     "db:studio": "pnpm --filter @bahikhata/db run db:studio",
-    "clean": "turbo run clean"
+    "clean": "turbo run clean",
+    "db:seed": "pnpm --filter @bahikhata/db run db:seed",
+    "test:integration": "pnpm --filter @bahikhata/db run test:integration"
   },
   "devDependencies": {
     "@eslint/js": "catalog:",
