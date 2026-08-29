@@ -699,12 +699,12 @@ Use the separate scaffold prompt for this. Deliverable is an empty but wired-up 
 - [x] `units`, `categories`, `tax_rates` tables + seed defaults on business creation
   - Seed units: PCS, KGS, GMS, LTR, MTR, BOX, PKT, DOZ
   - Seed tax rates: 0, 0.25, 3, 5, 18, 40 (`effective_from = '2025-09-22'`)
-- [x] Business settings page: profile, GSTIN, state, terms (logo upload blocked — no Supabase creds)
+- [x] Business settings page: profile, GSTIN, state, logo upload, terms
 
-**1b. Products** ⚠️ DONE except images
+**1b. Products** ✅ DONE
 - [x] Products CRUD + list with search, category filter, low-stock filter
 - [x] `custom_field_defs` CRUD (settings page) + dynamic rendering in the product form
-- [ ] Image upload to Supabase public bucket, converted to webp, max 5 per product — **BLOCKED: no Supabase credentials**
+- [x] Image upload to Supabase public bucket, converted to webp, max 5 per product
 - [x] Opening stock creates a `stock_movements` row
 
 **1c. Parties** ✅ DONE
@@ -832,7 +832,7 @@ Each step names the package it lands in. Do not start a step until the previous 
  7. [x] Repositories for products, parties, invoices     → packages/db/src/repositories
         Tenant isolation (§8.3) and stock reconciliation (§8.4) both
         proven against the real database.
- 8. [x] Phase 1a + 1b — masters, products               → web  (images blocked)
+ 8. [x] Phase 1a + 1b — masters, products               → web
  9. [x] Phase 1c — parties + ledger                     → db (balance calc in SQL), web
 10. [x] Phase 1d — invoices                             → core/services, web
 11. [x] Phase 1e — A4 + 80mm print views                → web

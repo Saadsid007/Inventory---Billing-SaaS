@@ -10,6 +10,7 @@ import { requireBusiness } from '@/lib/auth/require-business';
 import { CategoriesSection } from './categories-section';
 import { CustomFieldsSection } from './custom-fields-section';
 import { InvoiceSettingsSection } from './invoice-settings-section';
+import { LogoSection } from './logo-section';
 import { ProfileSection } from './profile-section';
 import { UnitsSection } from './units-section';
 
@@ -50,6 +51,8 @@ export default async function SettingsPage() {
           email: business?.email ?? '',
         }}
       />
+
+      <LogoSection initialUrl={business?.logoUrl ?? null} />
 
       <InvoiceSettingsSection
         initial={{

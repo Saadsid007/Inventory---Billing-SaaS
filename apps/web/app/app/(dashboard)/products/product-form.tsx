@@ -327,9 +327,12 @@ export function ProductForm({
           checked={values.showInCatalog}
           onCheckedChange={(checked) => setValues((v) => ({ ...v, showInCatalog: checked }))}
         />
-        <p className="text-xs text-muted-foreground">
-          Product images need Supabase storage, which is not configured yet.
-        </p>
+        {!productId && (
+          <p className="text-xs text-muted-foreground">
+            Save the product first, then add photos — they are filed under the product,
+            so it has to exist before they can be uploaded.
+          </p>
+        )}
       </section>
 
       <WarningList warnings={warnings} />

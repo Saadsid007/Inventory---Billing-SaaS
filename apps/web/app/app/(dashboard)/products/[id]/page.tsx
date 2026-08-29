@@ -5,6 +5,7 @@ import { notFound } from 'next/navigation';
 import { requireBusiness } from '@/lib/auth/require-business';
 import { loadProductFormData } from '../_form-data';
 import { ProductForm } from '../product-form';
+import { ProductImages } from '../product-images';
 
 export const metadata: Metadata = { title: 'Edit product' };
 
@@ -35,6 +36,11 @@ export default async function EditProductPage({
   return (
     <div className="mx-auto max-w-2xl space-y-8">
       <h1 className="text-2xl font-semibold tracking-tight">{product.name}</h1>
+
+      <ProductImages
+        productId={product.id}
+        initialUrls={Array.isArray(product.imageUrls) ? product.imageUrls : []}
+      />
 
       <ProductForm
         productId={product.id}

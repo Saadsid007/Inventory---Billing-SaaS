@@ -189,7 +189,7 @@ Integration tests moved behind their own script so `pnpm test` stays fast.
 
 ---
 
-## Phase 1a + 1b — masters and products ⚠️ done except images (2026-08-29)
+## Phase 1a + 1b — masters and products ✅ done (2026-08-29)
 
 Settings (profile, invoice/catalog defaults, units, categories, custom fields)
 and full product CRUD. Verified in a browser against the real database: created
@@ -219,11 +219,40 @@ Decisions worth keeping:
   own paperwork; the consequence is a GSTR-1 rejection in Phase 2, and that is
   theirs to weigh.
 
-### Blocked
+### Images — added once Supabase credentials arrived
 
-**Product image upload.** Needs `SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY`,
-which are not set. Everything else in 1b is done; the form says so where the
-upload control will go. `requireStorageEnv()` already guards the code path.
+Product photos (max 5) and the business logo, both to the **public** bucket at
+`{business_id}/products/{product_id}/{uuid}.webp` and
+`{business_id}/logo/{uuid}.webp`.
+
+- **Conversion happens in the browser, not on the server.** A phone photo is
+  3–5MB of JPEG; resized to 1200px and re-encoded as webp it leaves as roughly
+  150KB. For a shopkeeper on a weak connection that is the difference between
+  the upload working and timing out — and it costs the server nothing. Verified:
+  a 1600×1200 60KB source arrived as a 12KB webp.
+- **The server re-checks anyway.** `isWebp()` sniffs the actual RIFF/WEBP
+  signature rather than trusting `file.type`, which is whatever the client
+  decides to claim. Six unit tests cover it, including that a WAV file is also
+  RIFF — checking only the first four bytes would let one through.
+- **Paths are built from ids only** (spec §2: never from unsanitised input). A
+  user-supplied filename could contain `../` and walk out of the tenant folder.
+  Deletes additionally require the path to start with the caller's own
+  `business_id`.
+- **Row first, storage second.** A failed delete orphans a file worth a fraction
+  of a paisa; the reverse order would leave a product pointing at a file that no
+  longer exists.
+- Uploads are sequential, not parallel — five photos over a weak connection do
+  better one at a time than racing each other into a timeout.
+- Verified against the live bucket: anonymous `GET` returns 200 with
+  `content-type: image/webp` and a one-year immutable cache; removing an image
+  clears the row and deletes the object; replacing a logo deletes the old one
+  rather than accumulating versions.
+
+**Bucket note:** the project already had a private `inventory` bucket. Catalog
+images are served to anonymous visitors, so they need a public bucket — signed
+URLs expire, which breaks both ISR caching and SEO. A separate `public-assets`
+bucket was created (public, 5MB limit, image MIME types only) rather than making
+the existing one public and exposing whatever was already in it.
 
 ---
 
