@@ -51,6 +51,24 @@ before investigating anything else.** Derive the direct URL from the pooled one:
 node -e "const u=new URL(process.env.DATABASE_URL);u.hostname=u.hostname.replace('-pooler','');console.log(u.toString())"
 ```
 
+### Never run `pnpm build` while `pnpm dev` is running
+
+They share `apps/web/.next`. Running a production build against a directory a
+Turbopack dev server is using corrupts its cache, and the symptom is not an
+error: the next route you visit prints `○ Compiling /app/settings ...` and then
+hangs forever. Every other route queues behind it, so the whole app looks dead
+while `/app` (already compiled) keeps working, which sends you hunting for a
+bug in the page that is fine.
+
+The fix is to throw the cache away:
+
+```bash
+pnpm --filter @billwise/web clean
+```
+
+Then start dev again. Stop the dev server before building, or build in a
+separate checkout.
+
 ### Stale dev servers on Windows
 
 `pkill -f "next dev"` does not reliably kill Next on Windows; a second
