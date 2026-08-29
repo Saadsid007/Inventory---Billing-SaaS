@@ -271,9 +271,12 @@ export function AppShell({
 
   return (
     <div className="flex min-h-dvh bg-background">
+      {/* `print:hidden` on the chrome: the invoice print view escapes this
+          shell entirely, but somebody will eventually hit Ctrl+P on an ordinary
+          screen, and a sidebar down the edge of the paper looks broken. */}
       <aside
         className={cn(
-          'hidden shrink-0 border-r border-sidebar-border transition-[width] duration-200 md:block',
+          'hidden shrink-0 border-r border-sidebar-border transition-[width] duration-200 md:block print:hidden',
           collapsed ? 'w-[4.5rem]' : 'w-60',
         )}
       >
@@ -298,7 +301,7 @@ export function AppShell({
       )}
 
       <div className="flex min-w-0 flex-1 flex-col">
-        <header className="sticky top-0 z-40 flex h-14 items-center gap-2 border-b bg-background/85 px-3 backdrop-blur-md sm:px-5">
+        <header className="sticky top-0 z-40 flex h-14 items-center gap-2 border-b bg-background/85 px-3 backdrop-blur-md sm:px-5 print:hidden">
           <button
             type="button"
             className="-ml-1 rounded-md p-2 text-muted-foreground transition-colors hover:bg-accent hover:text-foreground md:hidden"
@@ -340,7 +343,7 @@ export function AppShell({
 
         {banner}
 
-        <main className="min-w-0 flex-1 p-4 sm:p-5 lg:p-6">
+        <main className="min-w-0 flex-1 p-4 sm:p-5 lg:p-6 print:p-0">
           <div className="mx-auto w-full max-w-5xl">{children}</div>
         </main>
       </div>

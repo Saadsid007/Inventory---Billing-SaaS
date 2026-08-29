@@ -202,8 +202,13 @@ export default async function DashboardPage() {
         </Alert>
       )}
 
-      <div className="grid gap-6 lg:grid-cols-[1fr_18rem]">
+      {/* `min-w-0` on both columns is load-bearing. A grid item defaults to
+          min-width:auto, so the invoice table's intrinsic width pushes the
+          column wider than the page instead of scrolling inside it, and the
+          whole dashboard spills out of the frame on a narrow screen. */}
+      <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_18rem]">
         <Section
+          className="min-w-0"
           title="Recent bills"
           actions={
             <Link
@@ -282,7 +287,7 @@ export default async function DashboardPage() {
           )}
         </Section>
 
-        <Section title="Quick actions">
+        <Section className="min-w-0" title="Quick actions">
           <Card className="divide-y p-0">
             <QuickAction
               href="/app/invoices/new"
