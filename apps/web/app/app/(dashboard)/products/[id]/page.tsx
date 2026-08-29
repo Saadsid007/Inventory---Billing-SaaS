@@ -1,6 +1,8 @@
 import { getProduct, listMovements } from '@bahikhata/db';
-import { TBody, TD, TH, THead, TR, Table } from '@bahikhata/ui';
+import { PageBody, PageHeader, Section, TBody, TD, TH, THead, TR, Table } from '@bahikhata/ui';
+import { ArrowLeft } from 'lucide-react';
 import type { Metadata } from 'next';
+import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { requireBusiness } from '@/lib/auth/require-business';
 import { loadProductFormData } from '../_form-data';
@@ -34,8 +36,23 @@ export default async function EditProductPage({
   const movements = product.trackInventory ? await listMovements(ctx, id, 25) : [];
 
   return (
-    <div className="mx-auto max-w-2xl space-y-8">
-      <h1 className="text-2xl font-semibold tracking-tight">{product.name}</h1>
+    <PageBody className="mx-auto max-w-2xl space-y-8">
+      <PageHeader
+        breadcrumb={
+          <Link
+            href="/app/products"
+            className="inline-flex items-center gap-1.5 transition-colors hover:text-foreground"
+          >
+            <ArrowLeft className="size-3.5" /> All products
+          </Link>
+        }
+        title={product.name}
+        description={
+          product.trackInventory
+            ? `${product.currentStock} in stock`
+            : 'Inventory tracking is off for this item.'
+        }
+      />
 
       <ProductImages
         productId={product.id}
@@ -65,13 +82,11 @@ export default async function EditProductPage({
       />
 
       {product.trackInventory && (
-        <section className="space-y-3 border-t pt-6">
-          <div>
-            <h2 className="text-sm font-medium">Stock history</h2>
-            <p className="text-xs text-muted-foreground">
-              Current stock is {product.currentStock} — the sum of every movement below.
-            </p>
-          </div>
+        <Section
+          title="Stock history"
+          description={`Current stock is ${product.currentStock} — the sum of every movement below.`}
+          className="border-t pt-6"
+        >
           {movements.length === 0 ? (
             <p className="text-sm text-muted-foreground">No movements yet.</p>
           ) : (
@@ -105,8 +120,8 @@ export default async function EditProductPage({
               </TBody>
             </Table>
           )}
-        </section>
+        </Section>
       )}
-    </div>
+    </PageBody>
   );
 }

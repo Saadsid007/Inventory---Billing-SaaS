@@ -323,3 +323,39 @@ placeholder controls would be worse than shipping nothing — someone flips a
 switch, sees it move, and believes the setting took effect. When the first real
 setting arrives it lands here, backed by a `site_settings` table read through a
 repository like every other piece of data in the system.
+
+## D17. The whole UI is blue, including the greys
+
+The brand hue is 258 and every neutral in the system carries a trace of it. A
+palette of dead greys next to a saturated blue makes the blue look bolted on;
+tinting the neutrals with the same hue is what makes the thing read as designed
+rather than as an unstyled default.
+
+Two consequences that look like mistakes and are not:
+
+- **Hover on the primary button is a darker token, not `bg-primary/90`.** An
+  opacity hover over a tinted background goes milky — the button appears to fade
+  rather than to press.
+- **Pure black is never used, in either mode.** The dark surface is a deep
+  blue-slate. Pure black beside saturated blue makes the blue appear to vibrate.
+
+Full reasoning, tokens and component rules: `docs/design.md`.
+
+## D18. Page furniture is a component, not a convention
+
+`PageHeader`, `PageBody` and `Section` in `@bahikhata/ui` exist because every
+screen opens identically — title, one line of purpose, primary action right.
+Left as a convention, twenty pages become twenty slightly different headers with
+different spacing, and that inconsistency is what makes software look homemade.
+As a component it cannot drift.
+
+The same argument applies to `EmptyState`: it is the first screen a new
+shopkeeper sees in every module, so it takes an icon, a sentence about what will
+appear there, and — non-negotiably — the button that creates the first record.
+
+## D19. The print stylesheet is exempt from the design system
+
+`invoices/[id]/print/print.css` is hardcoded `#000` on `#fff` with millimetre
+sizing and no tokens. An invoice is a legal document: it must not change because
+someone adjusted a colour token, and it must never follow the reader's dark mode
+onto paper as a black rectangle of toner.

@@ -1,5 +1,19 @@
 import { getAdminStats, listAllBusinesses } from '@bahikhata/db';
-import { Badge, StatCard, TBody, TD, TH, THead, TR, Table } from '@bahikhata/ui';
+import {
+  Badge,
+  EmptyState,
+  PageBody,
+  PageHeader,
+  Section,
+  StatCard,
+  TBody,
+  TD,
+  TH,
+  THead,
+  TR,
+  Table,
+} from '@bahikhata/ui';
+import { Activity, Building2, CreditCard, PauseCircle, SearchX, Timer } from 'lucide-react';
 import type { Metadata } from 'next';
 import { requireSuperAdmin } from '@/lib/auth/require-business';
 import { AdminSearch } from '../admin-search';
@@ -40,32 +54,32 @@ export default async function AdminPage({
       : '—';
 
   return (
-    <div className="mx-auto max-w-6xl space-y-8 p-6">
-      <header>
-        <h1 className="text-2xl font-semibold tracking-tight">Businesses</h1>
-        <p className="text-sm text-muted-foreground">
-          Metadata and counts only. No customer transaction data is shown here, by design.
-        </p>
-      </header>
+    <PageBody className="mx-auto max-w-6xl p-6 sm:p-8">
+      <PageHeader
+        title="Businesses"
+        description="Metadata and counts only. No customer transaction data is shown here, by design."
+      />
 
-      <section className="grid gap-3 sm:grid-cols-3 lg:grid-cols-5">
-        <StatCard label="Businesses" value={String(stats.businesses)} />
-        <StatCard label="On trial" value={String(stats.trialing)} />
-        <StatCard label="Paying" value={String(stats.paying)} />
-        <StatCard label="Suspended" value={String(stats.suspended)} />
+      <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
+        <StatCard label="Businesses" value={String(stats.businesses)} icon={Building2} />
+        <StatCard label="On trial" value={String(stats.trialing)} icon={Timer} tone="warning" />
+        <StatCard label="Paying" value={String(stats.paying)} icon={CreditCard} tone="success" />
+        <StatCard
+          label="Suspended"
+          value={String(stats.suspended)}
+          icon={PauseCircle}
+          tone={stats.suspended > 0 ? 'destructive' : 'default'}
+        />
         <StatCard
           label="Active this week"
           value={String(stats.activeThisWeek)}
           hint={`${stats.invoices} invoices all time`}
+          icon={Activity}
+          tone="info"
         />
       </section>
 
-      <section className="space-y-3">
-        <div className="flex flex-wrap items-center justify-between gap-2">
-          <h2 className="text-base font-medium">All businesses</h2>
-          <AdminSearch initial={q ?? ''} />
-        </div>
-
+      <Section title="All businesses" actions={<AdminSearch initial={q ?? ''} />}>
         <Table>
           <THead>
             <TR>
@@ -96,12 +110,18 @@ export default async function AdminPage({
                 </TD>
                 <TD>
                   {b.status === 'active' ? (
-                    <Badge variant="success">Paying</Badge>
+                    <Badge variant="success" dot>
+                      Paying
+                    </Badge>
                   ) : b.status === 'suspended' ? (
-                    <Badge variant="destructive">Suspended</Badge>
+                    <Badge variant="destructive" dot>
+                      Suspended
+                    </Badge>
                   ) : b.status === 'trial' ? (
                     <>
-                      <Badge variant="warning">Trial</Badge>
+                      <Badge variant="warning" dot>
+                        Trial
+                      </Badge>
                       <span className="mt-0.5 block text-xs text-muted-foreground">
                         ends {fmtDate(b.trialEndsAt)}
                       </span>
@@ -126,11 +146,13 @@ export default async function AdminPage({
         </Table>
 
         {businesses.length === 0 && (
-          <p className="py-8 text-center text-sm text-muted-foreground">
-            No businesses match that search.
-          </p>
+          <EmptyState
+            icon={SearchX}
+            title="No businesses match that search"
+            description="Try an email address, a shop name, or clear the box to see everyone."
+          />
         )}
-      </section>
-    </div>
+      </Section>
+    </PageBody>
   );
 }

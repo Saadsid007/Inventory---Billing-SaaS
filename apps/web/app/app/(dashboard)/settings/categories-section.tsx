@@ -1,6 +1,6 @@
 'use client';
 
-import { Button, FormError, Input } from '@bahikhata/ui';
+import { Button, Card, FormError, Input } from '@bahikhata/ui';
 import { Trash2 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import * as React from 'react';
@@ -37,9 +37,9 @@ export function CategoriesSection({
   }
 
   return (
-    <section className="space-y-4 border-t pt-8">
+    <Card className="space-y-4 p-6">
       <div>
-        <h2 className="text-base font-medium">Categories</h2>
+        <h2 className="text-base font-semibold">Categories</h2>
         <p className="text-sm text-muted-foreground">
           Nothing is seeded here on purpose — a kirana store and a hardware shop have nothing in
           common, and a wrong default is worse than an empty list.
@@ -83,6 +83,6 @@ export function CategoriesSection({
           Add category
         </Button>
       </div>
-    </section>
+    </Card>
   );
 }

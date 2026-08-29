@@ -1,4 +1,7 @@
+import { PageBody, PageHeader } from '@bahikhata/ui';
+import { ArrowLeft } from 'lucide-react';
 import type { Metadata } from 'next';
+import Link from 'next/link';
 import { requireBusiness } from '@/lib/auth/require-business';
 import { loadProductFormData } from '../_form-data';
 import { EMPTY_PRODUCT, ProductForm } from '../product-form';
@@ -10,9 +13,20 @@ export default async function NewProductPage() {
   const data = await loadProductFormData(ctx);
 
   return (
-    <div className="mx-auto max-w-2xl space-y-6">
-      <h1 className="text-2xl font-semibold tracking-tight">Add product</h1>
+    <PageBody className="mx-auto max-w-2xl">
+      <PageHeader
+        breadcrumb={
+          <Link
+            href="/app/products"
+            className="inline-flex items-center gap-1.5 transition-colors hover:text-foreground"
+          >
+            <ArrowLeft className="size-3.5" /> All products
+          </Link>
+        }
+        title="Add product"
+        description="Only the name and sale price are required — everything else can wait."
+      />
       <ProductForm initial={EMPTY_PRODUCT} {...data} />
-    </div>
+    </PageBody>
   );
 }

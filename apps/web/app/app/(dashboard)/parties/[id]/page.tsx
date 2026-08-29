@@ -1,6 +1,21 @@
 import { getParty, getPartyBalance, listPartyLedger } from '@bahikhata/db';
-import { Badge, EmptyState, TBody, TD, TH, THead, TR, Table } from '@bahikhata/ui';
+import {
+  Badge,
+  Card,
+  EmptyState,
+  PageBody,
+  PageHeader,
+  Section,
+  TBody,
+  TD,
+  TH,
+  THead,
+  TR,
+  Table,
+} from '@bahikhata/ui';
+import { ArrowLeft, ReceiptText } from 'lucide-react';
 import type { Metadata } from 'next';
+import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { requireBusiness } from '@/lib/auth/require-business';
 import { loadPartyFormData } from '../_form-data';
@@ -41,34 +56,49 @@ export default async function PartyPage({ params }: { params: Promise<{ id: stri
   const outstanding = Number(balance?.outstanding ?? party.openingBalance);
 
   return (
-    <div className="mx-auto max-w-4xl space-y-8">
-      <header className="flex flex-wrap items-start justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-semibold tracking-tight">{party.name}</h1>
-          <div className="mt-1 flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
-            <Badge variant="secondary">{party.type}</Badge>
+    <PageBody className="mx-auto max-w-4xl space-y-8">
+      <PageHeader
+        breadcrumb={
+          <Link
+            href="/app/parties"
+            className="inline-flex items-center gap-1.5 transition-colors hover:text-foreground"
+          >
+            <ArrowLeft className="size-3.5" /> All contacts
+          </Link>
+        }
+        title={party.name}
+        description={
+          <span className="flex flex-wrap items-center gap-2">
+            <Badge variant="secondary" className="capitalize">
+              {party.type}
+            </Badge>
             {party.phone && <span className="tabular">{party.phone}</span>}
             {party.gstin && <span className="tabular">{party.gstin}</span>}
-          </div>
-        </div>
-        <div className="text-right">
-          <p className="text-xs font-medium text-muted-foreground">Outstanding</p>
-          <p className="tabular text-2xl font-semibold">{inr(outstanding)}</p>
-          <p className="text-xs text-muted-foreground">
-            {outstanding > 0
-              ? 'They owe you'
-              : outstanding < 0
-                ? 'You owe them'
-                : 'Settled up'}
-          </p>
-        </div>
-      </header>
+          </span>
+        }
+        actions={
+          <Card className="px-5 py-3 text-right">
+            <p className="text-xs font-medium tracking-wide text-muted-foreground uppercase">
+              Outstanding
+            </p>
+            <p
+              className={`tabular mt-0.5 text-2xl font-semibold ${
+                outstanding > 0 ? 'text-warning' : ''
+              }`}
+            >
+              {inr(outstanding)}
+            </p>
+            <p className="text-xs text-muted-foreground">
+              {outstanding > 0 ? 'They owe you' : outstanding < 0 ? 'You owe them' : 'Settled up'}
+            </p>
+          </Card>
+        }
+      />
 
-      <section className="space-y-3">
-        <h2 className="text-sm font-medium">Ledger</h2>
-
+      <Section title="Ledger" description="Every bill and payment, with a running balance.">
         {rows.length === 0 ? (
           <EmptyState
+            icon={ReceiptText}
             title="No transactions yet"
             description={
               Number(party.openingBalance) !== 0
@@ -102,7 +132,9 @@ export default async function PartyPage({ params }: { params: Promise<{ id: stri
                 <TR key={`${entry.kind}-${entry.id}`}>
                   <TD className="tabular text-muted-foreground">{entry.date}</TD>
                   <TD>
-                    <span className="capitalize">{entry.label}</span>
+                    {/* Labels arrive as `tax_invoice 001` from the ledger query;
+                        an underscore on screen looks like a leaked column name. */}
+                    <span className="capitalize">{entry.label.replace(/_/g, ' ')}</span>
                   </TD>
                   <TD
                     numeric
@@ -119,10 +151,9 @@ export default async function PartyPage({ params }: { params: Promise<{ id: stri
             </TBody>
           </Table>
         )}
-      </section>
+      </Section>
 
-      <section className="space-y-4 border-t pt-8">
-        <h2 className="text-sm font-medium">Details</h2>
+      <Section title="Details" className="border-t pt-8">
         <PartyForm
           partyId={party.id}
           initial={{
@@ -140,7 +171,7 @@ export default async function PartyPage({ params }: { params: Promise<{ id: stri
           }}
           customFieldDefs={formData.customFieldDefs}
         />
-      </section>
-    </div>
+      </Section>
+    </PageBody>
   );
 }

@@ -1,5 +1,6 @@
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@bahikhata/ui';
+import { TRIAL_DAYS } from '@bahikhata/shared';
 import type { Metadata } from 'next';
+import Link from 'next/link';
 import { LoginForm } from './login-form';
 
 export const metadata: Metadata = { title: 'Login' };
@@ -12,14 +13,23 @@ export default async function LoginPage({
   const { next } = await searchParams;
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Welcome back</CardTitle>
-        <CardDescription>Log in to your account.</CardDescription>
-      </CardHeader>
-      <CardContent>
-        <LoginForm next={next} />
-      </CardContent>
-    </Card>
+    <div className="space-y-7">
+      <div className="space-y-1.5">
+        <h1 className="text-2xl font-semibold">Welcome back</h1>
+        <p className="text-sm text-muted-foreground">
+          Log in to carry on billing where you left off.
+        </p>
+      </div>
+
+      <LoginForm next={next} />
+
+      <p className="text-center text-sm text-muted-foreground">
+        New here?{' '}
+        <Link href="/register" className="font-medium text-primary underline-offset-4 hover:underline">
+          Create an account
+        </Link>{' '}
+        — {TRIAL_DAYS} days free.
+      </p>
+    </div>
   );
 }

@@ -1,6 +1,33 @@
 import { getDashboardStats, getRecentInvoices } from '@bahikhata/db';
-import { MONTHLY_PRICE_INR, trialDaysRemaining } from '@bahikhata/shared';
-import { Badge, EmptyState, StatCard, TBody, TD, TH, THead, TR, Table } from '@bahikhata/ui';
+import {
+  Alert,
+  Badge,
+  Button,
+  Card,
+  EmptyState,
+  PageBody,
+  PageHeader,
+  Section,
+  StatCard,
+  TBody,
+  TD,
+  TH,
+  THead,
+  TR,
+  Table,
+} from '@bahikhata/ui';
+import {
+  ArrowRight,
+  FileText,
+  IndianRupee,
+  PackagePlus,
+  Plus,
+  QrCode,
+  TrendingUp,
+  TriangleAlert,
+  UserPlus,
+  Wallet,
+} from 'lucide-react';
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { requireBusiness, requireMembership } from '@/lib/auth/require-business';
@@ -9,147 +36,248 @@ export const metadata: Metadata = { title: 'Dashboard' };
 
 const inr = (v: string) => `₹${Number(v).toLocaleString('en-IN', { minimumFractionDigits: 2 })}`;
 
+/** Formats 2026-08-29 as 29 Aug — the invoice list is read by date, not by ISO. */
+const shortDate = (iso: string) =>
+  new Date(`${iso}T00:00:00`).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' });
+
+/**
+ * The dashboard.
+ *
+ * Answers, in this order, the four questions a shopkeeper opens the app with:
+ * how much did I sell, how much am I owed, what is running out, and what did I
+ * bill last. The primary action — make a bill — is the first thing on the page
+ * and the first thing under the thumb on a phone, because that is what the
+ * product is for.
+ */
 export default async function DashboardPage() {
   // Called again rather than trusted from the layout: a page is reachable on
   // its own during client-side navigation, and the guard is cached.
   const ctx = await requireBusiness();
 
-  const [{ businessName, status, slug, trialEndsAt }, stats, recent] = await Promise.all([
+  const [{ businessName, slug }, stats, recent] = await Promise.all([
     requireMembership(),
     getDashboardStats(ctx),
     getRecentInvoices(ctx, 8),
   ]);
 
-  const daysLeft = status === 'trial' && trialEndsAt ? trialDaysRemaining(trialEndsAt) : null;
-
   return (
-    <div className="mx-auto max-w-5xl space-y-8">
-      <header className="space-y-1">
-        <h1 className="text-2xl font-semibold tracking-tight">{businessName}</h1>
-        <p className="text-sm text-muted-foreground">
-          Public catalog:{' '}
-          <Link href="/app/catalog" className="hover:underline">
-            <code className="rounded bg-muted px-1 py-0.5 text-xs">/store/{slug}</code>
+    <PageBody>
+      <PageHeader
+        title={businessName}
+        description={
+          <>
+            Your shop at a glance. Public catalog:{' '}
+            <Link
+              href="/app/catalog"
+              className="font-medium text-primary underline-offset-4 hover:underline"
+            >
+              /store/{slug}
+            </Link>
+          </>
+        }
+        actions={
+          <Link href="/app/invoices/new">
+            <Button size="lg">
+              <Plus /> New bill
+            </Button>
           </Link>
-        </p>
-      </header>
+        }
+      />
 
-      {/* Nag only in the last three days. A countdown from day one just teaches
-          people to ignore the banner. */}
-      {daysLeft !== null && daysLeft <= 3 && (
-        <div className="rounded-lg border border-warning/40 bg-warning/10 px-4 py-3 text-sm">
-          <span className="font-medium">
-            {daysLeft === 0
-              ? 'Your trial ends today.'
-              : `${daysLeft} ${daysLeft === 1 ? 'day' : 'days'} left in your trial.`}
-          </span>{' '}
-          <span className="text-muted-foreground">
-            Subscribe at ₹{MONTHLY_PRICE_INR} a month to keep going.
-          </span>
-        </div>
-      )}
-
-      <section className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+      <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <StatCard
           label="Sales today"
           value={inr(stats.salesToday)}
-          hint={`${stats.invoicesToday} ${stats.invoicesToday === 1 ? 'invoice' : 'invoices'}`}
+          hint={`${stats.invoicesToday} ${stats.invoicesToday === 1 ? 'bill' : 'bills'} made today`}
+          icon={IndianRupee}
         />
         <StatCard
-          label="Sales this month"
+          label="This month"
           value={inr(stats.salesThisMonth)}
-          hint={`${stats.invoicesThisMonth} ${stats.invoicesThisMonth === 1 ? 'invoice' : 'invoices'}`}
+          hint={`${stats.invoicesThisMonth} ${stats.invoicesThisMonth === 1 ? 'bill' : 'bills'} so far`}
+          icon={TrendingUp}
+          tone="info"
         />
         <StatCard
-          label="Total outstanding"
+          label="Owed to you"
           value={inr(stats.totalOutstanding)}
-          hint={`Across ${stats.partyCount} ${stats.partyCount === 1 ? 'contact' : 'contacts'}`}
+          hint={`Across ${stats.partyCount} ${stats.partyCount === 1 ? 'customer' : 'customers'}`}
+          icon={Wallet}
+          tone={Number(stats.totalOutstanding) > 0 ? 'warning' : 'success'}
         />
         <StatCard
-          label="Low stock items"
+          label="Low stock"
           value={String(stats.lowStockCount)}
-          hint={stats.lowStockCount > 0 ? 'Needs restocking' : `${stats.productCount} products`}
+          hint={
+            stats.lowStockCount > 0
+              ? 'Needs restocking'
+              : `All ${stats.productCount} products are fine`
+          }
+          icon={TriangleAlert}
+          tone={stats.lowStockCount > 0 ? 'destructive' : 'default'}
         />
       </section>
 
       {stats.lowStockCount > 0 && (
-        <Link
-          href="/app/products?low=1"
-          className="block rounded-lg border border-warning/40 bg-warning/10 px-4 py-3 text-sm hover:bg-warning/15"
+        <Alert
+          variant="warning"
+          icon={TriangleAlert}
+          title={`${stats.lowStockCount} ${stats.lowStockCount === 1 ? 'item is' : 'items are'} at or below your low-stock level`}
+          action={
+            <Link href="/app/products?low=1">
+              <Button size="sm" variant="outline">
+                See which <ArrowRight />
+              </Button>
+            </Link>
+          }
         >
-          <span className="font-medium">
-            {stats.lowStockCount} {stats.lowStockCount === 1 ? 'item is' : 'items are'} at or
-            below the low-stock level.
-          </span>{' '}
-          <span className="text-muted-foreground">See which →</span>
-        </Link>
+          Order these before a customer asks for something you have run out of.
+        </Alert>
       )}
 
-      <section className="space-y-3">
-        <div className="flex items-center justify-between">
-          <h2 className="text-sm font-medium">Recent invoices</h2>
-          <Link href="/app/invoices" className="text-sm text-muted-foreground hover:underline">
-            See all
-          </Link>
-        </div>
-
-        {recent.length === 0 ? (
-          <EmptyState
-            title="No invoices yet"
-            description="Your bills will show up here as you make them."
-            action={
-              <Link
-                href="/app/invoices/new"
-                className="inline-flex h-9 items-center rounded-md bg-primary px-4 text-sm font-medium text-primary-foreground hover:bg-primary/90"
-              >
-                Make your first bill
-              </Link>
-            }
-          />
-        ) : (
-          <Table>
-            <THead>
-              <TR>
-                <TH>Number</TH>
-                <TH>Date</TH>
-                <TH>Customer</TH>
-                <TH numeric>Total</TH>
-                <TH>Status</TH>
-              </TR>
-            </THead>
-            <TBody>
-              {recent.map((inv) => (
-                <TR key={inv.id}>
-                  <TD>
-                    <Link
-                      href={`/app/invoices/${inv.id}`}
-                      className="font-medium hover:underline"
-                    >
-                      {inv.invoiceNo ?? 'Draft'}
-                    </Link>
-                  </TD>
-                  <TD className="tabular text-muted-foreground">{inv.invoiceDate}</TD>
-                  <TD>{inv.partyName}</TD>
-                  <TD numeric>₹{inv.grandTotal}</TD>
-                  <TD>
-                    {inv.status === 'cancelled' ? (
-                      <Badge variant="destructive">Cancelled</Badge>
-                    ) : inv.status === 'draft' ? (
-                      <Badge variant="outline">Draft</Badge>
-                    ) : inv.paymentStatus === 'paid' ? (
-                      <Badge variant="success">Paid</Badge>
-                    ) : inv.paymentStatus === 'partial' ? (
-                      <Badge variant="warning">Part paid</Badge>
-                    ) : (
-                      <Badge variant="outline">Unpaid</Badge>
-                    )}
-                  </TD>
+      <div className="grid gap-6 lg:grid-cols-[1fr_18rem]">
+        <Section
+          title="Recent bills"
+          actions={
+            <Link
+              href="/app/invoices"
+              className="text-sm font-medium text-primary underline-offset-4 hover:underline"
+            >
+              See all
+            </Link>
+          }
+        >
+          {recent.length === 0 ? (
+            <EmptyState
+              icon={FileText}
+              title="No bills yet"
+              description="Make your first bill and it will show up here, with stock going down by itself."
+              action={
+                <Link href="/app/invoices/new">
+                  <Button>
+                    <Plus /> Make your first bill
+                  </Button>
+                </Link>
+              }
+            />
+          ) : (
+            <Table>
+              <THead>
+                <TR>
+                  <TH>Number</TH>
+                  <TH>Date</TH>
+                  <TH>Customer</TH>
+                  <TH numeric>Total</TH>
+                  <TH>Status</TH>
                 </TR>
-              ))}
-            </TBody>
-          </Table>
-        )}
-      </section>
-    </div>
+              </THead>
+              <TBody>
+                {recent.map((inv) => (
+                  <TR key={inv.id}>
+                    <TD>
+                      <Link
+                        href={`/app/invoices/${inv.id}`}
+                        className="font-medium underline-offset-4 hover:text-primary hover:underline"
+                      >
+                        {inv.invoiceNo ?? 'Draft'}
+                      </Link>
+                    </TD>
+                    <TD className="tabular whitespace-nowrap text-muted-foreground">
+                      {shortDate(inv.invoiceDate)}
+                    </TD>
+                    <TD className="max-w-[12rem] truncate">{inv.partyName}</TD>
+                    <TD numeric className="font-medium">
+                      ₹{inv.grandTotal}
+                    </TD>
+                    <TD>
+                      {inv.status === 'cancelled' ? (
+                        <Badge variant="destructive">Cancelled</Badge>
+                      ) : inv.status === 'draft' ? (
+                        <Badge variant="outline">Draft</Badge>
+                      ) : inv.paymentStatus === 'paid' ? (
+                        <Badge variant="success" dot>
+                          Paid
+                        </Badge>
+                      ) : inv.paymentStatus === 'partial' ? (
+                        <Badge variant="warning" dot>
+                          Part paid
+                        </Badge>
+                      ) : (
+                        <Badge variant="outline" dot>
+                          Unpaid
+                        </Badge>
+                      )}
+                    </TD>
+                  </TR>
+                ))}
+              </TBody>
+            </Table>
+          )}
+        </Section>
+
+        <Section title="Quick actions">
+          <Card className="divide-y p-0">
+            <QuickAction
+              href="/app/invoices/new"
+              icon={Plus}
+              label="New bill"
+              hint="Sell something"
+            />
+            <QuickAction
+              href="/app/products/new"
+              icon={PackagePlus}
+              label="Add a product"
+              hint="Price, tax, stock"
+            />
+            <QuickAction
+              href="/app/parties/new"
+              icon={UserPlus}
+              label="Add a customer"
+              hint="For khata and GST bills"
+            />
+            <QuickAction
+              href="/app/stock"
+              icon={PackagePlus}
+              label="Stock in / out"
+              hint="Received or damaged goods"
+            />
+            <QuickAction
+              href="/app/catalog"
+              icon={QrCode}
+              label="Your QR poster"
+              hint="Print it for the counter"
+            />
+          </Card>
+        </Section>
+      </div>
+    </PageBody>
+  );
+}
+
+function QuickAction({
+  href,
+  icon: Icon,
+  label,
+  hint,
+}: {
+  href: string;
+  icon: React.ComponentType<{ className?: string }>;
+  label: string;
+  hint: string;
+}) {
+  return (
+    <Link
+      href={href}
+      className="flex items-center gap-3 p-3.5 transition-colors first:rounded-t-xl last:rounded-b-xl hover:bg-primary-subtle/50"
+    >
+      <span className="grid size-9 shrink-0 place-items-center rounded-lg bg-primary-subtle text-primary-subtle-foreground">
+        <Icon className="size-4" />
+      </span>
+      <span className="min-w-0 flex-1">
+        <span className="block truncate text-sm font-medium">{label}</span>
+        <span className="block truncate text-xs text-muted-foreground">{hint}</span>
+      </span>
+      <ArrowRight className="size-4 shrink-0 text-muted-foreground" />
+    </Link>
   );
 }

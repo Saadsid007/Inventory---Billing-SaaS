@@ -1,5 +1,16 @@
 import { listAdmins } from '@bahikhata/db';
-import { TBody, TD, TH, THead, TR, Table } from '@bahikhata/ui';
+import {
+  Card,
+  PageBody,
+  PageHeader,
+  Section,
+  TBody,
+  TD,
+  TH,
+  THead,
+  TR,
+  Table,
+} from '@bahikhata/ui';
 import type { Metadata } from 'next';
 import { requireSuperAdmin } from '@/lib/auth/require-business';
 import { GrantAdminForm, RevokeAdminButton } from './admin-accounts';
@@ -17,16 +28,13 @@ export default async function AdminsPage() {
   const admins = await listAdmins();
 
   return (
-    <div className="mx-auto max-w-4xl space-y-8 p-6">
-      <header>
-        <h1 className="text-2xl font-semibold tracking-tight">Admins</h1>
-        <p className="text-sm text-muted-foreground">
-          Admins can see every business on Bahikhata and can suspend one. Keep this list short.
-        </p>
-      </header>
+    <PageBody className="mx-auto max-w-4xl p-6 sm:p-8">
+      <PageHeader
+        title="Admins"
+        description="Admins can see every business on Bahikhata and can suspend one. Keep this list short."
+      />
 
-      <section className="space-y-3">
-        <h2 className="text-base font-medium">Current admins</h2>
+      <Section title="Current admins">
         <Table>
           <THead>
             <TR>
@@ -62,19 +70,19 @@ export default async function AdminsPage() {
             ))}
           </TBody>
         </Table>
-      </section>
+      </Section>
 
-      <section className="max-w-md space-y-3 rounded-lg border p-5">
+      <Card className="max-w-md space-y-4 p-6">
         <div>
-          <h2 className="text-base font-medium">Add an admin</h2>
-          <p className="mt-1 text-sm text-muted-foreground">
+          <h2 className="text-base font-semibold">Add an admin</h2>
+          <p className="mt-1 text-sm leading-relaxed text-muted-foreground">
             They need a Bahikhata account first — ask them to sign up, then enter the same email
             here. Nothing is emailed out; they simply get the Admin panel link the next time they
             log in.
           </p>
         </div>
         <GrantAdminForm />
-      </section>
-    </div>
+      </Card>
+    </PageBody>
   );
 }

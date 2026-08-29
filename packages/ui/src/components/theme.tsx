@@ -72,7 +72,10 @@ export function ThemeToggle({ className }: { className?: string }) {
 
   return (
     <div
-      className={cn('inline-flex items-center gap-0.5 rounded-md border p-0.5', className)}
+      className={cn(
+        'inline-flex items-center gap-0.5 rounded-lg border bg-muted/60 p-0.5 shadow-xs',
+        className,
+      )}
       role="group"
       aria-label="Theme"
     >
@@ -82,12 +85,13 @@ export function ThemeToggle({ className }: { className?: string }) {
           type="button"
           onClick={() => choose(value)}
           aria-label={label}
+          title={label}
           // Before mount we don't know the stored value; showing a pressed state
           // would be wrong half the time, so show none.
           aria-pressed={mounted ? theme === value : false}
           className={cn(
-            'rounded-sm p-1.5 text-muted-foreground transition-colors hover:text-foreground',
-            mounted && theme === value && 'bg-accent text-foreground',
+            'rounded-md p-1.5 text-muted-foreground transition-colors hover:text-foreground',
+            mounted && theme === value && 'bg-card text-primary shadow-xs',
           )}
         >
           <Icon className="size-4" />

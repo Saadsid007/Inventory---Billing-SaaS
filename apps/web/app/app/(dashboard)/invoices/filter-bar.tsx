@@ -1,7 +1,8 @@
 'use client';
 
 import { INVOICE_KINDS, INVOICE_KIND_LABELS } from '@bahikhata/shared';
-import { Button, Input, Select } from '@bahikhata/ui';
+import { Button, Card, Input, Select } from '@bahikhata/ui';
+import { Search, X } from 'lucide-react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import * as React from 'react';
 
@@ -38,14 +39,17 @@ export function InvoiceFilterBar({
   const isFiltered = Object.values(initial).some(Boolean);
 
   return (
-    <div className="flex flex-wrap items-center gap-2">
-      <Input
-        className="w-full sm:w-56"
-        placeholder="Invoice number or customer…"
-        aria-label="Search invoices"
-        value={q}
-        onChange={(e) => setQ(e.target.value)}
-      />
+    <Card className="flex flex-wrap items-center gap-2 p-3">
+      <div className="relative w-full sm:w-64">
+        <Search className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground" />
+        <Input
+          className="pl-9"
+          placeholder="Invoice number or customer…"
+          aria-label="Search invoices"
+          value={q}
+          onChange={(e) => setQ(e.target.value)}
+        />
+      </div>
       <Input
         className="w-36"
         type="date"
@@ -61,7 +65,7 @@ export function InvoiceFilterBar({
         onChange={(e) => apply({ to: e.target.value })}
       />
       <Select
-        className="w-40"
+        className="w-44"
         aria-label="Document type"
         value={initial.kind}
         onChange={(e) => apply({ kind: e.target.value })}
@@ -74,7 +78,7 @@ export function InvoiceFilterBar({
         ))}
       </Select>
       <Select
-        className="w-32"
+        className="w-40"
         aria-label="Status"
         value={initial.status}
         onChange={(e) => apply({ status: e.target.value })}
@@ -85,7 +89,7 @@ export function InvoiceFilterBar({
         <option value="cancelled">Cancelled</option>
       </Select>
       <Select
-        className="w-32"
+        className="w-40"
         aria-label="Payment status"
         value={initial.payment}
         onChange={(e) => apply({ payment: e.target.value })}
@@ -104,10 +108,10 @@ export function InvoiceFilterBar({
             startTransition(() => router.replace('/app/invoices'));
           }}
         >
-          Clear
+          <X /> Clear
         </Button>
       )}
       {pending && <span className="text-xs text-muted-foreground">Updating…</span>}
-    </div>
+    </Card>
   );
 }

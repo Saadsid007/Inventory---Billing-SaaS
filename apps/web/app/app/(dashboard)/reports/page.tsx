@@ -5,7 +5,21 @@ import {
   listPartyBalances,
 } from '@bahikhata/db';
 import { todayInIndia } from '@bahikhata/core';
-import { Badge, EmptyState, TBody, TD, TH, THead, TR, Table } from '@bahikhata/ui';
+import {
+  Badge,
+  EmptyState,
+  PageBody,
+  PageHeader,
+  Section,
+  StatCard,
+  TBody,
+  TD,
+  TH,
+  THead,
+  TR,
+  Table,
+} from '@bahikhata/ui';
+import { CheckCircle2, FileText, IndianRupee, Package, Receipt, SearchX } from 'lucide-react';
 import type { Metadata } from 'next';
 import { requireBusiness } from '@/lib/auth/require-business';
 import { DateRangePicker } from './date-range';
@@ -53,34 +67,36 @@ export default async function ReportsPage({
   const owedTotal = owed.reduce((a, b) => a + Number(b.outstanding), 0);
 
   return (
-    <div className="mx-auto max-w-5xl space-y-10">
-      <header className="flex flex-wrap items-start justify-between gap-3">
-        <div>
-          <h1 className="text-2xl font-semibold tracking-tight">Reports</h1>
-          <p className="text-sm text-muted-foreground">
-            Sales, stock and outstanding — and the CSVs your accountant will ask for.
-          </p>
-        </div>
-        <ExportButtons />
-      </header>
+    <PageBody className="space-y-10">
+      <PageHeader
+        title="Reports"
+        description="Sales, tax, stock and outstanding — and the CSVs your accountant will ask for."
+        actions={<ExportButtons />}
+      />
 
-      <section className="space-y-4">
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <h2 className="text-base font-medium">Sales</h2>
-          <DateRangePicker initial={range} />
-        </div>
-
-        <div className="grid gap-3 sm:grid-cols-4">
-          <Figure label="Invoices" value={String(totals.invoices)} />
-          <Figure label="Taxable value" value={inr(totals.taxable.toFixed(2))} />
-          <Figure label="Tax collected" value={inr(totals.tax.toFixed(2))} />
-          <Figure label="Total sales" value={inr(totals.grand.toFixed(2))} />
+      <Section title="Sales" actions={<DateRangePicker initial={range} />}>
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          <StatCard label="Invoices" value={String(totals.invoices)} icon={FileText} />
+          <StatCard label="Taxable value" value={inr(totals.taxable.toFixed(2))} icon={Receipt} />
+          <StatCard
+            label="Tax collected"
+            value={inr(totals.tax.toFixed(2))}
+            icon={Receipt}
+            tone="info"
+          />
+          <StatCard
+            label="Total sales"
+            value={inr(totals.grand.toFixed(2))}
+            icon={IndianRupee}
+            tone="success"
+          />
         </div>
 
         {sales.length === 0 ? (
           <EmptyState
+            icon={SearchX}
             title="No sales in this range"
-            description="Try a wider date range."
+            description="Try a wider date range — the picker above defaults to this month so far."
           />
         ) : (
           <Table>
@@ -108,16 +124,13 @@ export default async function ReportsPage({
             </TBody>
           </Table>
         )}
-      </section>
+      </Section>
 
       {tax.length > 0 && (
-        <section className="space-y-3">
-          <div>
-            <h2 className="text-base font-medium">Tax by rate</h2>
-            <p className="text-sm text-muted-foreground">
-              What a CA asks for at year end, and the basis of the GSTR-1 HSN summary.
-            </p>
-          </div>
+        <Section
+          title="Tax by rate"
+          description="What a CA asks for at year end, and the basis of the GSTR-1 HSN summary."
+        >
           <Table>
             <THead>
               <TR>
@@ -142,18 +155,24 @@ export default async function ReportsPage({
               ))}
             </TBody>
           </Table>
-        </section>
+        </Section>
       )}
 
-      <section className="space-y-3">
-        <div className="flex flex-wrap items-center justify-between gap-2">
-          <h2 className="text-base font-medium">Stock</h2>
+      <Section
+        title="Stock"
+        actions={
           <p className="tabular text-sm text-muted-foreground">
-            Value at sale price: <span className="font-medium">{inr(stockValue.toFixed(2))}</span>
+            Value at sale price:{' '}
+            <span className="font-semibold text-foreground">{inr(stockValue.toFixed(2))}</span>
           </p>
-        </div>
+        }
+      >
         {stock.length === 0 ? (
-          <EmptyState title="Nothing tracked yet" description="Products with inventory tracking on will appear here." />
+          <EmptyState
+            icon={Package}
+            title="Nothing tracked yet"
+            description="Products with inventory tracking switched on will appear here."
+          />
         ) : (
           <Table>
             <THead>
@@ -178,23 +197,35 @@ export default async function ReportsPage({
                   </TD>
                   <TD numeric className="text-muted-foreground">{r.lowStockAlert ?? '—'}</TD>
                   <TD numeric>₹{r.stockValue}</TD>
-                  <TD>{r.isLow && <Badge variant="warning">Low</Badge>}</TD>
+                  <TD>
+                    {r.isLow && (
+                      <Badge variant="warning" dot>
+                        Low
+                      </Badge>
+                    )}
+                  </TD>
                 </TR>
               ))}
             </TBody>
           </Table>
         )}
-      </section>
+      </Section>
 
-      <section className="space-y-3">
-        <div className="flex flex-wrap items-center justify-between gap-2">
-          <h2 className="text-base font-medium">Outstanding by party</h2>
+      <Section
+        title="Outstanding by customer"
+        actions={
           <p className="tabular text-sm text-muted-foreground">
-            Total: <span className="font-medium">{inr(owedTotal.toFixed(2))}</span>
+            Total:{' '}
+            <span className="font-semibold text-foreground">{inr(owedTotal.toFixed(2))}</span>
           </p>
-        </div>
+        }
+      >
         {owed.length === 0 ? (
-          <EmptyState title="Nobody owes you anything" description="Everything is settled up." />
+          <EmptyState
+            icon={CheckCircle2}
+            title="Nobody owes you anything"
+            description="Every bill you have issued has been paid in full."
+          />
         ) : (
           <Table>
             <THead>
@@ -213,22 +244,13 @@ export default async function ReportsPage({
                   <TD className="tabular text-muted-foreground">{b.phone ?? '—'}</TD>
                   <TD numeric className="text-muted-foreground">₹{b.invoicedTotal}</TD>
                   <TD numeric className="text-muted-foreground">₹{b.paidIn}</TD>
-                  <TD numeric className="font-medium">₹{b.outstanding}</TD>
+                  <TD numeric className="font-semibold text-warning">₹{b.outstanding}</TD>
                 </TR>
               ))}
             </TBody>
           </Table>
         )}
-      </section>
-    </div>
-  );
-}
-
-function Figure({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="rounded-lg border p-4">
-      <p className="text-xs font-medium text-muted-foreground">{label}</p>
-      <p className="tabular mt-1 text-xl font-semibold">{value}</p>
-    </div>
+      </Section>
+    </PageBody>
   );
 }

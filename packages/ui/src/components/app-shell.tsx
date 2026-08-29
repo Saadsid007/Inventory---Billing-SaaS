@@ -1,35 +1,52 @@
 'use client';
 
-import { ChevronsUpDown, Menu, X } from 'lucide-react';
+import { Menu, X } from 'lucide-react';
 import * as React from 'react';
 import { cn } from '../lib/cn';
 import { ThemeToggle } from './theme';
 
 /**
- * The authenticated app frame: sidebar, topbar, business switcher.
+ * The authenticated app frame: sidebar, topbar, mobile drawer.
  *
  * Takes everything as props and renders no data of its own — routing and
  * session are the app's concern, so this stays a pure presentation component
  * that `packages/ui` is allowed to own.
+ *
+ * ## Why the nav is grouped
+ *
+ * Eight flat links all look equally important, so the shopkeeper reads all
+ * eight every time. Grouped into what they came to do (Billing), what they
+ * sell (Catalogue) and what they only touch occasionally (Business), the eye
+ * skips two thirds of the list. The groups are declared by the app via
+ * `section` on each item and rendered in the order they first appear.
  */
 
 export type NavItem = {
   href: string;
   label: string;
   icon: React.ComponentType<{ className?: string }>;
+  /** Group heading. Items with the same section render together. */
+  section?: string;
+  /** Small count on the right, e.g. unpaid bills. */
+  badge?: string | number;
 };
 
 export type AppShellProps = {
   businessName: string;
-  /** e.g. 'Trial' — rendered as a small badge beside the name. */
+  /** e.g. 'Trial · 6 days left' — rendered under the business name. */
   statusLabel?: string | undefined;
+  /** How urgent that status is. Only 'warning' and 'destructive' draw the eye. */
+  statusTone?: 'default' | 'warning' | 'destructive' | undefined;
   userName: string;
+  userEmail?: string | undefined;
   nav: readonly NavItem[];
   currentPath: string;
   /** Rendered inside the sidebar's business button. Phase 3 makes it a real menu. */
   onSwitchBusiness?: (() => void) | undefined;
   /** Sign-out control, supplied by the app because it owns the auth action. */
   userMenu?: React.ReactNode;
+  /** Optional banner above the page content — trial ending, payment due. */
+  banner?: React.ReactNode;
   children: React.ReactNode;
   /** Link component. Passed in so this package never imports next/link. */
   LinkComponent: React.ComponentType<{
@@ -37,6 +54,7 @@ export type AppShellProps = {
     className?: string;
     children: React.ReactNode;
     onClick?: () => void;
+    'aria-current'?: 'page' | undefined;
   }>;
 };
 
@@ -46,18 +64,35 @@ function isActive(currentPath: string, href: string): boolean {
   return href === '/app' ? currentPath === '/app' : currentPath.startsWith(href);
 }
 
+/** Groups items by `section`, preserving the order sections first appear. */
+function groupNav(nav: readonly NavItem[]) {
+  const groups: { section: string; items: NavItem[] }[] = [];
+  for (const item of nav) {
+    const section = item.section ?? '';
+    const existing = groups.find((g) => g.section === section);
+    if (existing) existing.items.push(item);
+    else groups.push({ section, items: [item] });
+  }
+  return groups;
+}
+
 export function AppShell({
   businessName,
   statusLabel,
+  statusTone = 'default',
   userName,
+  userEmail,
   nav,
   currentPath,
   onSwitchBusiness,
   userMenu,
+  banner,
   children,
   LinkComponent: Link,
 }: AppShellProps) {
   const [mobileOpen, setMobileOpen] = React.useState(false);
+  const groups = React.useMemo(() => groupNav(nav), [nav]);
+  const current = nav.find((item) => isActive(currentPath, item.href));
 
   // A shopkeeper taps a nav item on a phone; leaving the drawer open would
   // cover the page they just asked for.
@@ -65,54 +100,111 @@ export function AppShell({
     setMobileOpen(false);
   }, [currentPath]);
 
+  // Escape closes the drawer. Cheap, and expected by anyone using a keyboard.
+  React.useEffect(() => {
+    if (!mobileOpen) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setMobileOpen(false);
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [mobileOpen]);
+
+  const statusClass = {
+    default: 'text-muted-foreground',
+    warning: 'text-warning',
+    destructive: 'text-destructive',
+  }[statusTone];
+
   const sidebar = (
     <div className="flex h-full flex-col bg-sidebar text-sidebar-foreground">
+      {/* Brand. The product name is here and nowhere else in the app, so a
+          shopkeeper always knows what they are inside of. */}
+      <div className="flex h-14 items-center gap-2.5 border-b border-sidebar-border px-4">
+        <span className="grid size-7 shrink-0 place-items-center rounded-lg bg-sidebar-primary text-[0.8rem] font-bold text-sidebar-primary-foreground shadow-xs">
+          B
+        </span>
+        <span className="text-[0.95rem] font-semibold tracking-tight">Bahikhata</span>
+      </div>
+
       <div className="p-3">
         <button
           type="button"
           onClick={onSwitchBusiness}
           disabled={!onSwitchBusiness}
           className={cn(
-            'flex w-full items-center gap-2 rounded-md p-2 text-left transition-colors',
+            'flex w-full items-center gap-2.5 rounded-lg border border-sidebar-border bg-card/60 p-2.5 text-left transition-colors',
             onSwitchBusiness ? 'hover:bg-sidebar-accent' : 'cursor-default',
           )}
         >
-          <span className="grid size-8 shrink-0 place-items-center rounded-md bg-sidebar-primary text-sm font-semibold text-sidebar-primary-foreground">
+          <span className="grid size-8 shrink-0 place-items-center rounded-md bg-primary-subtle text-sm font-semibold text-primary-subtle-foreground">
             {businessName.charAt(0).toUpperCase()}
           </span>
           <span className="min-w-0 flex-1">
             <span className="block truncate text-sm font-medium">{businessName}</span>
             {statusLabel && (
-              <span className="block truncate text-xs text-muted-foreground">{statusLabel}</span>
+              <span className={cn('block truncate text-xs', statusClass)}>{statusLabel}</span>
             )}
           </span>
-          {onSwitchBusiness && (
-            <ChevronsUpDown className="size-4 shrink-0 text-muted-foreground" />
-          )}
         </button>
       </div>
 
-      <nav className="flex-1 space-y-0.5 overflow-y-auto px-3 pb-3">
-        {nav.map(({ href, label, icon: Icon }) => (
-          <Link
-            key={href}
-            href={href}
-            className={cn(
-              'flex items-center gap-2.5 rounded-md px-2 py-2 text-sm transition-colors',
-              isActive(currentPath, href)
-                ? 'bg-sidebar-accent font-medium text-sidebar-accent-foreground'
-                : 'text-muted-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground',
+      <nav className="flex-1 space-y-5 overflow-y-auto px-3 pb-4">
+        {groups.map((group) => (
+          <div key={group.section} className="space-y-1">
+            {group.section && (
+              <p className="px-2 pb-1 text-[0.68rem] font-semibold tracking-widest text-muted-foreground/80 uppercase">
+                {group.section}
+              </p>
             )}
-          >
-            <Icon className="size-4 shrink-0" />
-            {label}
-          </Link>
+            {group.items.map(({ href, label, icon: Icon, badge }) => {
+              const active = isActive(currentPath, href);
+              return (
+                <Link
+                  key={href}
+                  href={href}
+                  aria-current={active ? 'page' : undefined}
+                  className={cn(
+                    'relative flex items-center gap-2.5 rounded-lg px-2.5 py-2 text-sm transition-colors',
+                    active
+                      ? 'bg-sidebar-accent font-medium text-sidebar-accent-foreground'
+                      : 'text-muted-foreground hover:bg-sidebar-accent/60 hover:text-sidebar-accent-foreground',
+                  )}
+                >
+                  {/* The active marker is a bar, not just a fill: at a glance
+                      down a list of eight, a coloured edge is found faster than
+                      a slightly different background. */}
+                  {active && (
+                    <span
+                      className="absolute inset-y-1.5 -left-3 w-1 rounded-r-full bg-primary"
+                      aria-hidden
+                    />
+                  )}
+                  <Icon className={cn('size-4 shrink-0', active && 'text-primary')} />
+                  <span className="truncate">{label}</span>
+                  {badge !== undefined && (
+                    <span className="tabular ml-auto rounded-full bg-primary-subtle px-1.5 py-0.5 text-[0.7rem] font-medium text-primary-subtle-foreground">
+                      {badge}
+                    </span>
+                  )}
+                </Link>
+              );
+            })}
+          </div>
         ))}
       </nav>
 
       <div className="border-t border-sidebar-border p-3">
-        <div className="flex items-center justify-between gap-2">
-          <span className="min-w-0 truncate text-sm text-muted-foreground">{userName}</span>
+        <div className="flex items-center gap-2.5">
+          <span className="grid size-8 shrink-0 place-items-center rounded-full bg-accent text-xs font-semibold text-accent-foreground">
+            {userName.charAt(0).toUpperCase()}
+          </span>
+          <span className="min-w-0 flex-1">
+            <span className="block truncate text-sm font-medium">{userName}</span>
+            {userEmail && (
+              <span className="block truncate text-xs text-muted-foreground">{userEmail}</span>
+            )}
+          </span>
           {userMenu}
         </div>
       </div>
@@ -120,40 +212,59 @@ export function AppShell({
   );
 
   return (
-    <div className="flex min-h-dvh">
-      <aside className="hidden w-60 shrink-0 border-r md:block">
+    <div className="flex min-h-dvh bg-background">
+      <aside className="hidden w-64 shrink-0 border-r border-sidebar-border md:block">
         <div className="sticky top-0 h-dvh">{sidebar}</div>
       </aside>
 
       {mobileOpen && (
-        <div className="fixed inset-0 z-50 md:hidden">
+        // `h-dvh` as well as `inset-0`: on a mobile browser the fixed
+        // containing block can end up as tall as the document, which would let
+        // the drawer scroll away from the menu button that opened it.
+        <div className="fixed inset-0 z-50 h-dvh md:hidden">
           <button
             type="button"
             aria-label="Close menu"
-            className="absolute inset-0 bg-black/50"
+            className="absolute inset-0 bg-foreground/40 backdrop-blur-[2px]"
             onClick={() => setMobileOpen(false)}
           />
-          <div className="absolute inset-y-0 left-0 w-64 border-r shadow-lg">{sidebar}</div>
+          <div className="animate-slide-in absolute inset-y-0 left-0 w-[17rem] border-r border-sidebar-border shadow-lg">
+            {sidebar}
+          </div>
         </div>
       )}
 
       <div className="flex min-w-0 flex-1 flex-col">
-        <header className="sticky top-0 z-40 flex h-14 items-center gap-3 border-b bg-background/95 px-4 backdrop-blur">
+        <header className="sticky top-0 z-40 flex h-14 items-center gap-3 border-b bg-background/85 px-4 backdrop-blur-md sm:px-6">
           <button
             type="button"
-            className="-ml-1 rounded-md p-2 text-muted-foreground hover:text-foreground md:hidden"
+            className="-ml-1.5 rounded-md p-2 text-muted-foreground transition-colors hover:bg-accent hover:text-foreground md:hidden"
             onClick={() => setMobileOpen((v) => !v)}
             aria-label={mobileOpen ? 'Close menu' : 'Open menu'}
+            aria-expanded={mobileOpen}
           >
             {mobileOpen ? <X className="size-5" /> : <Menu className="size-5" />}
           </button>
-          <span className="truncate text-sm font-medium md:hidden">{businessName}</span>
+
+          {/* On a phone the sidebar is hidden, so the topbar has to answer
+              "where am I?" — hence the current page's name, not the product's. */}
+          <span className="truncate text-sm font-medium md:hidden">
+            {current?.label ?? businessName}
+          </span>
+          <span className="hidden truncate text-sm text-muted-foreground md:inline">
+            {current?.label}
+          </span>
+
           <div className="ml-auto flex items-center gap-2">
             <ThemeToggle />
           </div>
         </header>
 
-        <main className="min-w-0 flex-1 p-4 sm:p-6">{children}</main>
+        {banner}
+
+        <main className="min-w-0 flex-1 p-4 sm:p-6 lg:p-8">
+          <div className="mx-auto w-full max-w-6xl">{children}</div>
+        </main>
       </div>
     </div>
   );

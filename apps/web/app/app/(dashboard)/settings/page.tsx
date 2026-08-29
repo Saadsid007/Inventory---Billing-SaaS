@@ -5,6 +5,7 @@ import {
   listCustomFieldDefs,
   listUnits,
 } from '@bahikhata/db';
+import { PageBody, PageHeader } from '@bahikhata/ui';
 import type { Metadata } from 'next';
 import { requireBusiness } from '@/lib/auth/require-business';
 import { CategoriesSection } from './categories-section';
@@ -29,13 +30,11 @@ export default async function SettingsPage() {
   ]);
 
   return (
-    <div className="mx-auto max-w-3xl space-y-10">
-      <header>
-        <h1 className="text-2xl font-semibold tracking-tight">Settings</h1>
-        <p className="text-sm text-muted-foreground">
-          Your business details, and the lists that shape your products and invoices.
-        </p>
-      </header>
+    <PageBody className="mx-auto max-w-3xl space-y-10">
+      <PageHeader
+        title="Settings"
+        description="Your business details, and the lists that shape your products and invoices."
+      />
 
       <ProfileSection
         initial={{
@@ -73,6 +72,6 @@ export default async function SettingsPage() {
         productFields={productFields.map((f) => ({ id: f.id, label: f.label, type: f.type }))}
         partyFields={partyFields.map((f) => ({ id: f.id, label: f.label, type: f.type }))}
       />
-    </div>
+    </PageBody>
   );
 }

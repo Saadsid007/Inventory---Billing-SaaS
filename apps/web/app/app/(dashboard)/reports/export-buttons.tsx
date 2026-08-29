@@ -24,7 +24,8 @@ const EXPORTS = [
  */
 export function ExportButtons() {
   return (
-    <div className="flex flex-wrap gap-2">
+    <div className="flex flex-wrap items-center gap-2">
+      <span className="text-xs font-medium text-muted-foreground">Download CSV:</span>
       {EXPORTS.map(({ kind, label }) => (
         <a
           key={kind}
@@ -32,7 +33,7 @@ export function ExportButtons() {
           download
           className={cn(buttonVariants({ variant: 'outline', size: 'sm' }))}
         >
-          <Download className="size-4" />
+          <Download className="size-3.5" />
           {label}
         </a>
       ))}

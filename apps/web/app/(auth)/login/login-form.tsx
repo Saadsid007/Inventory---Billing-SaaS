@@ -1,13 +1,14 @@
 'use client';
 
 import { Button, Field, FormError, Input } from '@bahikhata/ui';
-import Link from 'next/link';
+import { Eye, EyeOff, LogIn } from 'lucide-react';
 import * as React from 'react';
 import { loginAction } from '../actions';
 
 export function LoginForm({ next }: { next?: string }) {
   const [email, setEmail] = React.useState('');
   const [password, setPassword] = React.useState('');
+  const [reveal, setReveal] = React.useState(false);
   const [state, setState] = React.useState<{
     formError?: string;
     fieldErrors?: Record<string, string>;
@@ -38,6 +39,7 @@ export function LoginForm({ next }: { next?: string }) {
           type="email"
           autoComplete="email"
           inputMode="email"
+          placeholder="you@example.com"
           autoFocus
           value={email}
           onChange={(e) => setEmail(e.target.value)}
@@ -46,26 +48,39 @@ export function LoginForm({ next }: { next?: string }) {
       </Field>
 
       <Field label="Password" htmlFor="password" error={state.fieldErrors?.['password']} required>
-        <Input
-          id="password"
-          type="password"
-          autoComplete="current-password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          aria-invalid={Boolean(state.fieldErrors?.['password'])}
-        />
+        <div className="relative">
+          <Input
+            id="password"
+            // A shopkeeper typing a password on a phone keyboard, in a hurry,
+            // gets it wrong often enough that hiding it by default and letting
+            // them look is kinder than a second failed login.
+            type={reveal ? 'text' : 'password'}
+            autoComplete="current-password"
+            className="pr-11"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            aria-invalid={Boolean(state.fieldErrors?.['password'])}
+          />
+          <button
+            type="button"
+            onClick={() => setReveal((v) => !v)}
+            aria-label={reveal ? 'Hide password' : 'Show password'}
+            className="absolute inset-y-0 right-0 grid w-11 place-items-center rounded-r-md text-muted-foreground transition-colors hover:text-foreground"
+          >
+            {reveal ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
+          </button>
+        </div>
       </Field>
 
-      <Button className="w-full" onClick={submit} disabled={pending}>
-        {pending ? 'Signing in…' : 'Log in'}
+      <Button className="w-full" size="lg" onClick={submit} disabled={pending}>
+        {pending ? (
+          'Signing in…'
+        ) : (
+          <>
+            <LogIn /> Log in
+          </>
+        )}
       </Button>
-
-      <p className="text-center text-sm text-muted-foreground">
-        No account yet?{' '}
-        <Link href="/register" className="font-medium text-primary hover:underline">
-          Create one
-        </Link>
-      </p>
     </div>
   );
 }

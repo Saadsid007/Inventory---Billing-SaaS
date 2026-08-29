@@ -1,7 +1,10 @@
 import { listCategories, listProducts } from '@bahikhata/db';
 import {
   Badge,
+  Button,
   EmptyState,
+  PageBody,
+  PageHeader,
   TBody,
   TD,
   TH,
@@ -9,6 +12,7 @@ import {
   TR,
   Table,
 } from '@bahikhata/ui';
+import { Package, Plus, SearchX } from 'lucide-react';
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { requireBusiness } from '@/lib/auth/require-business';
@@ -48,22 +52,22 @@ export default async function ProductsPage({
   const isFiltered = Boolean(q || category || low);
 
   return (
-    <div className="mx-auto max-w-6xl space-y-5">
-      <header className="flex flex-wrap items-center justify-between gap-3">
-        <div>
-          <h1 className="text-2xl font-semibold tracking-tight">Products</h1>
-          <p className="text-sm text-muted-foreground">
-            {products.length} {products.length === 1 ? 'product' : 'products'}
-            {isFiltered && ' matching your filters'}
-          </p>
-        </div>
-        <Link
-          href="/app/products/new"
-          className="inline-flex h-9 items-center rounded-md bg-primary px-4 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
-        >
-          Add product
-        </Link>
-      </header>
+    <PageBody>
+      <PageHeader
+        title="Products"
+        description={
+          isFiltered
+            ? `${products.length} ${products.length === 1 ? 'product matches' : 'products match'} your filters.`
+            : 'What you sell — price, tax rate and how much is left on the shelf.'
+        }
+        actions={
+          <Link href="/app/products/new">
+            <Button>
+              <Plus /> Add product
+            </Button>
+          </Link>
+        }
+      />
 
       <ProductFilterBar
         categories={categories.map((c) => ({ id: c.id, name: c.name }))}
@@ -72,19 +76,19 @@ export default async function ProductsPage({
 
       {products.length === 0 ? (
         <EmptyState
+          icon={isFiltered ? SearchX : Package}
           title={isFiltered ? 'Nothing matches those filters' : 'No products yet'}
           description={
             isFiltered
-              ? 'Try a different search, or clear the filters.'
+              ? 'Try a different search, or clear the filters and start again.'
               : 'Add what you sell. You can bill without adding products first, but a catalogue makes billing much faster.'
           }
           action={
             !isFiltered && (
-              <Link
-                href="/app/products/new"
-                className="inline-flex h-9 items-center rounded-md bg-primary px-4 text-sm font-medium text-primary-foreground hover:bg-primary/90"
-              >
-                Add your first product
+              <Link href="/app/products/new">
+                <Button>
+                  <Plus /> Add your first product
+                </Button>
               </Link>
             )
           }
@@ -109,7 +113,7 @@ export default async function ProductsPage({
                   <TD>
                     <Link
                       href={`/app/products/${p.id}`}
-                      className="font-medium hover:underline"
+                      className="font-medium underline-offset-4 hover:text-primary hover:underline"
                     >
                       {p.name}
                     </Link>
@@ -138,11 +142,17 @@ export default async function ProductsPage({
                     {state === 'untracked' ? (
                       <Badge variant="outline">Service</Badge>
                     ) : state === 'out_of_stock' ? (
-                      <Badge variant="destructive">Out of stock</Badge>
+                      <Badge variant="destructive" dot>
+                        Out of stock
+                      </Badge>
                     ) : state === 'low_stock' ? (
-                      <Badge variant="warning">Low stock</Badge>
+                      <Badge variant="warning" dot>
+                        Low stock
+                      </Badge>
                     ) : (
-                      <Badge variant="success">In stock</Badge>
+                      <Badge variant="success" dot>
+                        In stock
+                      </Badge>
                     )}
                   </TD>
                 </TR>
@@ -157,6 +167,6 @@ export default async function ProductsPage({
           Showing the first 200. Narrow the search to see more.
         </p>
       )}
-    </div>
+    </PageBody>
   );
 }

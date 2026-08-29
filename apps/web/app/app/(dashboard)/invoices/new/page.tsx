@@ -1,5 +1,8 @@
 import { getBusiness, getSettings, listParties, listProducts } from '@bahikhata/db';
+import { PageBody, PageHeader } from '@bahikhata/ui';
+import { ArrowLeft } from 'lucide-react';
 import type { Metadata } from 'next';
+import Link from 'next/link';
 import { requireBusiness } from '@/lib/auth/require-business';
 import { InvoiceForm } from '../invoice-form';
 
@@ -18,8 +21,19 @@ export default async function NewInvoicePage() {
   ]);
 
   return (
-    <div className="mx-auto max-w-3xl space-y-6">
-      <h1 className="text-2xl font-semibold tracking-tight">New invoice</h1>
+    <PageBody className="mx-auto max-w-3xl">
+      <PageHeader
+        breadcrumb={
+          <Link
+            href="/app/invoices"
+            className="inline-flex items-center gap-1.5 transition-colors hover:text-foreground"
+          >
+            <ArrowLeft className="size-3.5" /> All invoices
+          </Link>
+        }
+        title="New invoice"
+        description="Pick a customer, add what they bought, and the tax works itself out."
+      />
       <InvoiceForm
         supplierStateCode={business?.stateCode ?? '09'}
         supplierHasGstin={Boolean(business?.gstin)}
@@ -43,6 +57,6 @@ export default async function NewInvoicePage() {
           cessRate: p.cessRate,
         }))}
       />
-    </div>
+    </PageBody>
   );
 }

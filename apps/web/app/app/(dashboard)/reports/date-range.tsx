@@ -53,15 +53,19 @@ export function DateRangePicker({ initial }: { initial: { from: string; to: stri
         value={to}
         onChange={(e) => apply(from, e.target.value)}
       />
-      <Button variant="outline" size="sm" onClick={() => preset('month')}>
-        This month
-      </Button>
-      <Button variant="outline" size="sm" onClick={() => preset('lastMonth')}>
-        Last month
-      </Button>
-      <Button variant="outline" size="sm" onClick={() => preset('fy')}>
-        This FY
-      </Button>
+      {/* The three ranges a shopkeeper actually asks for. Typing two dates to
+          see this month's sales is work nobody should have to do. */}
+      <div className="flex items-center gap-1 rounded-lg border bg-muted/50 p-0.5">
+        <Button variant="ghost" size="sm" onClick={() => preset('month')}>
+          This month
+        </Button>
+        <Button variant="ghost" size="sm" onClick={() => preset('lastMonth')}>
+          Last month
+        </Button>
+        <Button variant="ghost" size="sm" onClick={() => preset('fy')}>
+          This FY
+        </Button>
+      </div>
       {pending && <span className="text-xs text-muted-foreground">Updating…</span>}
     </div>
   );

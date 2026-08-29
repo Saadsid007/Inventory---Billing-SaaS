@@ -1,6 +1,6 @@
 'use client';
 
-import { Button, Checkbox, Field, FormError, Input, Select, Textarea } from '@bahikhata/ui';
+import { Button, Card, Checkbox, Field, FormError, Input, Select, Textarea } from '@bahikhata/ui';
 import { useRouter } from 'next/navigation';
 import * as React from 'react';
 import { saveSettingsAction } from './actions';
@@ -43,9 +43,9 @@ export function InvoiceSettingsSection({ initial }: { initial: Values }) {
   const err = (k: string) => state.fieldErrors?.[k];
 
   return (
-    <section className="space-y-4 border-t pt-8">
+    <Card className="space-y-4 p-6">
       <div>
-        <h2 className="text-base font-medium">Invoices and catalog</h2>
+        <h2 className="text-base font-semibold">Invoices and catalog</h2>
         <p className="text-sm text-muted-foreground">
           Defaults applied to new invoices, and what the public sees.
         </p>
@@ -129,6 +129,6 @@ export function InvoiceSettingsSection({ initial }: { initial: Values }) {
         </Button>
         {state.saved && <span className="text-sm text-success">Saved</span>}
       </div>
-    </section>
+    </Card>
   );
 }

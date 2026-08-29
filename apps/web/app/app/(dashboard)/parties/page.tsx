@@ -1,5 +1,19 @@
 import { listPartyBalances } from '@bahikhata/db';
-import { Badge, EmptyState, TBody, TD, TH, THead, TR, Table } from '@bahikhata/ui';
+import {
+  Badge,
+  Button,
+  EmptyState,
+  PageBody,
+  PageHeader,
+  StatCard,
+  TBody,
+  TD,
+  TH,
+  THead,
+  TR,
+  Table,
+} from '@bahikhata/ui';
+import { UserPlus, Users, Wallet } from 'lucide-react';
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { requireBusiness } from '@/lib/auth/require-business';
@@ -17,43 +31,47 @@ export default async function PartiesPage() {
     .reduce((a, b) => a + Number(b.outstanding), 0);
 
   return (
-    <div className="mx-auto max-w-5xl space-y-5">
-      <header className="flex flex-wrap items-center justify-between gap-3">
-        <div>
-          <h1 className="text-2xl font-semibold tracking-tight">Parties</h1>
-          <p className="text-sm text-muted-foreground">
-            Customers and suppliers, and who owes what.
-          </p>
-        </div>
-        <Link
-          href="/app/parties/new"
-          className="inline-flex h-9 items-center rounded-md bg-primary px-4 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
-        >
-          Add contact
-        </Link>
-      </header>
+    <PageBody>
+      <PageHeader
+        title="Customers and suppliers"
+        description="Everyone you bill or buy from — and exactly who still owes you money."
+        actions={
+          <Link href="/app/parties/new">
+            <Button>
+              <UserPlus /> Add contact
+            </Button>
+          </Link>
+        }
+      />
 
       {balances.length > 0 && (
-        <div className="rounded-lg border p-4">
-          <p className="text-xs font-medium text-muted-foreground">Total outstanding</p>
-          <p className="tabular mt-1 text-2xl font-semibold">₹{totalOwed.toFixed(2)}</p>
-          <p className="mt-1 text-xs text-muted-foreground">
-            Across {balances.filter((b) => Number(b.outstanding) > 0).length} of{' '}
-            {balances.length} contacts.
-          </p>
+        <div className="grid gap-4 sm:grid-cols-2">
+          <StatCard
+            label="Total outstanding"
+            value={`₹${totalOwed.toLocaleString('en-IN', { minimumFractionDigits: 2 })}`}
+            hint={`Across ${balances.filter((b) => Number(b.outstanding) > 0).length} of ${balances.length} contacts`}
+            icon={Wallet}
+            tone={totalOwed > 0 ? 'warning' : 'success'}
+          />
+          <StatCard
+            label="Contacts"
+            value={String(balances.length)}
+            hint="Customers and suppliers together"
+            icon={Users}
+          />
         </div>
       )}
 
       {balances.length === 0 ? (
         <EmptyState
+          icon={Users}
           title="No contacts yet"
-          description="Add the customers you bill and the suppliers you buy from. You can also create a customer inline while making an invoice."
+          description="Add the customers you bill and the suppliers you buy from. A walk-in cash sale does not need one — this is for the people whose khata you keep."
           action={
-            <Link
-              href="/app/parties/new"
-              className="inline-flex h-9 items-center rounded-md bg-primary px-4 text-sm font-medium text-primary-foreground hover:bg-primary/90"
-            >
-              Add your first contact
+            <Link href="/app/parties/new">
+              <Button>
+                <UserPlus /> Add your first contact
+              </Button>
             </Link>
           }
         />
@@ -76,7 +94,7 @@ export default async function PartiesPage() {
                   <TD>
                     <Link
                       href={`/app/parties/${b.partyId}`}
-                      className="font-medium hover:underline"
+                      className="font-medium underline-offset-4 hover:text-primary hover:underline"
                     >
                       {b.name}
                     </Link>
@@ -86,7 +104,7 @@ export default async function PartiesPage() {
                   <TD numeric className="text-muted-foreground">₹{b.paidIn}</TD>
                   <TD numeric>
                     {outstanding > 0 ? (
-                      <span className="font-medium">₹{b.outstanding}</span>
+                      <span className="font-semibold text-warning">₹{b.outstanding}</span>
                     ) : outstanding < 0 ? (
                       /* Negative means the business owes them — an advance. */
                       <Badge variant="secondary">₹{b.outstanding} advance</Badge>
@@ -100,6 +118,6 @@ export default async function PartiesPage() {
           </TBody>
         </Table>
       )}
-    </div>
+    </PageBody>
   );
 }

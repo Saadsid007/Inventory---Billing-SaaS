@@ -2,12 +2,12 @@
 
 import { AppShell, type NavItem } from '@bahikhata/ui';
 import {
+  ArrowLeftRight,
   BarChart3,
   FileText,
   LayoutDashboard,
   LogOut,
   Package,
-  PackagePlus,
   QrCode,
   Settings,
   Shield,
@@ -29,16 +29,20 @@ import { signOutAction } from '@/app/(auth)/actions';
 /**
  * Nav grows one phase at a time. Adding a link before its page exists just
  * gives a shopkeeper a 404 to find on their own.
+ *
+ * Grouped by what someone came here to do. "Billing" is first and stays first:
+ * on a normal day a shopkeeper opens this product to make a bill and closes it
+ * again, and everything else is occasional.
  */
 const NAV: readonly NavItem[] = [
   { href: '/app', label: 'Dashboard', icon: LayoutDashboard },
-  { href: '/app/invoices', label: 'Invoices', icon: FileText },
-  { href: '/app/products', label: 'Products', icon: Package },
-  { href: '/app/stock', label: 'Stock in / out', icon: PackagePlus },
-  { href: '/app/parties', label: 'Parties', icon: Users },
-  { href: '/app/catalog', label: 'Catalog', icon: QrCode },
-  { href: '/app/reports', label: 'Reports', icon: BarChart3 },
-  { href: '/app/settings', label: 'Settings', icon: Settings },
+  { href: '/app/invoices', label: 'Invoices', icon: FileText, section: 'Billing' },
+  { href: '/app/parties', label: 'Customers', icon: Users, section: 'Billing' },
+  { href: '/app/products', label: 'Products', icon: Package, section: 'Catalogue' },
+  { href: '/app/stock', label: 'Stock in / out', icon: ArrowLeftRight, section: 'Catalogue' },
+  { href: '/app/catalog', label: 'Online catalog', icon: QrCode, section: 'Catalogue' },
+  { href: '/app/reports', label: 'Reports', icon: BarChart3, section: 'Business' },
+  { href: '/app/settings', label: 'Settings', icon: Settings, section: 'Business' },
 ];
 
 /**
@@ -46,7 +50,12 @@ const NAV: readonly NavItem[] = [
  * Without it the only way in is to know the URL, which is a bad thing to rely
  * on for the people who run the service.
  */
-const ADMIN_NAV: NavItem = { href: '/admin', label: 'Admin panel', icon: Shield };
+const ADMIN_NAV: NavItem = {
+  href: '/admin',
+  label: 'Admin panel',
+  icon: Shield,
+  section: 'Bahikhata',
+};
 
 function SignOutButton() {
   const [pending, startTransition] = React.useTransition();
@@ -57,7 +66,7 @@ function SignOutButton() {
       aria-label="Log out"
       disabled={pending}
       onClick={() => startTransition(() => signOutAction())}
-      className="rounded-md p-1.5 text-muted-foreground transition-colors hover:text-foreground disabled:opacity-50"
+      className="shrink-0 rounded-md p-2 text-muted-foreground transition-colors hover:bg-accent hover:text-foreground disabled:opacity-50"
     >
       <LogOut className="size-4" />
     </button>
@@ -67,14 +76,20 @@ function SignOutButton() {
 export function AppFrame({
   businessName,
   statusLabel,
+  statusTone,
   userName,
+  userEmail,
   isSuperAdmin = false,
+  banner,
   children,
 }: {
   businessName: string;
   statusLabel?: string | undefined;
+  statusTone?: 'default' | 'warning' | 'destructive' | undefined;
   userName: string;
+  userEmail?: string | undefined;
   isSuperAdmin?: boolean;
+  banner?: React.ReactNode;
   children: React.ReactNode;
 }) {
   const pathname = usePathname();
@@ -84,13 +99,16 @@ export function AppFrame({
     <AppShell
       businessName={businessName}
       statusLabel={statusLabel}
+      statusTone={statusTone}
       userName={userName}
+      userEmail={userEmail}
       nav={nav}
       currentPath={pathname}
       // Business switching is a Phase 3 feature (multi-branch). The shell
       // renders no switcher affordance until there is something to switch to.
       onSwitchBusiness={undefined}
       userMenu={<SignOutButton />}
+      banner={banner}
       LinkComponent={Link}
     >
       {children}

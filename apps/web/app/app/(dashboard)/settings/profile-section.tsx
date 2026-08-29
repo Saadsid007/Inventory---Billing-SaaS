@@ -1,7 +1,7 @@
 'use client';
 
 import { GST_STATES } from '@bahikhata/shared';
-import { Button, Field, FormError, Input, Select } from '@bahikhata/ui';
+import { Button, Card, Field, FormError, Input, Select } from '@bahikhata/ui';
 import { useRouter } from 'next/navigation';
 import * as React from 'react';
 import { saveProfileAction } from './actions';
@@ -51,9 +51,9 @@ export function ProfileSection({ initial }: { initial: Values }) {
   const err = (k: string) => state.fieldErrors?.[k];
 
   return (
-    <section className="space-y-4">
+    <Card className="space-y-4 p-6">
       <div>
-        <h2 className="text-base font-medium">Business profile</h2>
+        <h2 className="text-base font-semibold">Business profile</h2>
         <p className="text-sm text-muted-foreground">
           This is what prints on your invoices and shows on your public catalog.
         </p>
@@ -138,6 +138,6 @@ export function ProfileSection({ initial }: { initial: Values }) {
         </Button>
         {state.saved && <span className="text-sm text-success">Saved</span>}
       </div>
-    </section>
+    </Card>
   );
 }

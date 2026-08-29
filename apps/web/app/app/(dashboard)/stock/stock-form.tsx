@@ -1,6 +1,6 @@
 'use client';
 
-import { Button, Field, FormError, Input, Select, Textarea } from '@bahikhata/ui';
+import { Button, Card, Field, FormError, FormSuccess, Input, Select, Textarea } from '@bahikhata/ui';
 import { useRouter } from 'next/navigation';
 import * as React from 'react';
 import { adjustStockAction } from './actions';
@@ -62,13 +62,9 @@ export function StockForm({ products }: { products: readonly ProductOption[] }) 
   const err = (k: string) => state.fieldErrors?.[k];
 
   return (
-    <div className="space-y-4">
+    <Card className="space-y-4 p-5">
       <FormError>{state.formError}</FormError>
-      {state.done && (
-        <p className="rounded-md border border-success/40 bg-success/10 px-3 py-2 text-sm">
-          {state.done}
-        </p>
-      )}
+      <FormSuccess>{state.done}</FormSuccess>
 
       <Field label="Product" htmlFor="productId" error={err('productId')} required>
         <Select id="productId" value={productId} onChange={(e) => setProductId(e.target.value)}>
@@ -139,6 +135,6 @@ export function StockForm({ products }: { products: readonly ProductOption[] }) 
       <Button onClick={submit} disabled={pending || !productId || !qty}>
         {pending ? 'Recording…' : direction === 'in' ? 'Record stock in' : 'Record stock out'}
       </Button>
-    </div>
+    </Card>
   );
 }

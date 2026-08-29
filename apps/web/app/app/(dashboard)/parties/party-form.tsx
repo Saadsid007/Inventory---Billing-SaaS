@@ -1,7 +1,7 @@
 'use client';
 
 import { GST_STATES, partyWarnings } from '@bahikhata/shared';
-import { Button, Field, FormError, Input, Select, WarningList } from '@bahikhata/ui';
+import { Button, Card, Field, FormError, Input, Select, WarningList } from '@bahikhata/ui';
 import { useRouter } from 'next/navigation';
 import * as React from 'react';
 import { savePartyAction } from './actions';
@@ -96,122 +96,126 @@ export function PartyForm({
     <div className="space-y-5">
       <FormError>{state.formError}</FormError>
 
-      <div className="grid gap-4 sm:grid-cols-2">
-        <Field label="Name" htmlFor="name" error={err('name')} required>
-          <Input
-            id="name"
-            autoFocus
-            value={values.name}
-            onChange={set('name')}
-            aria-invalid={Boolean(err('name'))}
-          />
-        </Field>
-        <Field
-          label="Type"
-          htmlFor="type"
-          error={err('type')}
-          hint="'Both' shows up in customer and supplier lists."
-        >
-          <Select id="type" value={values.type} onChange={set('type')}>
-            <option value="customer">Customer</option>
-            <option value="supplier">Supplier</option>
-            <option value="both">Both</option>
-          </Select>
-        </Field>
-      </div>
-
-      <div className="grid gap-4 sm:grid-cols-2">
-        <Field label="Phone" htmlFor="phone" error={err('phone')}>
-          <Input id="phone" type="tel" value={values.phone} onChange={set('phone')} />
-        </Field>
-        <Field label="Email" htmlFor="email" error={err('email')}>
-          <Input id="email" type="email" value={values.email} onChange={set('email')} />
-        </Field>
-      </div>
-
-      <div className="grid gap-4 sm:grid-cols-2">
-        <Field
-          label="GSTIN"
-          htmlFor="gstin"
-          error={err('gstin')}
-          hint="Only if they are GST registered."
-        >
-          <Input
-            id="gstin"
-            className="uppercase"
-            maxLength={15}
-            value={values.gstin}
-            onChange={set('gstin')}
-            aria-invalid={Boolean(err('gstin'))}
-          />
-        </Field>
-        <Field
-          label="State"
-          htmlFor="stateCode"
-          error={err('stateCode')}
-          hint="Decides IGST vs CGST/SGST on their invoices."
-          required={Boolean(values.gstin)}
-        >
-          <Select
-            id="stateCode"
-            value={values.stateCode}
-            onChange={set('stateCode')}
-            aria-invalid={Boolean(err('stateCode'))}
+      <Card className="space-y-4 p-5">
+        <div className="grid gap-4 sm:grid-cols-2">
+          <Field label="Name" htmlFor="name" error={err('name')} required>
+            <Input
+              id="name"
+              autoFocus
+              value={values.name}
+              onChange={set('name')}
+              aria-invalid={Boolean(err('name'))}
+            />
+          </Field>
+          <Field
+            label="Type"
+            htmlFor="type"
+            error={err('type')}
+            hint="'Both' shows up in customer and supplier lists."
           >
-            <option value="">Not recorded</option>
-            {GST_STATES.map((s) => (
-              <option key={s.code} value={s.code}>
-                {s.code} — {s.name}
-              </option>
-            ))}
-          </Select>
-        </Field>
-      </div>
+            <Select id="type" value={values.type} onChange={set('type')}>
+              <option value="customer">Customer</option>
+              <option value="supplier">Supplier</option>
+              <option value="both">Both</option>
+            </Select>
+          </Field>
+        </div>
 
-      <Field label="Address" htmlFor="addressLine1" error={err('addressLine1')}>
-        <Input id="addressLine1" value={values.addressLine1} onChange={set('addressLine1')} />
-      </Field>
+        <div className="grid gap-4 sm:grid-cols-2">
+          <Field label="Phone" htmlFor="phone" error={err('phone')}>
+            <Input id="phone" type="tel" value={values.phone} onChange={set('phone')} />
+          </Field>
+          <Field label="Email" htmlFor="email" error={err('email')}>
+            <Input id="email" type="email" value={values.email} onChange={set('email')} />
+          </Field>
+        </div>
 
-      <div className="grid gap-4 sm:grid-cols-2">
-        <Field label="City" htmlFor="city" error={err('city')}>
-          <Input id="city" value={values.city} onChange={set('city')} />
-        </Field>
-        <Field label="PIN code" htmlFor="pincode" error={err('pincode')}>
-          <Input id="pincode" inputMode="numeric" value={values.pincode} onChange={set('pincode')} />
-        </Field>
-      </div>
+        <div className="grid gap-4 sm:grid-cols-2">
+          <Field
+            label="GSTIN"
+            htmlFor="gstin"
+            error={err('gstin')}
+            hint="Only if they are GST registered."
+          >
+            <Input
+              id="gstin"
+              className="uppercase"
+              maxLength={15}
+              value={values.gstin}
+              onChange={set('gstin')}
+              aria-invalid={Boolean(err('gstin'))}
+            />
+          </Field>
+          <Field
+            label="State"
+            htmlFor="stateCode"
+            error={err('stateCode')}
+            hint="Decides IGST vs CGST/SGST on their invoices."
+            required={Boolean(values.gstin)}
+          >
+            <Select
+              id="stateCode"
+              value={values.stateCode}
+              onChange={set('stateCode')}
+              aria-invalid={Boolean(err('stateCode'))}
+            >
+              <option value="">Not recorded</option>
+              {GST_STATES.map((s) => (
+                <option key={s.code} value={s.code}>
+                  {s.code} — {s.name}
+                </option>
+              ))}
+            </Select>
+          </Field>
+        </div>
 
-      <Field
-        label="Opening balance"
-        htmlFor="openingBalance"
-        error={err('openingBalance')}
-        hint={
-          partyId
-            ? 'Set when the contact was created. Record a payment to change what they owe.'
-            : 'What they already owed you before you started using Bahikhata. Negative if you owe them.'
-        }
-      >
-        <Input
-          id="openingBalance"
-          inputMode="decimal"
-          value={values.openingBalance}
-          onChange={set('openingBalance')}
-          // The starting point of a ledger. Moving it later would change every
-          // running balance since, with no record of why.
-          disabled={Boolean(partyId)}
-        />
-      </Field>
+        <Field label="Address" htmlFor="addressLine1" error={err('addressLine1')}>
+          <Input id="addressLine1" value={values.addressLine1} onChange={set('addressLine1')} />
+        </Field>
+
+        <div className="grid gap-4 sm:grid-cols-2">
+          <Field label="City" htmlFor="city" error={err('city')}>
+            <Input id="city" value={values.city} onChange={set('city')} />
+          </Field>
+          <Field label="PIN code" htmlFor="pincode" error={err('pincode')}>
+            <Input
+              id="pincode"
+              inputMode="numeric"
+              value={values.pincode}
+              onChange={set('pincode')}
+            />
+          </Field>
+        </div>
+
+        <Field
+          label="Opening balance"
+          htmlFor="openingBalance"
+          error={err('openingBalance')}
+          hint={
+            partyId
+              ? 'Set when the contact was created. Record a payment to change what they owe.'
+              : 'What they already owed you before you started using Bahikhata. Negative if you owe them.'
+          }
+        >
+          <Input
+            id="openingBalance"
+            inputMode="decimal"
+            value={values.openingBalance}
+            onChange={set('openingBalance')}
+            // The starting point of a ledger. Moving it later would change every
+            // running balance since, with no record of why.
+            disabled={Boolean(partyId)}
+          />
+        </Field>
+      </Card>
 
       {customFieldDefs.length > 0 && (
-        <section className="space-y-4 border-t pt-5">
-          <h2 className="text-sm font-medium text-muted-foreground">Your own fields</h2>
+        <Card className="space-y-4 p-5">
+          <h2 className="text-xs font-semibold tracking-widest text-muted-foreground uppercase">
+            Your own fields
+          </h2>
           {customFieldDefs.map((def) => (
-            <Field
-              key={def.id}
-              label={def.label}
-              htmlFor={`cf-${def.key}`}
-              required={def.required}
-            >
+            <Field key={def.id} label={def.label} htmlFor={`cf-${def.key}`} required={def.required}>
               {def.type === 'select' ? (
                 <Select
                   id={`cf-${def.key}`}
@@ -244,12 +248,12 @@ export function PartyForm({
               )}
             </Field>
           ))}
-        </section>
+        </Card>
       )}
 
       <WarningList warnings={warnings} />
 
-      <div className="flex gap-2 border-t pt-5">
+      <div className="flex flex-wrap gap-2 border-t pt-5">
         <Button onClick={submit} disabled={pending}>
           {pending ? 'Saving…' : partyId ? 'Save changes' : 'Add contact'}
         </Button>

@@ -1,6 +1,7 @@
 import { findCatalogBusiness, listCatalogCategories, listCatalogProducts } from '@bahikhata/db';
 import { enquiryMessage, productSlug, whatsappEnquiryUrl } from '@bahikhata/shared';
 import { EmptyState, StockBadge } from '@bahikhata/ui';
+import { ImageOff, MessageCircle, PackageSearch } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
@@ -95,6 +96,7 @@ export default async function CatalogPage({
 
         {products.length === 0 ? (
           <EmptyState
+            icon={PackageSearch}
             title={q || category ? 'Nothing matches that' : 'Nothing listed yet'}
             description={
               q || category
@@ -110,9 +112,9 @@ export default async function CatalogPage({
                 <li key={p.id}>
                   <Link
                     href={`/store/${slug}/${productSlug(p.name, p.id)}`}
-                    className="group block overflow-hidden rounded-lg border transition-colors hover:border-foreground/30"
+                    className="group block h-full overflow-hidden rounded-xl border bg-card shadow-xs transition-all hover:-translate-y-0.5 hover:border-primary/40 hover:shadow-md"
                   >
-                    <div className="relative aspect-square bg-muted">
+                    <div className="relative aspect-square overflow-hidden bg-muted">
                       {cover ? (
                         <Image
                           src={cover}
@@ -123,15 +125,16 @@ export default async function CatalogPage({
                           unoptimized
                         />
                       ) : (
-                        <div className="grid h-full place-items-center px-3 text-center text-xs text-muted-foreground">
+                        <div className="grid h-full place-items-center gap-1.5 px-3 text-center text-xs text-muted-foreground">
+                          <ImageOff className="size-6 opacity-60" />
                           No photo
                         </div>
                       )}
                     </div>
-                    <div className="space-y-1.5 p-3">
+                    <div className="space-y-2 p-3.5">
                       <p className="line-clamp-2 text-sm font-medium">{p.name}</p>
                       {business.showCatalogPrices ? (
-                        <p className="tabular text-sm font-semibold">₹{p.salePrice}</p>
+                        <p className="tabular text-base font-semibold">₹{p.salePrice}</p>
                       ) : (
                         <p className="text-xs text-muted-foreground">Ask for price</p>
                       )}
@@ -157,8 +160,9 @@ export default async function CatalogPage({
               href={whatsapp}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex h-10 items-center rounded-md bg-success px-5 text-sm font-medium text-success-foreground transition-opacity hover:opacity-90"
+              className="inline-flex h-11 items-center gap-2 rounded-lg bg-success px-6 text-sm font-medium text-success-foreground shadow-sm transition-all hover:brightness-95 active:translate-y-px"
             >
+              <MessageCircle className="size-4" />
               Enquire on WhatsApp
             </a>
           </div>

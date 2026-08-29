@@ -1,6 +1,6 @@
 'use client';
 
-import { Button } from '@bahikhata/ui';
+import { Button, Card } from '@bahikhata/ui';
 import { Check, Copy, Download, ExternalLink, Printer } from 'lucide-react';
 import QRCode from 'qrcode';
 import * as React from 'react';
@@ -101,16 +101,16 @@ export function CatalogQr({
   }
 
   return (
-    <section className="space-y-4 border-t pt-8">
+    <Card className="space-y-4 p-6">
       <div>
-        <h2 className="text-base font-medium">Share your catalog</h2>
+        <h2 className="text-base font-semibold">Share your catalog</h2>
         <p className="text-sm text-muted-foreground">
           Print the QR and stick it on your counter. Customers scan it and see your products.
         </p>
       </div>
 
       <div className="flex flex-col gap-5 sm:flex-row sm:items-start">
-        <div className="shrink-0 rounded-lg border bg-white p-3">
+        <div className="shrink-0 rounded-xl border bg-white p-3 shadow-xs">
           {dataUrl ? (
             /* Plain <img>: a data URL has nothing for next/image to optimise. */
             // eslint-disable-next-line @next/next/no-img-element
@@ -123,7 +123,7 @@ export function CatalogQr({
         </div>
 
         <div className="min-w-0 flex-1 space-y-3">
-          <div className="rounded-md border bg-muted/40 p-3">
+          <div className="rounded-lg border bg-muted/50 p-3">
             <p className="tabular text-sm break-all">{url}</p>
           </div>
 
@@ -144,7 +144,7 @@ export function CatalogQr({
               href={url}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex h-8 items-center gap-2 rounded-md border px-3 text-xs font-medium transition-colors hover:bg-accent"
+              className="inline-flex h-8 items-center gap-1.5 rounded-md border border-input bg-card px-3 text-xs font-medium shadow-xs transition-colors hover:border-primary/40 hover:bg-primary-subtle"
             >
               <ExternalLink className="size-4" />
               Open
@@ -158,6 +158,6 @@ export function CatalogQr({
           )}
         </div>
       </div>
-    </section>
+    </Card>
   );
 }

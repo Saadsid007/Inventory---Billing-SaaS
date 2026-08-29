@@ -1,7 +1,9 @@
 import { getBusiness, getInvoice } from '@bahikhata/db';
 import { INVOICE_KIND_LABELS, getGstStateName } from '@bahikhata/shared';
-import { Badge, TBody, TD, TH, THead, TR, Table } from '@bahikhata/ui';
+import { Alert, Badge, Card, PageBody, PageHeader, TBody, TD, TH, THead, TR, Table } from '@bahikhata/ui';
+import { ArrowLeft, Ban } from 'lucide-react';
 import type { Metadata } from 'next';
+import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { requireBusiness } from '@/lib/auth/require-business';
 import { InvoiceActions } from './invoice-actions';
@@ -20,52 +22,63 @@ export default async function InvoicePage({ params }: { params: Promise<{ id: st
   const due = (Number(invoice.grandTotal) - Number(invoice.amountPaid)).toFixed(2);
 
   return (
-    <div className="mx-auto max-w-4xl space-y-6">
-      <header className="flex flex-wrap items-start justify-between gap-4">
-        <div>
-          <div className="flex flex-wrap items-center gap-2">
-            <h1 className="text-2xl font-semibold tracking-tight">
-              {invoice.invoiceNo ?? 'Draft'}
-            </h1>
+    <PageBody className="mx-auto max-w-4xl">
+      <PageHeader
+        breadcrumb={
+          <Link
+            href="/app/invoices"
+            className="inline-flex items-center gap-1.5 transition-colors hover:text-foreground"
+          >
+            <ArrowLeft className="size-3.5" /> All invoices
+          </Link>
+        }
+        title={
+          <span className="flex flex-wrap items-center gap-2.5">
+            {invoice.invoiceNo ?? 'Draft'}
             {invoice.status === 'cancelled' && <Badge variant="destructive">Cancelled</Badge>}
             {invoice.status === 'draft' && <Badge variant="outline">Draft</Badge>}
-            {invoice.status === 'issued' && <Badge variant="success">Issued</Badge>}
-          </div>
-          <p className="mt-1 text-sm text-muted-foreground">
-            {INVOICE_KIND_LABELS[invoice.kind]} · {invoice.invoiceDate} · FY {invoice.fy}
-          </p>
-        </div>
-        <InvoiceActions
-          invoiceId={invoice.id}
-          status={invoice.status}
-          grandTotal={invoice.grandTotal}
-          amountPaid={invoice.amountPaid}
-        />
-      </header>
+            {invoice.status === 'issued' && (
+              <Badge variant="success" dot>
+                Issued
+              </Badge>
+            )}
+          </span>
+        }
+        description={`${INVOICE_KIND_LABELS[invoice.kind]} · ${invoice.invoiceDate} · FY ${invoice.fy}`}
+        actions={
+          <InvoiceActions
+            invoiceId={invoice.id}
+            status={invoice.status}
+            grandTotal={invoice.grandTotal}
+            amountPaid={invoice.amountPaid}
+          />
+        }
+      />
 
       {invoice.status === 'cancelled' && invoice.cancelReason && (
-        <div className="rounded-md border border-destructive/40 bg-destructive/10 p-3 text-sm">
-          <span className="font-medium">Cancelled:</span> {invoice.cancelReason}
-          {/* The number is retained deliberately — a gap in a GST series looks
-              exactly like a hidden sale (spec §5.1). */}
-          <p className="mt-1 text-xs text-muted-foreground">
-            The invoice number is kept on purpose. It is never reused.
-          </p>
-        </div>
+        /* The number is retained deliberately — a gap in a GST series looks
+           exactly like a hidden sale (spec §5.1). */
+        <Alert variant="destructive" icon={Ban} title={`Cancelled: ${invoice.cancelReason}`}>
+          The invoice number is kept on purpose, and is never reused.
+        </Alert>
       )}
 
       <div className="grid gap-4 sm:grid-cols-2">
-        <section className="rounded-lg border p-4">
-          <h2 className="text-xs font-medium text-muted-foreground">From</h2>
+        <Card className="p-4">
+          <h2 className="text-xs font-semibold tracking-wide text-muted-foreground uppercase">
+            From
+          </h2>
           <p className="mt-1 font-medium">{business?.name}</p>
           {business?.gstin && <p className="tabular text-sm">{business.gstin}</p>}
           <p className="text-sm text-muted-foreground">
             State {invoice.supplierStateCode} — {getGstStateName(invoice.supplierStateCode)}
           </p>
-        </section>
+        </Card>
 
-        <section className="rounded-lg border p-4">
-          <h2 className="text-xs font-medium text-muted-foreground">To</h2>
+        <Card className="p-4">
+          <h2 className="text-xs font-semibold tracking-wide text-muted-foreground uppercase">
+            To
+          </h2>
           {/* Read from the invoice's own snapshot columns, never joined back to
               the party — their address may have changed since (spec §4). */}
           <p className="mt-1 font-medium">{invoice.partyName}</p>
@@ -77,7 +90,7 @@ export default async function InvoicePage({ params }: { params: Promise<{ id: st
             Place of supply {invoice.placeOfSupply} — {getGstStateName(invoice.placeOfSupply)}
             {showGst && (invoice.isInterstate ? ' · IGST' : ' · CGST + SGST')}
           </p>
-        </section>
+        </Card>
       </div>
 
       <Table>
@@ -127,7 +140,7 @@ export default async function InvoicePage({ params }: { params: Promise<{ id: st
         </TBody>
       </Table>
 
-      <dl className="ml-auto w-full max-w-xs space-y-1.5 rounded-lg border p-4 text-sm">
+      <dl className="ml-auto w-full max-w-xs space-y-1.5 rounded-xl border bg-card p-4 text-sm shadow-xs">
         <Row label="Taxable value" value={invoice.subtotal} />
         {Number(invoice.discountTotal) > 0 && (
           <Row label="Discount" value={invoice.discountTotal} />
@@ -160,22 +173,26 @@ export default async function InvoicePage({ params }: { params: Promise<{ id: st
       </dl>
 
       {(invoice.notes || invoice.terms) && (
-        <section className="space-y-3 border-t pt-5 text-sm">
+        <Card className="space-y-4 p-4 text-sm">
           {invoice.notes && (
             <div>
-              <h3 className="text-xs font-medium text-muted-foreground">Notes</h3>
-              <p className="mt-1 whitespace-pre-wrap">{invoice.notes}</p>
+              <h3 className="text-xs font-semibold tracking-wide text-muted-foreground uppercase">
+                Notes
+              </h3>
+              <p className="mt-1.5 whitespace-pre-wrap">{invoice.notes}</p>
             </div>
           )}
           {invoice.terms && (
             <div>
-              <h3 className="text-xs font-medium text-muted-foreground">Terms</h3>
-              <p className="mt-1 whitespace-pre-wrap text-muted-foreground">{invoice.terms}</p>
+              <h3 className="text-xs font-semibold tracking-wide text-muted-foreground uppercase">
+                Terms
+              </h3>
+              <p className="mt-1.5 whitespace-pre-wrap text-muted-foreground">{invoice.terms}</p>
             </div>
           )}
-        </section>
+        </Card>
       )}
-    </div>
+    </PageBody>
   );
 }
 

@@ -60,10 +60,10 @@ export default async function CatalogLayout({
 
   return (
     <div className="min-h-dvh bg-background">
-      <header className="border-b">
-        <div className="mx-auto flex max-w-5xl items-center gap-4 px-4 py-5">
+      <header className="sticky top-0 z-30 border-b bg-background/90 backdrop-blur-md">
+        <div className="mx-auto flex max-w-5xl items-center gap-4 px-4 py-4 sm:px-6">
           {business.logoUrl && (
-            <div className="relative size-14 shrink-0 overflow-hidden rounded-md border bg-muted">
+            <div className="relative size-14 shrink-0 overflow-hidden rounded-xl border bg-card shadow-xs">
               <Image
                 src={business.logoUrl}
                 alt={business.name}
@@ -76,7 +76,7 @@ export default async function CatalogLayout({
             </div>
           )}
           <div className="min-w-0 flex-1">
-            <h1 className="truncate text-xl font-semibold tracking-tight">
+            <h1 className="truncate text-xl font-semibold tracking-tight sm:text-2xl">
               <Link href={`/store/${business.slug}`}>{business.name}</Link>
             </h1>
             {address && <p className="truncate text-sm text-muted-foreground">{address}</p>}
@@ -93,12 +93,12 @@ export default async function CatalogLayout({
         </div>
       </header>
 
-      <main className="mx-auto max-w-5xl px-4 py-6">{children}</main>
+      <main className="mx-auto max-w-5xl px-4 py-6 sm:px-6 sm:py-8">{children}</main>
 
-      <footer className="mt-12 border-t py-6">
+      <footer className="mt-12 border-t bg-muted/30 py-8">
         <p className="text-center text-xs text-muted-foreground">
           {business.name} · Catalog powered by{' '}
-          <Link href="/" className="hover:text-foreground hover:underline">
+          <Link href="/" className="font-medium text-primary underline-offset-4 hover:underline">
             Bahikhata
           </Link>
         </p>

@@ -1,7 +1,7 @@
 'use client';
 
 import { MAX_IMAGE_EDGE, WEBP_QUALITY } from '@bahikhata/shared';
-import { Button, FormError } from '@bahikhata/ui';
+import { Button, Card, FormError } from '@bahikhata/ui';
 import { ImagePlus, Trash2 } from 'lucide-react';
 import Image from 'next/image';
 import * as React from 'react';
@@ -62,9 +62,9 @@ export function LogoSection({ initialUrl }: { initialUrl: string | null }) {
   }
 
   return (
-    <section className="space-y-3 border-t pt-8">
+    <Card className="space-y-3 p-6">
       <div>
-        <h2 className="text-base font-medium">Logo</h2>
+        <h2 className="text-base font-semibold">Logo</h2>
         <p className="text-sm text-muted-foreground">
           Printed on your invoices and shown at the top of your public catalog.
         </p>
@@ -107,6 +107,6 @@ export function LogoSection({ initialUrl }: { initialUrl: string | null }) {
           )}
         </div>
       </div>
-    </section>
+    </Card>
   );
 }

@@ -1,7 +1,7 @@
 'use client';
 
 import { isStandardUqc } from '@bahikhata/shared';
-import { Badge, Button, FormError, Input } from '@bahikhata/ui';
+import { Badge, Button, Card, FormError, Input } from '@bahikhata/ui';
 import { Trash2 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import * as React from 'react';
@@ -50,9 +50,9 @@ export function UnitsSection({
   const nonStandard = units.filter((u) => !isStandardUqc(u.shortName));
 
   return (
-    <section className="space-y-4 border-t pt-8">
+    <Card className="space-y-4 p-6">
       <div>
-        <h2 className="text-base font-medium">Units</h2>
+        <h2 className="text-base font-semibold">Units</h2>
         <p className="text-sm text-muted-foreground">
           How you measure what you sell. Short codes should be official GST UQCs.
         </p>
@@ -123,6 +123,6 @@ export function UnitsSection({
           {state.fieldErrors['name'] ?? state.fieldErrors['shortName']}
         </p>
       )}
-    </section>
+    </Card>
   );
 }

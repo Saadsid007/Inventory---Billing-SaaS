@@ -1,6 +1,6 @@
 'use client';
 
-import { Badge, Button, Checkbox, Field, FormError, Input, Select } from '@bahikhata/ui';
+import { Badge, Button, Card, Checkbox, Field, FormError, Input, Select } from '@bahikhata/ui';
 import { Trash2 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import * as React from 'react';
@@ -75,9 +75,9 @@ export function CustomFieldsSection({
   const list = entity === 'product' ? productFields : partyFields;
 
   return (
-    <section className="space-y-4 border-t pt-8">
+    <Card className="space-y-4 p-6">
       <div>
-        <h2 className="text-base font-medium">Your own fields</h2>
+        <h2 className="text-base font-semibold">Your own fields</h2>
         <p className="text-sm text-muted-foreground">
           Extra fields on products and parties — brand, warranty, delivery route, whatever your
           trade needs. Deliberately not available on invoices: an invoice is a legal document
@@ -180,6 +180,6 @@ export function CustomFieldsSection({
           Add field
         </Button>
       </div>
-    </section>
+    </Card>
   );
 }

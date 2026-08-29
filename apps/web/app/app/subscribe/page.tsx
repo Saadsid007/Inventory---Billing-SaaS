@@ -1,12 +1,6 @@
 import { MONTHLY_PRICE_INR, TRIAL_DAYS } from '@bahikhata/shared';
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-  ThemeToggle,
-} from '@bahikhata/ui';
+import { Badge, Card, CardContent, CardHeader, CardTitle, ThemeToggle } from '@bahikhata/ui';
+import { Check, MessageCircle } from 'lucide-react';
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
@@ -53,32 +47,45 @@ export default async function SubscribePage() {
 
   return (
     <div className="flex min-h-dvh flex-col">
-      <header className="flex items-center justify-between p-4">
-        <Link href="/" className="text-lg font-semibold tracking-tight">
-          Bahikhata
+      <header className="mx-auto flex w-full max-w-2xl items-center justify-between px-5 py-4">
+        <Link href="/" className="flex items-center gap-2.5">
+          <span className="grid size-8 place-items-center rounded-lg bg-primary text-sm font-bold text-primary-foreground">
+            B
+          </span>
+          <span className="text-lg font-semibold tracking-tight">Bahikhata</span>
         </Link>
         <ThemeToggle />
       </header>
 
-      <div className="flex flex-1 items-center justify-center px-4 pb-16">
-        <Card className="w-full max-w-lg">
-          <CardHeader>
-            <CardTitle>{copy.title}</CardTitle>
-            <CardDescription>{copy.body}</CardDescription>
+      <div className="flex flex-1 items-start justify-center px-5 py-10 sm:items-center sm:pb-20">
+        <Card className="w-full max-w-lg overflow-hidden p-0 shadow-md">
+          <CardHeader className="gap-2 border-b bg-muted/40">
+            <Badge variant="warning" className="w-fit" dot>
+              Access paused
+            </Badge>
+            <CardTitle className="text-xl">{copy.title}</CardTitle>
+            <p className="text-sm leading-relaxed text-muted-foreground">{copy.body}</p>
           </CardHeader>
 
-          <CardContent className="space-y-5">
+          <CardContent className="space-y-5 pt-6">
             {access === 'trial_expired' && (
-              <div className="rounded-lg border p-5">
-                <div className="flex items-baseline gap-1">
-                  <span className="tabular text-3xl font-semibold">₹{MONTHLY_PRICE_INR}</span>
-                  <span className="text-sm text-muted-foreground">/ month</span>
+              <div className="brand-wash rounded-xl p-6 text-white">
+                <div className="flex items-baseline gap-1.5">
+                  <span className="tabular text-4xl font-semibold">₹{MONTHLY_PRICE_INR}</span>
+                  <span className="text-sm text-white/80">/ month</span>
                 </div>
-                <ul className="mt-4 space-y-1.5 text-sm text-muted-foreground">
-                  <li>• Unlimited bills, products and parties</li>
-                  <li>• GST and non-GST billing</li>
-                  <li>• Public catalog with a QR code</li>
-                  <li>• CA-ready export at year end</li>
+                <ul className="mt-4 space-y-2 text-sm text-white/90">
+                  {[
+                    'Unlimited bills, products and customers',
+                    'GST and non-GST billing',
+                    'Public catalog with a QR code',
+                    'CA-ready exports at year end',
+                  ].map((item) => (
+                    <li key={item} className="flex items-start gap-2">
+                      <Check className="mt-0.5 size-4 shrink-0" />
+                      {item}
+                    </li>
+                  ))}
                 </ul>
               </div>
             )}
@@ -108,9 +115,12 @@ export default async function SubscribePage() {
               lands. In-app checkout is explicitly out of scope (spec §7).
               Phase 3 replaces this with Razorpay subscription automation.
             */}
-            <div className="rounded-md border border-dashed p-4 text-sm text-muted-foreground">
-              To subscribe, message us on WhatsApp or send an email. Your account is reactivated
-              the same day the payment reaches us.
+            <div className="flex items-start gap-3 rounded-xl border border-dashed p-4 text-sm text-muted-foreground">
+              <MessageCircle className="mt-0.5 size-4 shrink-0 text-primary" />
+              <p className="leading-relaxed">
+                To subscribe, message us on WhatsApp or send an email. Your account is switched
+                back on the same day the payment reaches us — nothing is lost in the meantime.
+              </p>
             </div>
 
             <SignOutLink />

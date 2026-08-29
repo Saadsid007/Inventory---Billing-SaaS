@@ -3,6 +3,7 @@
 import { productWarnings } from '@bahikhata/shared';
 import {
   Button,
+  Card,
   Checkbox,
   Field,
   FormError,
@@ -124,7 +125,7 @@ export function ProductForm({
     <div className="space-y-6">
       <FormError>{state.formError}</FormError>
 
-      <section className="space-y-4">
+      <Card className="space-y-4 p-5">
         <Field label="Product name" htmlFor="name" error={err('name')} required>
           <Input
             id="name"
@@ -171,10 +172,12 @@ export function ProductForm({
             </Select>
           </Field>
         </div>
-      </section>
+      </Card>
 
-      <section className="space-y-4 border-t pt-6">
-        <h2 className="text-sm font-medium text-muted-foreground">Pricing and tax</h2>
+      <Card className="space-y-4 p-5">
+        <h2 className="text-xs font-semibold tracking-widest text-muted-foreground uppercase">
+          Pricing and tax
+        </h2>
 
         <div className="grid gap-4 sm:grid-cols-2">
           <Field label="Sale price" htmlFor="salePrice" error={err('salePrice')} required>
@@ -208,7 +211,12 @@ export function ProductForm({
             error={err('hsnCode')}
             hint="4, 6 or 8 digits. Required on GST invoices."
           >
-            <Input id="hsnCode" inputMode="numeric" value={values.hsnCode} onChange={set('hsnCode')} />
+            <Input
+              id="hsnCode"
+              inputMode="numeric"
+              value={values.hsnCode}
+              onChange={set('hsnCode')}
+            />
           </Field>
           <Field label="GST rate" htmlFor="taxRateId" error={err('taxRateId')}>
             <Select id="taxRateId" value={values.taxRateId} onChange={set('taxRateId')}>
@@ -221,10 +229,12 @@ export function ProductForm({
             </Select>
           </Field>
         </div>
-      </section>
+      </Card>
 
-      <section className="space-y-4 border-t pt-6">
-        <h2 className="text-sm font-medium text-muted-foreground">Stock</h2>
+      <Card className="space-y-4 p-5">
+        <h2 className="text-xs font-semibold tracking-widest text-muted-foreground uppercase">
+          Stock
+        </h2>
 
         <Checkbox
           label="Track inventory for this product"
@@ -271,18 +281,15 @@ export function ProductForm({
             </Field>
           </div>
         )}
-      </section>
+      </Card>
 
       {customFieldDefs.length > 0 && (
-        <section className="space-y-4 border-t pt-6">
-          <h2 className="text-sm font-medium text-muted-foreground">Your own fields</h2>
+        <Card className="space-y-4 p-5">
+          <h2 className="text-xs font-semibold tracking-widest text-muted-foreground uppercase">
+            Your own fields
+          </h2>
           {customFieldDefs.map((def) => (
-            <Field
-              key={def.id}
-              label={def.label}
-              htmlFor={`cf-${def.key}`}
-              required={def.required}
-            >
+            <Field key={def.id} label={def.label} htmlFor={`cf-${def.key}`} required={def.required}>
               {def.type === 'checkbox' ? (
                 <Checkbox
                   id={`cf-${def.key}`}
@@ -314,11 +321,13 @@ export function ProductForm({
               )}
             </Field>
           ))}
-        </section>
+        </Card>
       )}
 
-      <section className="space-y-4 border-t pt-6">
-        <h2 className="text-sm font-medium text-muted-foreground">Catalog</h2>
+      <Card className="space-y-4 p-5">
+        <h2 className="text-xs font-semibold tracking-widest text-muted-foreground uppercase">
+          Catalog
+        </h2>
         <Field label="Description" htmlFor="description" error={err('description')}>
           <Textarea id="description" value={values.description} onChange={set('description')} />
         </Field>
@@ -329,15 +338,15 @@ export function ProductForm({
         />
         {!productId && (
           <p className="text-xs text-muted-foreground">
-            Save the product first, then add photos — they are filed under the product,
-            so it has to exist before they can be uploaded.
+            Save the product first, then add photos — they are filed under the product, so it has to
+            exist before they can be uploaded.
           </p>
         )}
-      </section>
+      </Card>
 
       <WarningList warnings={warnings} />
 
-      <div className="flex gap-2 border-t pt-6">
+      <div className="sticky bottom-0 -mx-4 flex flex-wrap gap-2 border-t bg-background/90 px-4 py-3 backdrop-blur-md sm:-mx-6 sm:px-6">
         <Button onClick={submit} disabled={pending}>
           {pending ? 'Saving…' : productId ? 'Save changes' : 'Add product'}
         </Button>

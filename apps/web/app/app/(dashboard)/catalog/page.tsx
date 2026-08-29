@@ -1,6 +1,7 @@
 import { getBusiness, getSettings, listProducts } from '@bahikhata/db';
 import { catalogUrl } from '@bahikhata/shared';
-import { Badge } from '@bahikhata/ui';
+import { Alert, Badge, PageBody, PageHeader, StatCard } from '@bahikhata/ui';
+import { Camera, EyeOff, Image as ImageIcon, TriangleAlert } from 'lucide-react';
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { requireBusiness, requireMembership } from '@/lib/auth/require-business';
@@ -28,42 +29,52 @@ export default async function CatalogSettingsPage() {
   const live = settings?.catalogEnabled ?? false;
 
   return (
-    <div className="mx-auto max-w-3xl space-y-8">
-      <header className="space-y-1">
-        <div className="flex flex-wrap items-center gap-2">
-          <h1 className="text-2xl font-semibold tracking-tight">Your catalog</h1>
-          {live ? <Badge variant="success">Live</Badge> : <Badge variant="outline">Off</Badge>}
-        </div>
-        <p className="text-sm text-muted-foreground">
-          A public page showing what you sell, kept in sync with your products automatically.
-        </p>
-      </header>
+    <PageBody className="mx-auto max-w-3xl space-y-8">
+      <PageHeader
+        title={
+          <span className="flex flex-wrap items-center gap-2.5">
+            Your catalog
+            {live ? (
+              <Badge variant="success" dot>
+                Live
+              </Badge>
+            ) : (
+              <Badge variant="outline">Off</Badge>
+            )}
+          </span>
+        }
+        description="A public page showing what you sell, kept in sync with your products automatically. Print the QR and put it on your counter."
+      />
 
       {!live && (
-        <div className="rounded-lg border border-warning/40 bg-warning/10 px-4 py-3 text-sm">
-          <span className="font-medium">Your catalog is switched off.</span>{' '}
-          <span className="text-muted-foreground">
-            The page returns 404 until you turn it on in{' '}
-            <Link href="/app/settings" className="underline">
-              Settings
-            </Link>
-            .
-          </span>
-        </div>
+        <Alert variant="warning" icon={TriangleAlert} title="Your catalog is switched off">
+          The page returns 404 until you turn it on in{' '}
+          <Link href="/app/settings" className="font-medium underline underline-offset-4">
+            Settings
+          </Link>
+          .
+        </Alert>
       )}
 
-      <section className="grid gap-3 sm:grid-cols-3">
-        <Stat label="Published products" value={String(published)} />
-        <Stat
+      <section className="grid gap-4 sm:grid-cols-3">
+        <StatCard label="Published" value={String(published)} icon={ImageIcon} />
+        <StatCard
           label="With a photo"
           value={String(withPhotos)}
           hint={
             published > 0 && withPhotos < published
-              ? `${published - withPhotos} without`
-              : undefined
+              ? `${published - withPhotos} still without one`
+              : 'Every published product has one'
           }
+          icon={Camera}
+          tone={published > 0 && withPhotos < published ? 'warning' : 'success'}
         />
-        <Stat label="Not published" value={String(products.length - published)} />
+        <StatCard
+          label="Not published"
+          value={String(products.length - published)}
+          hint="Hidden from customers"
+          icon={EyeOff}
+        />
       </section>
 
       {published > 0 && withPhotos < published && (
@@ -74,16 +85,6 @@ export default async function CatalogSettingsPage() {
       )}
 
       <CatalogQr url={url} businessName={business?.name ?? membership.businessName} live={live} />
-    </div>
-  );
-}
-
-function Stat({ label, value, hint }: { label: string; value: string; hint?: string }) {
-  return (
-    <div className="rounded-lg border p-4">
-      <p className="text-xs font-medium text-muted-foreground">{label}</p>
-      <p className="tabular mt-1 text-2xl font-semibold">{value}</p>
-      {hint && <p className="mt-1 text-xs text-muted-foreground">{hint}</p>}
-    </div>
+    </PageBody>
   );
 }

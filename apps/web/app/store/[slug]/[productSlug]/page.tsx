@@ -6,6 +6,7 @@ import {
 } from '@bahikhata/shared';
 import { StockBadge } from '@bahikhata/ui';
 import type { Metadata } from 'next';
+import { ArrowLeft, MessageCircle, Phone } from 'lucide-react';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { CatalogViewTracker } from '../view-tracker';
@@ -106,9 +107,12 @@ export default async function CatalogProductPage({
       />
       <CatalogViewTracker slug={slug} productId={productSlug} />
 
-      <nav className="mb-5 text-sm">
-        <Link href={`/store/${slug}`} className="text-muted-foreground hover:text-foreground">
-          ← All products
+      <nav className="mb-6 text-sm">
+        <Link
+          href={`/store/${slug}`}
+          className="inline-flex items-center gap-1.5 text-muted-foreground transition-colors hover:text-foreground"
+        >
+          <ArrowLeft className="size-3.5" /> All products
         </Link>
       </nav>
 
@@ -120,9 +124,9 @@ export default async function CatalogProductPage({
             {product.categoryName && (
               <p className="text-xs text-muted-foreground">{product.categoryName}</p>
             )}
-            <h2 className="text-2xl font-semibold tracking-tight">{product.name}</h2>
+            <h2 className="text-2xl font-semibold sm:text-3xl">{product.name}</h2>
             {business.showCatalogPrices ? (
-              <p className="tabular text-2xl font-semibold">₹{product.salePrice}</p>
+              <p className="tabular text-3xl font-semibold text-primary">₹{product.salePrice}</p>
             ) : (
               <p className="text-sm text-muted-foreground">
                 Contact the shop for pricing.
@@ -138,7 +142,7 @@ export default async function CatalogProductPage({
           )}
 
           {shownCustomFields.length > 0 && (
-            <dl className="space-y-1.5 rounded-lg border p-4 text-sm">
+            <dl className="space-y-1.5 rounded-xl border bg-card p-4 text-sm shadow-xs">
               {shownCustomFields.map(([key, value]) => (
                 <div key={key} className="flex justify-between gap-4">
                   <dt className="text-muted-foreground capitalize">
@@ -156,16 +160,18 @@ export default async function CatalogProductPage({
                 href={whatsapp}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex h-10 items-center rounded-md bg-success px-5 text-sm font-medium text-success-foreground transition-opacity hover:opacity-90"
+                className="inline-flex h-11 items-center gap-2 rounded-lg bg-success px-6 text-sm font-medium text-success-foreground shadow-sm transition-all hover:brightness-95 active:translate-y-px"
               >
+                <MessageCircle className="size-4" />
                 Enquire on WhatsApp
               </a>
             )}
             {business.phone && (
               <a
                 href={`tel:${business.phone}`}
-                className="inline-flex h-10 items-center rounded-md border px-5 text-sm font-medium transition-colors hover:bg-accent"
+                className="inline-flex h-11 items-center gap-2 rounded-lg border bg-card px-6 text-sm font-medium shadow-xs transition-colors hover:border-primary/40 hover:bg-primary-subtle"
               >
+                <Phone className="size-4" />
                 Call the shop
               </a>
             )}

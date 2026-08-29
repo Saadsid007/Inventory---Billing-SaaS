@@ -9,7 +9,9 @@ import {
   type InvoiceKind,
 } from '@bahikhata/shared';
 import {
+  Alert,
   Button,
+  Card,
   Field,
   FormError,
   Input,
@@ -17,7 +19,7 @@ import {
   Textarea,
   WarningList,
 } from '@bahikhata/ui';
-import { Plus, Trash2 } from 'lucide-react';
+import { Info, Plus, Trash2 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import * as React from 'react';
 import { issueInvoiceAction, saveInvoiceDraftAction } from './actions';
@@ -272,7 +274,7 @@ export function InvoiceForm({
     <div className="space-y-6">
       <FormError>{state.formError}</FormError>
 
-      <section className="grid gap-4 sm:grid-cols-3">
+      <Card className="grid gap-4 p-5 sm:grid-cols-3">
         <Field label="Document type" htmlFor="kind" error={err('kind')}>
           <Select
             id="kind"
@@ -302,17 +304,19 @@ export function InvoiceForm({
             onChange={(e) => setDueDate(e.target.value)}
           />
         </Field>
-      </section>
+      </Card>
 
       {!supplierHasGstin && (
-        <p className="rounded-md border bg-muted/40 p-3 text-xs text-muted-foreground">
-          Your business has no GSTIN, so tax invoices are not available and GST fields are
-          hidden. Add a GSTIN in Settings to enable them.
-        </p>
+        <Alert variant="info" icon={Info} title="No GSTIN on file">
+          Tax invoices are unavailable and GST fields are hidden. Add a GSTIN in Settings to
+          switch them on.
+        </Alert>
       )}
 
-      <section className="space-y-4 border-t pt-5">
-        <h2 className="text-sm font-medium text-muted-foreground">Customer</h2>
+      <Card className="space-y-4 p-5">
+        <h2 className="text-xs font-semibold tracking-widest text-muted-foreground uppercase">
+          Customer
+        </h2>
         <div className="grid gap-4 sm:grid-cols-2">
           <Field label="Existing contact" htmlFor="partyId">
             <Select
@@ -391,16 +395,18 @@ export function InvoiceForm({
             </Field>
           </div>
         )}
-      </section>
+      </Card>
 
-      <section className="space-y-3 border-t pt-5">
-        <h2 className="text-sm font-medium text-muted-foreground">Items</h2>
+      <Card className="space-y-3 p-5">
+        <h2 className="text-xs font-semibold tracking-widest text-muted-foreground uppercase">
+          Items
+        </h2>
 
         <div className="space-y-3">
           {lines.map((line, i) => {
             const computed = preview?.lines[i];
             return (
-              <div key={line.key} className="rounded-lg border p-3">
+              <div key={line.key} className="rounded-lg border bg-muted/30 p-3">
                 <div className="flex items-start gap-2">
                   <span className="mt-2 w-5 shrink-0 text-xs text-muted-foreground">
                     {i + 1}
@@ -500,14 +506,14 @@ export function InvoiceForm({
           })}
         </div>
 
-        <Button variant="outline" size="sm" onClick={() => setLines((r) => [...r, newLine()])}>
+        <Button variant="outline" onClick={() => setLines((r) => [...r, newLine()])}>
           <Plus className="size-4" />
           Add item
         </Button>
-        {err('lines') && <p className="text-xs text-destructive">{err('lines')}</p>}
-      </section>
+        {err('lines') && <p className="text-xs font-medium text-destructive">{err('lines')}</p>}
+      </Card>
 
-      <section className="space-y-4 border-t pt-5">
+      <Card className="space-y-4 p-5">
         <div className="grid gap-4 sm:grid-cols-2">
           <Field
             label="Other charges"
@@ -524,7 +530,7 @@ export function InvoiceForm({
         </div>
 
         {preview && (
-          <dl className="ml-auto w-full max-w-xs space-y-1.5 rounded-lg border p-4 text-sm sm:w-80">
+          <dl className="ml-auto w-full max-w-xs space-y-1.5 rounded-xl border border-primary/20 bg-primary-subtle/40 p-4 text-sm sm:w-80">
             <Row label="Taxable value" value={preview.subtotal} />
             {Number(preview.discountTotal) > 0 && (
               <Row label="Discount" value={`-${preview.discountTotal}`} />
@@ -543,39 +549,49 @@ export function InvoiceForm({
             {Number(preview.roundOff) !== 0 && (
               <Row label="Round off" value={preview.roundOff} />
             )}
-            <div className="flex justify-between border-t pt-2 text-base font-semibold">
+            <div className="flex justify-between border-t border-primary/20 pt-2 text-base font-semibold">
               <dt>Total</dt>
               <dd className="tabular">₹{preview.grandTotal}</dd>
             </div>
           </dl>
         )}
-      </section>
+      </Card>
 
-      <section className="space-y-4 border-t pt-5">
+      <Card className="space-y-4 p-5">
         <Field label="Notes" htmlFor="notes" hint="Shown on the invoice.">
           <Textarea id="notes" value={notes} onChange={(e) => setNotes(e.target.value)} />
         </Field>
         <Field label="Terms" htmlFor="terms">
           <Textarea id="terms" value={terms} onChange={(e) => setTerms(e.target.value)} />
         </Field>
-      </section>
+      </Card>
 
       <WarningList warnings={warnings} />
 
-      <div className="flex flex-wrap gap-2 border-t pt-5">
-        <Button onClick={saveAndIssue} disabled={pending || !preview}>
-          {pending ? 'Working…' : 'Save and issue'}
-        </Button>
-        <Button variant="outline" onClick={saveDraft} disabled={pending || !preview}>
-          Save as draft
-        </Button>
-        <Button variant="ghost" onClick={() => router.back()} disabled={pending}>
-          Cancel
-        </Button>
+      {/* Sticky, because this form is long enough to scroll on a phone and the
+          shopkeeper should never have to hunt for "Save and issue" with a
+          customer waiting. */}
+      <div className="sticky bottom-0 -mx-4 border-t bg-background/90 px-4 py-3 backdrop-blur-md sm:-mx-6 sm:px-6">
+        <div className="flex flex-wrap items-center gap-2">
+          <Button size="lg" onClick={saveAndIssue} disabled={pending || !preview}>
+            {pending ? 'Working…' : 'Save and issue'}
+          </Button>
+          <Button variant="outline" size="lg" onClick={saveDraft} disabled={pending || !preview}>
+            Save as draft
+          </Button>
+          <Button variant="ghost" onClick={() => router.back()} disabled={pending}>
+            Cancel
+          </Button>
+          {preview && (
+            <span className="tabular ml-auto text-sm text-muted-foreground">
+              Total <span className="font-semibold text-foreground">₹{preview.grandTotal}</span>
+            </span>
+          )}
+        </div>
+        <p className="mt-2 text-xs text-muted-foreground">
+          Issuing assigns a permanent invoice number and reduces stock. A draft does neither.
+        </p>
       </div>
-      <p className="text-xs text-muted-foreground">
-        Issuing assigns a permanent invoice number and reduces stock. A draft does neither.
-      </p>
     </div>
   );
 }
