@@ -189,6 +189,44 @@ Integration tests moved behind their own script so `pnpm test` stays fast.
 
 ---
 
+## Phase 1a + 1b — masters and products ⚠️ done except images (2026-08-29)
+
+Settings (profile, invoice/catalog defaults, units, categories, custom fields)
+and full product CRUD. Verified in a browser against the real database: created
+a category and a unit, then a product with category, unit, HSN, GST 18% and
+opening stock — the list rendered every join correctly, and the product page
+showed the `opening` ledger row of +48.000 matching `current_stock`.
+
+Decisions worth keeping:
+
+- **Filters live in the URL**, not component state, so a filtered product list
+  is shareable and back-button-friendly, and the page stays a server component.
+  Search is debounced 300ms.
+- **`openingStock` is disabled on edit.** Stock only moves through the ledger;
+  a form that could rewrite `current_stock` would desynchronise the rollup from
+  its own movements with nothing to detect it.
+- **Warnings are live and non-blocking** (spec §5.5). Missing HSN or tax rate
+  shows advice that disappears the moment it is fixed — never a hard block,
+  because refusing to save over paperwork that can be fixed later is the wrong
+  trade when a customer is standing at the counter.
+- **Custom field keys are derived from the label**, never typed. They become
+  JSON keys on every product row, so they must be stable and safe, and a user
+  should not have to think about that.
+- **Categories are not seeded**; units are. A kirana store's categories have
+  nothing in common with a hardware shop's, so a wrong default is worse than an
+  empty list. Units are universal enough to seed.
+- **Non-standard UQCs are flagged, not blocked.** A shop may want "TIN" on its
+  own paperwork; the consequence is a GSTR-1 rejection in Phase 2, and that is
+  theirs to weigh.
+
+### Blocked
+
+**Product image upload.** Needs `SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY`,
+which are not set. Everything else in 1b is done; the form says so where the
+upload control will go. `requireStorageEnv()` already guards the code path.
+
+---
+
 ## Not started
 
 Phase 1 (core billing), Phase 2 (compliance), Phase 3 (scale). The spec's

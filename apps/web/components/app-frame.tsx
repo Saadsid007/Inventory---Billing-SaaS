@@ -1,7 +1,7 @@
 'use client';
 
 import { AppShell, type NavItem } from '@bahikhata/ui';
-import { LayoutDashboard, LogOut } from 'lucide-react';
+import { LayoutDashboard, LogOut, Package, Settings } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import * as React from 'react';
@@ -19,7 +19,11 @@ import { signOutAction } from '@/app/(auth)/actions';
  * Nav grows one phase at a time. Adding a link before its page exists just
  * gives a shopkeeper a 404 to find on their own.
  */
-const NAV: readonly NavItem[] = [{ href: '/app', label: 'Dashboard', icon: LayoutDashboard }];
+const NAV: readonly NavItem[] = [
+  { href: '/app', label: 'Dashboard', icon: LayoutDashboard },
+  { href: '/app/products', label: 'Products', icon: Package },
+  { href: '/app/settings', label: 'Settings', icon: Settings },
+];
 
 function SignOutButton() {
   const [pending, startTransition] = React.useTransition();

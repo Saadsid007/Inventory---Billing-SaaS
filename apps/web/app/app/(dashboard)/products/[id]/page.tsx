@@ -1,0 +1,106 @@
+import { getProduct, listMovements } from '@bahikhata/db';
+import { TBody, TD, TH, THead, TR, Table } from '@bahikhata/ui';
+import type { Metadata } from 'next';
+import { notFound } from 'next/navigation';
+import { requireBusiness } from '@/lib/auth/require-business';
+import { loadProductFormData } from '../_form-data';
+import { ProductForm } from '../product-form';
+
+export const metadata: Metadata = { title: 'Edit product' };
+
+const REASON_LABELS: Record<string, string> = {
+  opening: 'Opening stock',
+  sale: 'Sold',
+  stock_in: 'Stock in',
+  stock_out: 'Stock out',
+  adjustment: 'Adjustment',
+  sale_cancelled: 'Sale cancelled',
+};
+
+export default async function EditProductPage({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}) {
+  const ctx = await requireBusiness();
+  const { id } = await params;
+
+  const [product, data] = await Promise.all([getProduct(ctx, id), loadProductFormData(ctx)]);
+  // getProduct is business-scoped, so a foreign id is indistinguishable from a
+  // non-existent one — which is exactly what we want to tell the caller.
+  if (!product) notFound();
+
+  const movements = product.trackInventory ? await listMovements(ctx, id, 25) : [];
+
+  return (
+    <div className="mx-auto max-w-2xl space-y-8">
+      <h1 className="text-2xl font-semibold tracking-tight">{product.name}</h1>
+
+      <ProductForm
+        productId={product.id}
+        initial={{
+          name: product.name,
+          sku: product.sku ?? '',
+          barcode: product.barcode ?? '',
+          categoryId: product.categoryId ?? '',
+          unitId: product.unitId ?? '',
+          hsnCode: product.hsnCode ?? '',
+          taxRateId: product.taxRateId ?? '',
+          salePrice: product.salePrice,
+          purchasePrice: product.purchasePrice ?? '',
+          openingStock: product.openingStock,
+          lowStockAlert: product.lowStockAlert ?? '',
+          trackInventory: product.trackInventory,
+          description: product.description ?? '',
+          showInCatalog: product.showInCatalog,
+          customFields: product.customFields,
+        }}
+        {...data}
+      />
+
+      {product.trackInventory && (
+        <section className="space-y-3 border-t pt-6">
+          <div>
+            <h2 className="text-sm font-medium">Stock history</h2>
+            <p className="text-xs text-muted-foreground">
+              Current stock is {product.currentStock} — the sum of every movement below.
+            </p>
+          </div>
+          {movements.length === 0 ? (
+            <p className="text-sm text-muted-foreground">No movements yet.</p>
+          ) : (
+            <Table>
+              <THead>
+                <TR>
+                  <TH>Date</TH>
+                  <TH>Reason</TH>
+                  <TH>Note</TH>
+                  <TH numeric>Change</TH>
+                </TR>
+              </THead>
+              <TBody>
+                {movements.map((m) => (
+                  <TR key={m.id}>
+                    <TD className="text-muted-foreground">
+                      {m.createdAt.toLocaleDateString('en-IN', {
+                        day: 'numeric',
+                        month: 'short',
+                        year: 'numeric',
+                      })}
+                    </TD>
+                    <TD>{REASON_LABELS[m.reason] ?? m.reason}</TD>
+                    <TD className="text-muted-foreground">{m.note ?? '—'}</TD>
+                    <TD numeric className={m.qtyChange.startsWith('-') ? 'text-destructive' : ''}>
+                      {m.qtyChange.startsWith('-') ? '' : '+'}
+                      {m.qtyChange}
+                    </TD>
+                  </TR>
+                ))}
+              </TBody>
+            </Table>
+          )}
+        </section>
+      )}
+    </div>
+  );
+}
