@@ -1,5 +1,5 @@
-import { MONTHLY_PRICE_INR, TRIAL_DAYS } from '@bahikhata/shared';
-import { Badge, Button, Card } from '@bahikhata/ui';
+import { MONTHLY_PRICE_INR, TRIAL_DAYS } from '@billwise/shared';
+import { Badge, Button, Card } from '@billwise/ui';
 import {
   ArrowRight,
   BarChart3,
@@ -15,7 +15,7 @@ import Link from 'next/link';
 import { MarketingFooter, MarketingHeader } from '@/components/marketing-chrome';
 
 export const metadata: Metadata = {
-  title: { absolute: 'Bahikhata — Billing, stock and khata for Indian shops' },
+  title: { absolute: 'Billwise — Billing, stock and khata for Indian shops' },
   description: `Make GST and non-GST bills, track stock, see who owes you money, and put your products online with a QR code. ${TRIAL_DAYS} days free, then ₹${MONTHLY_PRICE_INR} a month.`,
 };
 

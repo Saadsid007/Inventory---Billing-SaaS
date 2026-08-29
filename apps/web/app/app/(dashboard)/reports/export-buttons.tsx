@@ -1,6 +1,6 @@
 'use client';
 
-import { buttonVariants, cn } from '@bahikhata/ui';
+import { buttonVariants, cn } from '@billwise/ui';
 import { Download } from 'lucide-react';
 
 const EXPORTS = [

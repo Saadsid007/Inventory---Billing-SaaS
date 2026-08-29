@@ -1,7 +1,7 @@
 'use client';
 
-import { PAYMENT_METHODS, PAYMENT_METHOD_LABELS } from '@bahikhata/shared';
-import { Button, Field, FormError, Input, Select } from '@bahikhata/ui';
+import { PAYMENT_METHODS, PAYMENT_METHOD_LABELS } from '@billwise/shared';
+import { Button, Field, FormError, Input, Select } from '@billwise/ui';
 import { useRouter } from 'next/navigation';
 import * as React from 'react';
 import { cancelInvoiceAction, issueInvoiceAction, recordPaymentAction } from '../actions';
@@ -44,7 +44,7 @@ export function InvoiceActions({
    */
   function openPrint() {
     const saved =
-      typeof window === 'undefined' ? null : localStorage.getItem('bahikhata-print-format');
+      typeof window === 'undefined' ? null : localStorage.getItem('billwise-print-format');
     const format = saved === 'thermal' ? 'thermal' : 'a4';
     router.push(`/app/invoices/${invoiceId}/print?format=${format}`);
   }

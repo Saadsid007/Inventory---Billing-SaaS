@@ -1,6 +1,6 @@
 'use client';
 
-import { Button, Card, FormError, Input } from '@bahikhata/ui';
+import { Button, Card, FormError, Input } from '@billwise/ui';
 import { Trash2 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import * as React from 'react';

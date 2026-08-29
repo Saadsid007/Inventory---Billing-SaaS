@@ -1,4 +1,4 @@
-import type { PartyType, TenantCtx } from '@bahikhata/shared';
+import type { PartyType, TenantCtx } from '@billwise/shared';
 import { and, asc, eq, ilike, inArray, or, sql } from 'drizzle-orm';
 import { getDb, type Executor } from '../client';
 import { parties } from '../schema/index';

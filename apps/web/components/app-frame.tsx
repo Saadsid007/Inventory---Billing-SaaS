@@ -1,6 +1,6 @@
 'use client';
 
-import { AppShell, type NavItem } from '@bahikhata/ui';
+import { AppShell, type NavItem } from '@billwise/ui';
 import {
   ArrowLeftRight,
   BarChart3,
@@ -23,7 +23,7 @@ import { signOutAction } from '@/app/(auth)/actions';
  *
  * Exists because the shell needs `usePathname()` to highlight the active nav
  * item, and because `next/link` is injected rather than imported inside
- * `@bahikhata/ui` — keeping that package free of framework dependencies.
+ * `@billwise/ui` — keeping that package free of framework dependencies.
  */
 
 /**
@@ -54,7 +54,7 @@ const ADMIN_NAV: NavItem = {
   href: '/admin',
   label: 'Admin panel',
   icon: Shield,
-  section: 'Bahikhata',
+  section: 'Billwise',
 };
 
 function SignOutButton() {

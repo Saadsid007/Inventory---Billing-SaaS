@@ -1,4 +1,4 @@
-import { Card, Skeleton } from '@bahikhata/ui';
+import { Card, Skeleton } from '@billwise/ui';
 
 /**
  * Shown while a page under /app streams in.

@@ -73,13 +73,13 @@ The direct URL is the pooled URL with `-pooler` removed from the hostname and
 
 Spec §2.5 states architectural rules. Stated rules decay. These are machine-checked:
 
-- **`packages/core` is import-restricted** against `@bahikhata/db`, any ORM, any
-  driver, Next, React, `@bahikhata/ui`, `@bahikhata/shared/env` and the
+- **`packages/core` is import-restricted** against `@billwise/db`, any ORM, any
+  driver, Next, React, `@billwise/ui`, `@billwise/shared/env` and the
   filesystem — plus `Math.round`, which is float rounding on money. The rule
   lives in `packages/core/eslint.config.mjs`, and
   `packages/core/src/boundaries.test.ts` lints fixtures through that real config,
   so deleting a pattern turns the test suite red.
-- **The database client is not exported.** `@bahikhata/db`'s `exports` map
+- **The database client is not exported.** `@billwise/db`'s `exports` map
   publishes only `.` and `./schema`. `src/client.ts` is absent, so no app can
   resolve it even deliberately. `packages/db/src/boundaries.test.ts` asserts the
   exports map stays that way.
@@ -153,7 +153,7 @@ queue, no card up front.
 
 ### Expiry is derived, never stored
 
-`evaluateAccess({ status, trialEndsAt })` in `@bahikhata/shared` computes access
+`evaluateAccess({ status, trialEndsAt })` in `@billwise/shared` computes access
 on every request. There is deliberately no stored `expired` status:
 
 - A stored value needs a scheduled job to write it, and the day that job silently
@@ -343,7 +343,7 @@ Full reasoning, tokens and component rules: `docs/design.md`.
 
 ## D18. Page furniture is a component, not a convention
 
-`PageHeader`, `PageBody` and `Section` in `@bahikhata/ui` exist because every
+`PageHeader`, `PageBody` and `Section` in `@billwise/ui` exist because every
 screen opens identically — title, one line of purpose, primary action right.
 Left as a convention, twenty pages become twenty slightly different headers with
 different spacing, and that inconsistency is what makes software look homemade.

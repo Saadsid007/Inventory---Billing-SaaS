@@ -1,5 +1,5 @@
-import { listInvoices } from '@bahikhata/db';
-import { INVOICE_KIND_LABELS, type InvoiceKind } from '@bahikhata/shared';
+import { listInvoices } from '@billwise/db';
+import { INVOICE_KIND_LABELS, type InvoiceKind } from '@billwise/shared';
 import {
   Badge,
   Button,
@@ -12,7 +12,7 @@ import {
   THead,
   TR,
   Table,
-} from '@bahikhata/ui';
+} from '@billwise/ui';
 import { FileText, Plus, SearchX } from 'lucide-react';
 import type { Metadata } from 'next';
 import Link from 'next/link';

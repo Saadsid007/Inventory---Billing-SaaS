@@ -14,16 +14,16 @@ import base from '../../eslint.config.mjs';
 const boundary = {
   patterns: [
     {
-      group: ['@bahikhata/db', '@bahikhata/db/*'],
+      group: ['@billwise/db', '@billwise/db/*'],
       message:
         'core cannot touch the database. Take the data as a function argument and let the caller in apps/ or packages/db fetch it.',
     },
     {
-      group: ['@bahikhata/ui', '@bahikhata/ui/*'],
+      group: ['@billwise/ui', '@billwise/ui/*'],
       message: 'core is presentation-free. Move anything UI-shaped to packages/ui.',
     },
     {
-      group: ['@bahikhata/shared/env', '../../shared/src/env', '**/shared/src/env'],
+      group: ['@billwise/shared/env', '../../shared/src/env', '**/shared/src/env'],
       message:
         'core must not read environment config. Pass configuration in as a parameter so tests can vary it.',
     },

@@ -1,4 +1,4 @@
-import { listCategories, listProducts } from '@bahikhata/db';
+import { listCategories, listProducts } from '@billwise/db';
 import {
   Badge,
   Button,
@@ -11,7 +11,7 @@ import {
   THead,
   TR,
   Table,
-} from '@bahikhata/ui';
+} from '@billwise/ui';
 import { Package, Plus, SearchX } from 'lucide-react';
 import type { Metadata } from 'next';
 import Link from 'next/link';

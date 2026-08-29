@@ -1,4 +1,4 @@
-import { serverEnv } from '@bahikhata/shared/env';
+import { serverEnv } from '@billwise/shared/env';
 import { drizzle } from 'drizzle-orm/postgres-js';
 import postgres from 'postgres';
 import * as schema from './schema/index';
@@ -40,14 +40,14 @@ function connect() {
  * limit after twenty saves.
  */
 const globalForDb = globalThis as unknown as {
-  __bahikhataSql?: ReturnType<typeof postgres>;
+  __billwiseSql?: ReturnType<typeof postgres>;
 };
 
 export function getDb() {
   if (!database) {
-    sql = globalForDb.__bahikhataSql ?? connect();
+    sql = globalForDb.__billwiseSql ?? connect();
     if (process.env['NODE_ENV'] !== 'production') {
-      globalForDb.__bahikhataSql = sql;
+      globalForDb.__billwiseSql = sql;
     }
     database = drizzle(sql, { schema, casing: 'snake_case' });
   }
@@ -67,5 +67,5 @@ export async function closeDb(): Promise<void> {
   await sql?.end({ timeout: 5 });
   sql = undefined;
   database = undefined;
-  delete globalForDb.__bahikhataSql;
+  delete globalForDb.__billwiseSql;
 }

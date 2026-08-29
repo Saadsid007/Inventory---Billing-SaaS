@@ -1,4 +1,4 @@
-import type { InvoiceKind } from '@bahikhata/shared';
+import type { InvoiceKind } from '@billwise/shared';
 import { financialYear, type DateString } from '../gst/financial-year';
 
 /**

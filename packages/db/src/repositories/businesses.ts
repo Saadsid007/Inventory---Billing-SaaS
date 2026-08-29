@@ -1,4 +1,4 @@
-import type { TenantCtx } from '@bahikhata/shared';
+import type { TenantCtx } from '@billwise/shared';
 import { eq } from 'drizzle-orm';
 import { getDb } from '../client';
 import { businessSettings, businesses } from '../schema/index';

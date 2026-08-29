@@ -1,4 +1,4 @@
-import { type BusinessStatus, type TenantCtx, slugify, trialEndsAt } from '@bahikhata/shared';
+import { type BusinessStatus, type TenantCtx, slugify, trialEndsAt } from '@billwise/shared';
 import { and, eq } from 'drizzle-orm';
 import { getDb } from '../client';
 import { seedBusinessMasters } from './masters';

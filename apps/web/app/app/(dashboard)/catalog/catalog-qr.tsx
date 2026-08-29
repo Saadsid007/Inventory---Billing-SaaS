@@ -1,6 +1,6 @@
 'use client';
 
-import { Button, Card } from '@bahikhata/ui';
+import { Button, Card } from '@billwise/ui';
 import { Check, Copy, Download, ExternalLink, Printer } from 'lucide-react';
 import QRCode from 'qrcode';
 import * as React from 'react';

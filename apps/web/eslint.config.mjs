@@ -15,16 +15,16 @@ export default [
       ...nextPlugin.configs['core-web-vitals'].rules,
 
       // Spec §2.5 hard rule 2: apps import repository functions, never the
-      // database client. The client is not in @bahikhata/db's exports map
+      // database client. The client is not in @billwise/db's exports map
       // either — this catches deep relative imports that try to route around it.
       'no-restricted-imports': [
         'error',
         {
           patterns: [
             {
-              group: ['**/packages/db/src/client', '@bahikhata/db/src/*'],
+              group: ['**/packages/db/src/client', '@billwise/db/src/*'],
               message:
-                'Import a repository function from @bahikhata/db. Repositories take TenantCtx and scope every query by business_id.',
+                'Import a repository function from @billwise/db. Repositories take TenantCtx and scope every query by business_id.',
             },
           ],
         },

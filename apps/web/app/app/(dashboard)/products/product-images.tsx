@@ -4,8 +4,8 @@ import {
   MAX_IMAGES_PER_PRODUCT,
   MAX_IMAGE_EDGE,
   WEBP_QUALITY,
-} from '@bahikhata/shared';
-import { Button, FormError } from '@bahikhata/ui';
+} from '@billwise/shared';
+import { Button, FormError } from '@billwise/ui';
 import { ArrowLeft, ArrowRight, ImagePlus, Trash2 } from 'lucide-react';
 import Image from 'next/image';
 import * as React from 'react';

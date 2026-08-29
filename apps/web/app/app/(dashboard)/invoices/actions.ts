@@ -1,6 +1,6 @@
 'use server';
 
-import { buildInvoice, formatInvoiceNumber } from '@bahikhata/core';
+import { buildInvoice, formatInvoiceNumber } from '@billwise/core';
 import {
   cancelInvoice,
   createDraft,
@@ -11,13 +11,13 @@ import {
   issueInvoice,
   recordPayment,
   updateDraft,
-} from '@bahikhata/db';
+} from '@billwise/db';
 import {
   cancelInvoiceSchema,
   invoiceInputSchema,
   partySchema,
   paymentInputSchema,
-} from '@bahikhata/shared';
+} from '@billwise/shared';
 import { revalidatePath } from 'next/cache';
 import { requireBusiness } from '@/lib/auth/require-business';
 
@@ -26,7 +26,7 @@ import { requireBusiness } from '@/lib/auth/require-business';
  * call core and the repositories, format a response. No arithmetic here.
  *
  * The client never sends totals. It sends what a person typed; `buildInvoice`
- * in `@bahikhata/core` recomputes every figure server-side. A browser must not
+ * in `@billwise/core` recomputes every figure server-side. A browser must not
  * be able to decide what a customer owes.
  */
 
@@ -135,7 +135,7 @@ export async function saveInvoiceDraftAction(
  * Issue a draft — assign its number and move the stock.
  *
  * `formatInvoiceNumber` is passed in because `packages/db` may not depend on
- * `@bahikhata/core` (spec §2.5). The repository allocates the counter under a
+ * `@billwise/core` (spec §2.5). The repository allocates the counter under a
  * row lock; core turns it into `INV-007`.
  */
 export async function issueInvoiceAction(invoiceId: string): Promise<InvoiceActionResult> {

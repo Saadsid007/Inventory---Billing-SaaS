@@ -1,6 +1,6 @@
-import { findCatalogBusiness, listCatalogCategories, listCatalogProducts } from '@bahikhata/db';
-import { enquiryMessage, productSlug, whatsappEnquiryUrl } from '@bahikhata/shared';
-import { EmptyState, StockBadge } from '@bahikhata/ui';
+import { findCatalogBusiness, listCatalogCategories, listCatalogProducts } from '@billwise/db';
+import { enquiryMessage, productSlug, whatsappEnquiryUrl } from '@billwise/shared';
+import { EmptyState, StockBadge } from '@billwise/ui';
 import { ImageOff, MessageCircle, PackageSearch } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';

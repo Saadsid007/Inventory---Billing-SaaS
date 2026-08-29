@@ -1,4 +1,4 @@
-import { ThemeToggle } from '@bahikhata/ui';
+import { ThemeToggle } from '@billwise/ui';
 import Link from 'next/link';
 
 /**
@@ -15,7 +15,7 @@ export function BrandMark({ className }: { className?: string }) {
       <span className="grid size-8 place-items-center rounded-lg bg-primary text-sm font-bold text-primary-foreground shadow-xs">
         B
       </span>
-      <span className="text-lg font-semibold tracking-tight">Bahikhata</span>
+      <span className="text-lg font-semibold tracking-tight">Billwise</span>
     </Link>
   );
 }

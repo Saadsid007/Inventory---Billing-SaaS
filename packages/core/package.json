@@ -1,5 +1,5 @@
 {
-  "name": "@bahikhata/core",
+  "name": "@billwise/core",
   "version": "0.0.0",
   "private": true,
   "type": "module",
@@ -18,7 +18,7 @@
     "test": "vitest run --passWithNoTests"
   },
   "dependencies": {
-    "@bahikhata/shared": "workspace:*",
+    "@billwise/shared": "workspace:*",
     "decimal.js": "catalog:"
   },
   "devDependencies": {

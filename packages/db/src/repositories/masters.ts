@@ -2,7 +2,7 @@ import {
   type CustomFieldEntity,
   SEED_UNITS,
   type TenantCtx,
-} from '@bahikhata/shared';
+} from '@billwise/shared';
 import { and, asc, eq, isNull, or, sql } from 'drizzle-orm';
 import type { Executor } from '../client';
 import { getDb } from '../client';

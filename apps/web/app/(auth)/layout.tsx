@@ -1,5 +1,5 @@
-import { MONTHLY_PRICE_INR, TRIAL_DAYS } from '@bahikhata/shared';
-import { ThemeToggle } from '@bahikhata/ui';
+import { MONTHLY_PRICE_INR, TRIAL_DAYS } from '@billwise/shared';
+import { ThemeToggle } from '@billwise/ui';
 import { Check } from 'lucide-react';
 import Link from 'next/link';
 
@@ -29,7 +29,7 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
           <span className="grid size-8 place-items-center rounded-lg bg-white/15 text-sm font-bold backdrop-blur">
             B
           </span>
-          <span className="text-lg font-semibold tracking-tight">Bahikhata</span>
+          <span className="text-lg font-semibold tracking-tight">Billwise</span>
         </Link>
 
         <div className="max-w-md space-y-8">
@@ -59,7 +59,7 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
             <span className="grid size-7 place-items-center rounded-lg bg-primary text-xs font-bold text-primary-foreground">
               B
             </span>
-            <span className="font-semibold tracking-tight">Bahikhata</span>
+            <span className="font-semibold tracking-tight">Billwise</span>
           </Link>
           <ThemeToggle />
         </header>

@@ -1,4 +1,4 @@
-import type { TenantCtx } from '@bahikhata/shared';
+import type { TenantCtx } from '@billwise/shared';
 import { config as loadEnv } from 'dotenv';
 import { sql } from 'drizzle-orm';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';

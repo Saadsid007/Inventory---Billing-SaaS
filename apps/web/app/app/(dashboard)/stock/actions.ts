@@ -1,7 +1,7 @@
 'use server';
 
-import { adjustStock, getProduct } from '@bahikhata/db';
-import { stockAdjustmentSchema } from '@bahikhata/shared';
+import { adjustStock, getProduct } from '@billwise/db';
+import { stockAdjustmentSchema } from '@billwise/shared';
 import { revalidatePath } from 'next/cache';
 import { requireBusiness } from '@/lib/auth/require-business';
 

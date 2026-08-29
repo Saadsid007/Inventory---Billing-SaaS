@@ -1,5 +1,5 @@
-import { getBusiness, getSettings, listParties, listProducts } from '@bahikhata/db';
-import { PageBody, PageHeader } from '@bahikhata/ui';
+import { getBusiness, getSettings, listParties, listProducts } from '@billwise/db';
+import { PageBody, PageHeader } from '@billwise/ui';
 import { ArrowLeft } from 'lucide-react';
 import type { Metadata } from 'next';
 import Link from 'next/link';

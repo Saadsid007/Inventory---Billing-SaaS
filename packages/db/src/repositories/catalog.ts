@@ -24,7 +24,7 @@ import { businessSettings, businesses, catalogViews, categories, products } from
  * Trial shops get a live catalog on purpose: it is the feature most likely to
  * convince someone to pay, so hiding it until they do would be backwards.
  *
- * This mirrors `evaluateAccess()` in @bahikhata/shared. **The two must stay in
+ * This mirrors `evaluateAccess()` in @billwise/shared. **The two must stay in
  * step** — if one changes, so does the other.
  */
 const catalogIsLive = () =>

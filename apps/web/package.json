@@ -1,5 +1,5 @@
 {
-  "name": "@bahikhata/web",
+  "name": "@billwise/web",
   "version": "0.0.0",
   "private": true,
   "type": "module",
@@ -12,10 +12,10 @@
     "test": "vitest run --passWithNoTests"
   },
   "dependencies": {
-    "@bahikhata/core": "workspace:*",
-    "@bahikhata/db": "workspace:*",
-    "@bahikhata/shared": "workspace:*",
-    "@bahikhata/ui": "workspace:*",
+    "@billwise/core": "workspace:*",
+    "@billwise/db": "workspace:*",
+    "@billwise/shared": "workspace:*",
+    "@billwise/ui": "workspace:*",
     "bcryptjs": "^3.0.3",
     "dotenv": "^17.4.2",
     "lucide-react": "catalog:",

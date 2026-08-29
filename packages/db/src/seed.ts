@@ -1,4 +1,4 @@
-import { SEED_TAX_RATES } from '@bahikhata/shared';
+import { SEED_TAX_RATES } from '@billwise/shared';
 import { config as loadEnv } from 'dotenv';
 import { drizzle } from 'drizzle-orm/postgres-js';
 import { sql } from 'drizzle-orm';

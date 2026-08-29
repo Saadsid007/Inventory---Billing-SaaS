@@ -1,4 +1,4 @@
-import { getDashboardStats, getRecentInvoices } from '@bahikhata/db';
+import { getDashboardStats, getRecentInvoices } from '@billwise/db';
 import {
   Alert,
   Badge,
@@ -15,7 +15,7 @@ import {
   THead,
   TR,
   Table,
-} from '@bahikhata/ui';
+} from '@billwise/ui';
 import {
   ArrowRight,
   FileText,

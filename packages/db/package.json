@@ -1,5 +1,5 @@
 {
-  "name": "@bahikhata/db",
+  "name": "@billwise/db",
   "version": "0.0.0",
   "private": true,
   "type": "module",
@@ -19,7 +19,7 @@
     "test:integration": "vitest run --config vitest.integration.config.ts"
   },
   "dependencies": {
-    "@bahikhata/shared": "workspace:*",
+    "@billwise/shared": "workspace:*",
     "drizzle-orm": "catalog:",
     "postgres": "catalog:"
   },

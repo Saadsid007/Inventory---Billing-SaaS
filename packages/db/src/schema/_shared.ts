@@ -10,7 +10,7 @@ import { timestamp } from 'drizzle-orm/pg-core';
 
 /**
  * pgEnum wants a mutable non-empty tuple, but the enum arrays in
- * @bahikhata/shared are `readonly` on purpose. This is the one place that
+ * @billwise/shared are `readonly` on purpose. This is the one place that
  * conversion happens, so the shared constants stay the single source of truth
  * for both the TypeScript union and the Postgres type.
  */

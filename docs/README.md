@@ -1,4 +1,4 @@
-# Bahikhata — docs
+# Billwise — docs
 
 The build spec (`../inventory-billing-saas-build-spec.md`) is the source of truth
 for **what** to build. These docs record **what was actually built, and why** —

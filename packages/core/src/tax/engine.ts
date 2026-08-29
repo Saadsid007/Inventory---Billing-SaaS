@@ -1,4 +1,4 @@
-import { TAXABLE_INVOICE_KINDS } from '@bahikhata/shared';
+import { TAXABLE_INVOICE_KINDS } from '@billwise/shared';
 import { D, MONEY_DP, ZERO_MONEY, dec, money, roundToRupee } from '../money';
 import type { InvoiceTaxInput, InvoiceTaxResult, TaxLineInput, TaxLineResult } from './types';
 

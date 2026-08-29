@@ -1,10 +1,10 @@
-import { findCatalogBusiness, findCatalogProduct } from '@bahikhata/db';
+import { findCatalogBusiness, findCatalogProduct } from '@billwise/db';
 import {
   enquiryMessage,
   shortIdFromProductSlug,
   whatsappEnquiryUrl,
-} from '@bahikhata/shared';
-import { StockBadge } from '@bahikhata/ui';
+} from '@billwise/shared';
+import { StockBadge } from '@billwise/ui';
 import type { Metadata } from 'next';
 import { ArrowLeft, MessageCircle, Phone } from 'lucide-react';
 import Link from 'next/link';
@@ -39,7 +39,7 @@ export async function generateMetadata({
   const image = product.imageUrls?.[0];
 
   return {
-    // Absolute, not templated: the page belongs to the shop, not to Bahikhata.
+    // Absolute, not templated: the page belongs to the shop, not to Billwise.
     title: { absolute: `${product.name} — ${business.name}` },
     description,
     openGraph: {

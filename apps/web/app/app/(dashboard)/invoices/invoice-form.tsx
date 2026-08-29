@@ -1,13 +1,13 @@
 'use client';
 
-import { buildInvoice, todayInIndia } from '@bahikhata/core';
+import { buildInvoice, todayInIndia } from '@billwise/core';
 import {
   GST_STATES,
   INVOICE_KIND_LABELS,
   INVOICE_KINDS,
   invoiceWarnings,
   type InvoiceKind,
-} from '@bahikhata/shared';
+} from '@billwise/shared';
 import {
   Alert,
   Button,
@@ -18,7 +18,7 @@ import {
   Select,
   Textarea,
   WarningList,
-} from '@bahikhata/ui';
+} from '@billwise/ui';
 import { Info, Plus, Trash2 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import * as React from 'react';

@@ -124,7 +124,7 @@ export function AppShell({
         <span className="grid size-7 shrink-0 place-items-center rounded-lg bg-sidebar-primary text-[0.8rem] font-bold text-sidebar-primary-foreground shadow-xs">
           B
         </span>
-        <span className="text-[0.95rem] font-semibold tracking-tight">Bahikhata</span>
+        <span className="text-[0.95rem] font-semibold tracking-tight">Billwise</span>
       </div>
 
       <div className="p-3">

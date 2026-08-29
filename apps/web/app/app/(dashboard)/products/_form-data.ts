@@ -1,5 +1,5 @@
-import { listCategories, listCustomFieldDefs, listTaxRates, listUnits } from '@bahikhata/db';
-import type { TenantCtx } from '@bahikhata/shared';
+import { listCategories, listCustomFieldDefs, listTaxRates, listUnits } from '@billwise/db';
+import type { TenantCtx } from '@billwise/shared';
 import type { CustomFieldDefView, FormOption } from './product-form';
 
 /**

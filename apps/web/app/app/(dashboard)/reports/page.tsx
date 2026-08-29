@@ -3,8 +3,8 @@ import {
   getStockSummary,
   getTaxSummary,
   listPartyBalances,
-} from '@bahikhata/db';
-import { todayInIndia } from '@bahikhata/core';
+} from '@billwise/db';
+import { todayInIndia } from '@billwise/core';
 import {
   Badge,
   EmptyState,
@@ -18,7 +18,7 @@ import {
   THead,
   TR,
   Table,
-} from '@bahikhata/ui';
+} from '@billwise/ui';
 import { CheckCircle2, FileText, IndianRupee, Package, Receipt, SearchX } from 'lucide-react';
 import type { Metadata } from 'next';
 import { requireBusiness } from '@/lib/auth/require-business';

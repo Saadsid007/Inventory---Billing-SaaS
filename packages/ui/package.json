@@ -1,5 +1,5 @@
 {
-  "name": "@bahikhata/ui",
+  "name": "@billwise/ui",
   "version": "0.0.0",
   "private": true,
   "type": "module",
@@ -15,7 +15,7 @@
     "test": "vitest run --passWithNoTests"
   },
   "dependencies": {
-    "@bahikhata/shared": "workspace:*",
+    "@billwise/shared": "workspace:*",
     "class-variance-authority": "catalog:",
     "clsx": "catalog:",
     "lucide-react": "catalog:",

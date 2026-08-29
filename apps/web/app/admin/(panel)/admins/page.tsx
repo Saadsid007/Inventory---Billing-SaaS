@@ -1,4 +1,4 @@
-import { listAdmins } from '@bahikhata/db';
+import { listAdmins } from '@billwise/db';
 import {
   Card,
   PageBody,
@@ -10,7 +10,7 @@ import {
   THead,
   TR,
   Table,
-} from '@bahikhata/ui';
+} from '@billwise/ui';
 import type { Metadata } from 'next';
 import { requireSuperAdmin } from '@/lib/auth/require-business';
 import { GrantAdminForm, RevokeAdminButton } from './admin-accounts';
@@ -31,7 +31,7 @@ export default async function AdminsPage() {
     <PageBody className="mx-auto max-w-4xl p-6 sm:p-8">
       <PageHeader
         title="Admins"
-        description="Admins can see every business on Bahikhata and can suspend one. Keep this list short."
+        description="Admins can see every business on Billwise and can suspend one. Keep this list short."
       />
 
       <Section title="Current admins">
@@ -76,7 +76,7 @@ export default async function AdminsPage() {
         <div>
           <h2 className="text-base font-semibold">Add an admin</h2>
           <p className="mt-1 text-sm leading-relaxed text-muted-foreground">
-            They need a Bahikhata account first — ask them to sign up, then enter the same email
+            They need a Billwise account first — ask them to sign up, then enter the same email
             here. Nothing is emailed out; they simply get the Admin panel link the next time they
             log in.
           </p>

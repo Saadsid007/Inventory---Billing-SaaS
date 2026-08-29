@@ -1,5 +1,5 @@
-import { MONTHLY_PRICE_INR, TRIAL_DAYS } from '@bahikhata/shared';
-import { Badge } from '@bahikhata/ui';
+import { MONTHLY_PRICE_INR, TRIAL_DAYS } from '@billwise/shared';
+import { Badge } from '@billwise/ui';
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { RegisterForm } from './register-form';

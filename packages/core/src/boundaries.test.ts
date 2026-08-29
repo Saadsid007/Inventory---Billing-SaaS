@@ -26,13 +26,13 @@ async function lint(code: string): Promise<string[]> {
 
 /** Each entry: what a careless import would look like, and why it's banned. */
 const forbidden: ReadonlyArray<[label: string, code: string]> = [
-  ['the database package', `import { x } from '@bahikhata/db';\nexport const a = x;`],
+  ['the database package', `import { x } from '@billwise/db';\nexport const a = x;`],
   ['an ORM', `import { eq } from 'drizzle-orm';\nexport const a = eq;`],
   ['a database driver', `import postgres from 'postgres';\nexport const a = postgres;`],
   ['Next.js', `import { NextResponse } from 'next/server';\nexport const a = NextResponse;`],
   ['React', `import { useState } from 'react';\nexport const a = useState;`],
-  ['the design system', `import { cn } from '@bahikhata/ui';\nexport const a = cn;`],
-  ['environment config', `import { serverEnv } from '@bahikhata/shared/env';\nexport const a = serverEnv;`],
+  ['the design system', `import { cn } from '@billwise/ui';\nexport const a = cn;`],
+  ['environment config', `import { serverEnv } from '@billwise/shared/env';\nexport const a = serverEnv;`],
   ['the filesystem', `import { readFileSync } from 'node:fs';\nexport const a = readFileSync;`],
 ];
 
@@ -55,7 +55,7 @@ describe('core stays pure', () => {
     'still allows the one dependency core is meant to have',
     async () => {
       const messages = await lint(
-        `import { GST_STATES } from '@bahikhata/shared';\nimport Decimal from 'decimal.js';\nexport const a = [GST_STATES.length, Decimal.ROUND_HALF_UP];`,
+        `import { GST_STATES } from '@billwise/shared';\nimport Decimal from 'decimal.js';\nexport const a = [GST_STATES.length, Decimal.ROUND_HALF_UP];`,
       );
       expect(messages).toEqual([]);
     },

@@ -1,5 +1,5 @@
 import 'server-only';
-import { requireStorageEnv } from '@bahikhata/shared/env';
+import { requireStorageEnv } from '@billwise/shared/env';
 
 /**
  * Supabase Storage. Build spec §2 storage rules.

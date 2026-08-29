@@ -1,7 +1,7 @@
 /**
  * A local copy of core's number formatter, for integration tests only.
  *
- * `packages/db` may not depend on `@bahikhata/core` (spec §2.5), and production
+ * `packages/db` may not depend on `@billwise/core` (spec §2.5), and production
  * code injects `formatInvoiceNumber` as a callback. Tests need the same shape
  * without reaching across the boundary — the real formatter's own behaviour is
  * covered by `packages/core/src/numbering/numbering.test.ts`.

@@ -1,7 +1,7 @@
 'use server';
 
-import { createParty, deactivateParty, getParty, updateParty } from '@bahikhata/db';
-import { partySchema } from '@bahikhata/shared';
+import { createParty, deactivateParty, getParty, updateParty } from '@billwise/db';
+import { partySchema } from '@billwise/shared';
 import { revalidatePath } from 'next/cache';
 import { requireBusiness } from '@/lib/auth/require-business';
 

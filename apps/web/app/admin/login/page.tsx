@@ -1,5 +1,5 @@
-import { findUserById } from '@bahikhata/db';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@bahikhata/ui';
+import { findUserById } from '@billwise/db';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@billwise/ui';
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
@@ -55,7 +55,7 @@ export default async function AdminLoginPage() {
         <Card>
           <CardHeader>
             <CardTitle>Admin login</CardTitle>
-            <CardDescription>Log in with your Bahikhata account.</CardDescription>
+            <CardDescription>Log in with your Billwise account.</CardDescription>
           </CardHeader>
           <CardContent>
             <LoginForm next="/admin" />

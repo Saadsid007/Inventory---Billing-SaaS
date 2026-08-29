@@ -6,7 +6,7 @@ import { cn } from '../lib/cn';
 
 export type Theme = 'light' | 'dark' | 'system';
 
-const STORAGE_KEY = 'bahikhata-theme';
+const STORAGE_KEY = 'billwise-theme';
 
 /**
  * Runs before first paint to apply the stored theme.

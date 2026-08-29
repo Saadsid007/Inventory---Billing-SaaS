@@ -1,4 +1,4 @@
-import type { InvoiceKind, TaxMode } from '@bahikhata/shared';
+import type { InvoiceKind, TaxMode } from '@billwise/shared';
 
 /**
  * Tax engine contracts. Build spec §5.3.

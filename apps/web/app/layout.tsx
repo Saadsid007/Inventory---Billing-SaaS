@@ -1,11 +1,11 @@
-import { ThemeScript } from '@bahikhata/ui';
+import { ThemeScript } from '@billwise/ui';
 import type { Metadata, Viewport } from 'next';
 import './globals.css';
 
 export const metadata: Metadata = {
   title: {
-    default: 'Bahikhata — Billing, stock and khata in one place',
-    template: '%s · Bahikhata',
+    default: 'Billwise — Billing, stock and khata in one place',
+    template: '%s · Billwise',
   },
   description:
     'Create GST and non-GST bills, track stock, keep tabs on who owes you, and put your products online — all in one app built for Indian small businesses.',

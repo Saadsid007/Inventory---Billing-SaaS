@@ -1,10 +1,10 @@
 'use client';
 
-import { Button } from '@bahikhata/ui';
+import { Button } from '@billwise/ui';
 import { useRouter } from 'next/navigation';
 import * as React from 'react';
 
-const STORAGE_KEY = 'bahikhata-print-format';
+const STORAGE_KEY = 'billwise-print-format';
 
 /**
  * Format switcher. Screen only — `.no-print` keeps it off the paper.

@@ -1,6 +1,6 @@
 'use client';
 
-import { Button, Card, Checkbox, Field, FormError, Input, Select, Textarea } from '@bahikhata/ui';
+import { Button, Card, Checkbox, Field, FormError, Input, Select, Textarea } from '@billwise/ui';
 import { useRouter } from 'next/navigation';
 import * as React from 'react';
 import { saveSettingsAction } from './actions';

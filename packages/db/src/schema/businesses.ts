@@ -1,4 +1,4 @@
-import { BUSINESS_STATUSES, MEMBER_ROLES, TAX_MODES } from '@bahikhata/shared';
+import { BUSINESS_STATUSES, MEMBER_ROLES, TAX_MODES } from '@billwise/shared';
 import { relations } from 'drizzle-orm';
 import { boolean, index, pgEnum, pgTable, text, timestamp, unique, uuid } from 'drizzle-orm/pg-core';
 import { createdAt, enumValues } from './_shared';
@@ -47,7 +47,7 @@ export const businesses = pgTable(
      * the future, or while `status = 'active'` (paid).
      *
      * Expiry is NOT a stored status: it is derived from `trial_ends_at` by
-     * `evaluateAccess()` in @bahikhata/shared, so no scheduled job has to run
+     * `evaluateAccess()` in @billwise/shared, so no scheduled job has to run
      * for the answer to be correct.
      */
     status: businessStatusEnum().notNull().default('trial'),

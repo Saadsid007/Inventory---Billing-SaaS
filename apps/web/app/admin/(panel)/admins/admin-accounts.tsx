@@ -1,6 +1,6 @@
 'use client';
 
-import { Button, Field, FormError, Input } from '@bahikhata/ui';
+import { Button, Field, FormError, Input } from '@billwise/ui';
 import { useRouter } from 'next/navigation';
 import * as React from 'react';
 import { grantAdminAction, revokeAdminAction } from '../../actions';

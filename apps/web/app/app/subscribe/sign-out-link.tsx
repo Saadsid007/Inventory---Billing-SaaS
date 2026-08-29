@@ -1,6 +1,6 @@
 'use client';
 
-import { Button } from '@bahikhata/ui';
+import { Button } from '@billwise/ui';
 import * as React from 'react';
 import { signOutAction } from '@/app/(auth)/actions';
 

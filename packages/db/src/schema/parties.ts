@@ -1,4 +1,4 @@
-import { PARTY_TYPES } from '@bahikhata/shared';
+import { PARTY_TYPES } from '@billwise/shared';
 import { relations, sql } from 'drizzle-orm';
 import { boolean, index, jsonb, numeric, pgTable, text, uuid } from 'drizzle-orm/pg-core';
 import { createdAt, enumValues } from './_shared';

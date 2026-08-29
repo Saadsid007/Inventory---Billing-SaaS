@@ -1,6 +1,6 @@
 'use client';
 
-import { Badge, Button, Card, Checkbox, Field, FormError, Input, Select } from '@bahikhata/ui';
+import { Badge, Button, Card, Checkbox, Field, FormError, Input, Select } from '@billwise/ui';
 import { Trash2 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import * as React from 'react';

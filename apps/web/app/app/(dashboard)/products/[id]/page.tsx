@@ -1,5 +1,5 @@
-import { getProduct, listMovements } from '@bahikhata/db';
-import { PageBody, PageHeader, Section, TBody, TD, TH, THead, TR, Table } from '@bahikhata/ui';
+import { getProduct, listMovements } from '@billwise/db';
+import { PageBody, PageHeader, Section, TBody, TD, TH, THead, TR, Table } from '@billwise/ui';
 import { ArrowLeft } from 'lucide-react';
 import type { Metadata } from 'next';
 import Link from 'next/link';

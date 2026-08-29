@@ -6,8 +6,8 @@ import {
   markBusinessPaid,
   revokeAdmin,
   setBusinessSuspended,
-} from '@bahikhata/db';
-import { emailSchema } from '@bahikhata/shared';
+} from '@billwise/db';
+import { emailSchema } from '@billwise/shared';
 import { revalidatePath } from 'next/cache';
 import { requireSuperAdmin } from '@/lib/auth/require-business';
 

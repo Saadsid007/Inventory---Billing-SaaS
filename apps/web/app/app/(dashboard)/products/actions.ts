@@ -5,8 +5,8 @@ import {
   deactivateProduct,
   getProduct,
   updateProduct,
-} from '@bahikhata/db';
-import { productSchema } from '@bahikhata/shared';
+} from '@billwise/db';
+import { productSchema } from '@billwise/shared';
 import { revalidatePath } from 'next/cache';
 import { requireBusiness } from '@/lib/auth/require-business';
 

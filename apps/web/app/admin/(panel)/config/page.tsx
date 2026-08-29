@@ -1,4 +1,4 @@
-import { Card, EmptyState, PageBody, PageHeader, Section } from '@bahikhata/ui';
+import { Card, EmptyState, PageBody, PageHeader, Section } from '@billwise/ui';
 import { Megaphone, Plus, SlidersHorizontal, Tag, Wrench } from 'lucide-react';
 import type { Metadata } from 'next';
 import { requireSuperAdmin } from '@/lib/auth/require-business';
@@ -48,7 +48,7 @@ export default async function AdminConfigPage() {
     <PageBody className="mx-auto max-w-4xl p-6 sm:p-8">
       <PageHeader
         title="Site settings"
-        description="Changes that apply to the whole of Bahikhata, not to one business."
+        description="Changes that apply to the whole of Billwise, not to one business."
       />
 
       <EmptyState

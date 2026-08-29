@@ -1,5 +1,5 @@
-import { findCatalogBusiness } from '@bahikhata/db';
-import { ThemeToggle } from '@bahikhata/ui';
+import { findCatalogBusiness } from '@billwise/db';
+import { ThemeToggle } from '@billwise/ui';
 import type { Metadata } from 'next';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -8,7 +8,7 @@ import { notFound } from 'next/navigation';
 /**
  * Public catalog shell. Build spec Phase 1f.
  *
- * Deliberately outside the app shell: no sidebar, no session, no "Bahikhata"
+ * Deliberately outside the app shell: no sidebar, no session, no "Billwise"
  * branding above the fold. A customer scanning a QR code at a counter should
  * see the SHOP, not the software the shop happens to use.
  */
@@ -28,7 +28,7 @@ export async function generateMetadata({
     : `Browse products from ${business.name}.`;
 
   return {
-    // Overrides the root layout's "%s · Bahikhata" template — this page belongs
+    // Overrides the root layout's "%s · Billwise" template — this page belongs
     // to the shop, not to us.
     title: { absolute: `${business.name} — Product catalog` },
     description,
@@ -99,7 +99,7 @@ export default async function CatalogLayout({
         <p className="text-center text-xs text-muted-foreground">
           {business.name} · Catalog powered by{' '}
           <Link href="/" className="font-medium text-primary underline-offset-4 hover:underline">
-            Bahikhata
+            Billwise
           </Link>
         </p>
       </footer>

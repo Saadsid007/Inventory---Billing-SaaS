@@ -1,5 +1,5 @@
 {
-  "name": "bahikhata",
+  "name": "billwise",
   "version": "0.0.0",
   "private": true,
   "description": "Multi-tenant inventory + billing SaaS for Indian small businesses, with a public product catalog per business.",
@@ -15,12 +15,12 @@
     "test": "turbo run test",
     "format": "prettier --write \"**/*.{ts,tsx,mjs,json,md,css,yaml,yml}\"",
     "format:check": "prettier --check \"**/*.{ts,tsx,mjs,json,md,css,yaml,yml}\"",
-    "db:generate": "pnpm --filter @bahikhata/db run db:generate",
-    "db:migrate": "pnpm --filter @bahikhata/db run db:migrate",
-    "db:studio": "pnpm --filter @bahikhata/db run db:studio",
+    "db:generate": "pnpm --filter @billwise/db run db:generate",
+    "db:migrate": "pnpm --filter @billwise/db run db:migrate",
+    "db:studio": "pnpm --filter @billwise/db run db:studio",
     "clean": "turbo run clean",
-    "db:seed": "pnpm --filter @bahikhata/db run db:seed",
-    "test:integration": "pnpm --filter @bahikhata/db run test:integration"
+    "db:seed": "pnpm --filter @billwise/db run db:seed",
+    "test:integration": "pnpm --filter @billwise/db run test:integration"
   },
   "devDependencies": {
     "@eslint/js": "catalog:",

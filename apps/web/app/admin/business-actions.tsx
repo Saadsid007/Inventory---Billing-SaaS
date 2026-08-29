@@ -1,6 +1,6 @@
 'use client';
 
-import { Button } from '@bahikhata/ui';
+import { Button } from '@billwise/ui';
 import { useRouter } from 'next/navigation';
 import * as React from 'react';
 import { extendTrialAction, markPaidAction, setSuspendedAction } from './actions';

@@ -1,5 +1,5 @@
 @import 'tailwindcss';
-@import '@bahikhata/ui/styles/theme.css';
+@import '@billwise/ui/styles/theme.css';
 
 /* The design system lives outside this app's directory, so Tailwind needs to be
    told to scan it for class names. */

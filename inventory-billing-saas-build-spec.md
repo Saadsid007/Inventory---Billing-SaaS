@@ -1,6 +1,6 @@
 # Inventory & Billing SaaS — Build Spec
 
-> **Product name: Bahikhata.** Package scope is `@bahikhata/*`. Repo root is this directory.
+> **Product name: Billwise.** Package scope is `@billwise/*`. Repo root is this directory.
 
 > Multi-tenant inventory + billing SaaS for Indian small businesses, with a public product catalog per business.
 > This document is the single source of truth for the build. Follow phases in order. Do not skip ahead.
@@ -71,7 +71,7 @@ Read this section before writing any code.
 ### Layout
 
 ```
-bahikhata/
+billwise/
 ├── package.json                # workspace root, scripts only
 ├── pnpm-workspace.yaml
 ├── turbo.json
@@ -164,7 +164,7 @@ packages:
   - "packages/*"
 ```
 
-Internal packages are referenced as `"@bahikhata/core": "workspace:*"`. Use `tsup` to build packages, or keep them source-only with `transpilePackages: ['@bahikhata/ui', '@bahikhata/core', '@bahikhata/shared', '@bahikhata/db']` in `next.config.ts` (simpler — prefer this for Phase 0–1).
+Internal packages are referenced as `"@billwise/core": "workspace:*"`. Use `tsup` to build packages, or keep them source-only with `transpilePackages: ['@billwise/ui', '@billwise/core', '@billwise/shared', '@billwise/db']` in `next.config.ts` (simpler — prefer this for Phase 0–1).
 
 `turbo.json` tasks: `build`, `dev`, `lint`, `typecheck`, `test`, `db:generate`, `db:migrate`.
 
@@ -668,7 +668,7 @@ Use the separate scaffold prompt for this. Deliverable is an empty but wired-up 
 - [x] `apps/web` (Next.js App Router, Tailwind, shadcn/ui), `apps/api` (empty Hono stub)
 - [x] `packages/db`, `packages/core`, `packages/shared`, `packages/ui` with working cross-imports
 - [x] `packages/shared/src/env.ts` — Zod-validated env, fails on boot
-- [x] ESLint rule (`no-restricted-imports`) blocking `@bahikhata/db` and framework imports inside `packages/core`
+- [x] ESLint rule (`no-restricted-imports`) blocking `@billwise/db` and framework imports inside `packages/core`
 - [x] Vitest configured at root, running across packages via Turbo
 - [x] Root scripts: `dev`, `build`, `typecheck`, `test`, `db:generate`, `db:migrate`, `db:studio`
 - [x] One smoke test per package so CI has something to run

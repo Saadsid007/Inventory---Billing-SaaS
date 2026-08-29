@@ -31,6 +31,6 @@ export async function verifyPassword(plain: string, hash: string): Promise<boole
  * compare against this instead of returning early.
  */
 export const DUMMY_PASSWORD_HASH: string = bcrypt.hashSync(
-  'bahikhata::timing-equaliser::not-a-real-password',
+  'billwise::timing-equaliser::not-a-real-password',
   ROUNDS,
 );

@@ -10,7 +10,7 @@ loadEnv({ path: path.join(repoRoot, '.env'), quiet: true });
 const nextConfig: NextConfig = {
   // Workspace packages ship as TypeScript source during Phase 0–1 (spec §2.5),
   // so Next compiles them itself rather than each package carrying a build step.
-  transpilePackages: ['@bahikhata/ui', '@bahikhata/core', '@bahikhata/shared', '@bahikhata/db'],
+  transpilePackages: ['@billwise/ui', '@billwise/core', '@billwise/shared', '@billwise/db'],
 
   // Without this, Next infers the wrong root in a pnpm workspace and traces the
   // wrong files into the standalone output.

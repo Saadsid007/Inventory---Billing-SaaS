@@ -4,7 +4,7 @@ import { Hono } from 'hono';
  * Standalone HTTP server — Option B in build spec §2.5. INTENTIONALLY DORMANT.
  *
  * The project runs Option A: apps/web owns every request, calling
- * @bahikhata/core directly through server actions and route handlers. One
+ * @billwise/core directly through server actions and route handlers. One
  * deploy, one auth setup, no CORS.
  *
  * This stub exists because the split that actually matters — business logic out
@@ -17,6 +17,6 @@ import { Hono } from 'hono';
  */
 const app = new Hono();
 
-app.get('/health', (c) => c.json({ ok: true, service: 'bahikhata-api' }));
+app.get('/health', (c) => c.json({ ok: true, service: 'billwise-api' }));
 
 export default app;

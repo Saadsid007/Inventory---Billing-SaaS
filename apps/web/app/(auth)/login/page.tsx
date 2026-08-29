@@ -1,4 +1,4 @@
-import { TRIAL_DAYS } from '@bahikhata/shared';
+import { TRIAL_DAYS } from '@billwise/shared';
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { LoginForm } from './login-form';

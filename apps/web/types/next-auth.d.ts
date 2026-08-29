@@ -1,8 +1,8 @@
-import type { MemberRole } from '@bahikhata/shared';
+import type { MemberRole } from '@billwise/shared';
 import type { DefaultSession } from 'next-auth';
 
 /**
- * What a Bahikhata session carries.
+ * What a Billwise session carries.
  *
  * Note what is deliberately ABSENT: the business's approval status. Status
  * changes — a super admin approving or suspending a business — must take effect

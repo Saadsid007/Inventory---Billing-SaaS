@@ -110,13 +110,13 @@ importers:
 
   apps/api:
     dependencies:
-      '@bahikhata/core':
+      '@billwise/core':
         specifier: workspace:*
         version: link:../../packages/core
-      '@bahikhata/db':
+      '@billwise/db':
         specifier: workspace:*
         version: link:../../packages/db
-      '@bahikhata/shared':
+      '@billwise/shared':
         specifier: workspace:*
         version: link:../../packages/shared
       hono:
@@ -147,16 +147,16 @@ importers:
 
   apps/web:
     dependencies:
-      '@bahikhata/core':
+      '@billwise/core':
         specifier: workspace:*
         version: link:../../packages/core
-      '@bahikhata/db':
+      '@billwise/db':
         specifier: workspace:*
         version: link:../../packages/db
-      '@bahikhata/shared':
+      '@billwise/shared':
         specifier: workspace:*
         version: link:../../packages/shared
-      '@bahikhata/ui':
+      '@billwise/ui':
         specifier: workspace:*
         version: link:../../packages/ui
       bcryptjs:
@@ -232,7 +232,7 @@ importers:
 
   packages/core:
     dependencies:
-      '@bahikhata/shared':
+      '@billwise/shared':
         specifier: workspace:*
         version: link:../shared
       decimal.js:
@@ -263,7 +263,7 @@ importers:
 
   packages/db:
     dependencies:
-      '@bahikhata/shared':
+      '@billwise/shared':
         specifier: workspace:*
         version: link:../shared
       drizzle-orm:
@@ -334,7 +334,7 @@ importers:
 
   packages/ui:
     dependencies:
-      '@bahikhata/shared':
+      '@billwise/shared':
         specifier: workspace:*
         version: link:../shared
       class-variance-authority:

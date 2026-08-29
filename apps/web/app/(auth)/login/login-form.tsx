@@ -1,6 +1,6 @@
 'use client';
 
-import { Button, Field, FormError, Input } from '@bahikhata/ui';
+import { Button, Field, FormError, Input } from '@billwise/ui';
 import { Eye, EyeOff, LogIn } from 'lucide-react';
 import * as React from 'react';
 import { loginAction } from '../actions';

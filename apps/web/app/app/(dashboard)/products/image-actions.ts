@@ -1,7 +1,7 @@
 'use server';
 
-import { getProduct, updateProduct } from '@bahikhata/db';
-import { MAX_IMAGE_BYTES, MAX_IMAGES_PER_PRODUCT } from '@bahikhata/shared';
+import { getProduct, updateProduct } from '@billwise/db';
+import { MAX_IMAGE_BYTES, MAX_IMAGES_PER_PRODUCT } from '@billwise/shared';
 import { revalidatePath } from 'next/cache';
 import { requireBusiness } from '@/lib/auth/require-business';
 import { isWebp } from '@/lib/storage/image-format';

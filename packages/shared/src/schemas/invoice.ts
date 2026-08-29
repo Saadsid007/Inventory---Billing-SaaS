@@ -7,7 +7,7 @@ import { dateStringSchema, moneySchema, quantitySchema, stateCodeSchema } from '
  *
  * Only what a user types is validated here. Every computed figure — taxable
  * value, tax split, totals — is produced by the tax engine in
- * `@bahikhata/core`, never accepted from the client. A browser that posts its
+ * `@billwise/core`, never accepted from the client. A browser that posts its
  * own `grandTotal` must not be able to decide what a customer owes.
  */
 

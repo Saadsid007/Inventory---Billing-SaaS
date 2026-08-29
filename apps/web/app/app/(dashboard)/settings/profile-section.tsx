@@ -1,7 +1,7 @@
 'use client';
 
-import { GST_STATES } from '@bahikhata/shared';
-import { Button, Card, Field, FormError, Input, Select } from '@bahikhata/ui';
+import { GST_STATES } from '@billwise/shared';
+import { Button, Card, Field, FormError, Input, Select } from '@billwise/ui';
 import { useRouter } from 'next/navigation';
 import * as React from 'react';
 import { saveProfileAction } from './actions';

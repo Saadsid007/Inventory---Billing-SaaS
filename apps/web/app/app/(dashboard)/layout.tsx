@@ -1,4 +1,4 @@
-import { MONTHLY_PRICE_INR, trialDaysRemaining } from '@bahikhata/shared';
+import { MONTHLY_PRICE_INR, trialDaysRemaining } from '@billwise/shared';
 import { Clock } from 'lucide-react';
 import Link from 'next/link';
 import { AppFrame } from '@/components/app-frame';

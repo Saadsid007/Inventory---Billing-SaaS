@@ -1,5 +1,5 @@
 /**
- * @bahikhata/core — pure business logic.
+ * @billwise/core — pure business logic.
  *
  * Zero framework imports, zero database imports. Everything here takes plain
  * data in and returns plain data out, which is what lets the tax engine and the

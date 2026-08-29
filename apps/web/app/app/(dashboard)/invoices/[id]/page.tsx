@@ -1,6 +1,6 @@
-import { getBusiness, getInvoice } from '@bahikhata/db';
-import { INVOICE_KIND_LABELS, getGstStateName } from '@bahikhata/shared';
-import { Alert, Badge, Card, PageBody, PageHeader, TBody, TD, TH, THead, TR, Table } from '@bahikhata/ui';
+import { getBusiness, getInvoice } from '@billwise/db';
+import { INVOICE_KIND_LABELS, getGstStateName } from '@billwise/shared';
+import { Alert, Badge, Card, PageBody, PageHeader, TBody, TD, TH, THead, TR, Table } from '@billwise/ui';
 import { ArrowLeft, Ban } from 'lucide-react';
 import type { Metadata } from 'next';
 import Link from 'next/link';

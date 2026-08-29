@@ -1,7 +1,7 @@
 'use client';
 
-import { MAX_IMAGE_EDGE, WEBP_QUALITY } from '@bahikhata/shared';
-import { Button, Card, FormError } from '@bahikhata/ui';
+import { MAX_IMAGE_EDGE, WEBP_QUALITY } from '@billwise/shared';
+import { Button, Card, FormError } from '@billwise/ui';
 import { ImagePlus, Trash2 } from 'lucide-react';
 import Image from 'next/image';
 import * as React from 'react';

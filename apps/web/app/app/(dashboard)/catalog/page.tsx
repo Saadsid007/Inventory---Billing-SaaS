@@ -1,6 +1,6 @@
-import { getBusiness, getSettings, listProducts } from '@bahikhata/db';
-import { catalogUrl } from '@bahikhata/shared';
-import { Alert, Badge, PageBody, PageHeader, StatCard } from '@bahikhata/ui';
+import { getBusiness, getSettings, listProducts } from '@billwise/db';
+import { catalogUrl } from '@billwise/shared';
+import { Alert, Badge, PageBody, PageHeader, StatCard } from '@billwise/ui';
 import { Camera, EyeOff, Image as ImageIcon, TriangleAlert } from 'lucide-react';
 import type { Metadata } from 'next';
 import Link from 'next/link';

@@ -9,7 +9,7 @@ import {
   deleteUnit,
   updateBusinessProfile,
   updateSettings,
-} from '@bahikhata/db';
+} from '@billwise/db';
 import {
   businessProfileSchema,
   businessSettingsSchema,
@@ -17,7 +17,7 @@ import {
   customFieldSchema,
   slugify,
   unitSchema,
-} from '@bahikhata/shared';
+} from '@billwise/shared';
 import { revalidatePath } from 'next/cache';
 import { requireBusiness } from '@/lib/auth/require-business';
 

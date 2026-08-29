@@ -1,5 +1,5 @@
 {
-  "name": "@bahikhata/api",
+  "name": "@billwise/api",
   "version": "0.0.0",
   "private": true,
   "type": "module",
@@ -9,9 +9,9 @@
     "test": "vitest run --passWithNoTests"
   },
   "dependencies": {
-    "@bahikhata/core": "workspace:*",
-    "@bahikhata/db": "workspace:*",
-    "@bahikhata/shared": "workspace:*",
+    "@billwise/core": "workspace:*",
+    "@billwise/db": "workspace:*",
+    "@billwise/shared": "workspace:*",
     "hono": "catalog:"
   },
   "devDependencies": {

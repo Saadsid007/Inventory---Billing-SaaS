@@ -1,5 +1,5 @@
-import { MONTHLY_PRICE_INR, TRIAL_DAYS } from '@bahikhata/shared';
-import { Badge, Card, CardContent, CardHeader, CardTitle, ThemeToggle } from '@bahikhata/ui';
+import { MONTHLY_PRICE_INR, TRIAL_DAYS } from '@billwise/shared';
+import { Badge, Card, CardContent, CardHeader, CardTitle, ThemeToggle } from '@billwise/ui';
 import { Check, MessageCircle } from 'lucide-react';
 import type { Metadata } from 'next';
 import Link from 'next/link';
@@ -52,7 +52,7 @@ export default async function SubscribePage() {
           <span className="grid size-8 place-items-center rounded-lg bg-primary text-sm font-bold text-primary-foreground">
             B
           </span>
-          <span className="text-lg font-semibold tracking-tight">Bahikhata</span>
+          <span className="text-lg font-semibold tracking-tight">Billwise</span>
         </Link>
         <ThemeToggle />
       </header>

@@ -5,7 +5,7 @@ import {
   type PaymentMethod,
   type TaxMode,
   type TenantCtx,
-} from '@bahikhata/shared';
+} from '@billwise/shared';
 import { and, desc, eq, sql } from 'drizzle-orm';
 import { getDb, type Executor } from '../client';
 import {
@@ -22,9 +22,9 @@ import { recordMovement } from './stock';
  * Invoices. Build spec §4, §5.1, §5.4, Phase 1d.
  *
  * This file owns the transactions. The *decisions* — what tax is due, what the
- * number looks like — are made by pure functions in `@bahikhata/core` and
+ * number looks like — are made by pure functions in `@billwise/core` and
  * arrive here already computed, because `packages/db` may only depend on
- * `@bahikhata/shared` (spec §2.5).
+ * `@billwise/shared` (spec §2.5).
  *
  * Where a formatted number is needed, the formatter is injected as a callback
  * rather than imported. Same reason.
@@ -313,8 +313,8 @@ export type IssueResult = { invoiceNo: string; number: number };
  * that was never issued is a permanent gap in a GST series.
  *
  * `formatNumber` is injected rather than imported so this package keeps its
- * single dependency on `@bahikhata/shared`. Pass `formatInvoiceNumber` from
- * `@bahikhata/core`.
+ * single dependency on `@billwise/shared`. Pass `formatInvoiceNumber` from
+ * `@billwise/core`.
  */
 export async function issueInvoice(
   ctx: TenantCtx,

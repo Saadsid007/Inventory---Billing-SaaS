@@ -4,8 +4,8 @@ import {
   listCategories,
   listCustomFieldDefs,
   listUnits,
-} from '@bahikhata/db';
-import { PageBody, PageHeader } from '@bahikhata/ui';
+} from '@billwise/db';
+import { PageBody, PageHeader } from '@billwise/ui';
 import type { Metadata } from 'next';
 import { requireBusiness } from '@/lib/auth/require-business';
 import { CategoriesSection } from './categories-section';

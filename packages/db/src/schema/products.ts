@@ -1,4 +1,4 @@
-import { PRODUCT_TYPES, STOCK_REASONS } from '@bahikhata/shared';
+import { PRODUCT_TYPES, STOCK_REASONS } from '@billwise/shared';
 import { relations, sql } from 'drizzle-orm';
 import {
   boolean,

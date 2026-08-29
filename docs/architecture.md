@@ -44,7 +44,7 @@ by `packages/core/src/boundaries.test.ts`.
 ### 2. All SQL lives in `packages/db/src/repositories/`
 
 Apps import repository functions. They never import the database client — it is
-deliberately missing from `@bahikhata/db`'s `exports` map, so it cannot be
+deliberately missing from `@billwise/db`'s `exports` map, so it cannot be
 resolved from outside the package at all.
 
 Schema files describe tables; they never query.

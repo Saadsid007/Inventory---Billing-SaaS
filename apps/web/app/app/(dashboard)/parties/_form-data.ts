@@ -1,5 +1,5 @@
-import { listCustomFieldDefs } from '@bahikhata/db';
-import type { TenantCtx } from '@bahikhata/shared';
+import { listCustomFieldDefs } from '@billwise/db';
+import type { TenantCtx } from '@billwise/shared';
 import type { CustomFieldDefView } from './party-form';
 
 export async function loadPartyFormData(

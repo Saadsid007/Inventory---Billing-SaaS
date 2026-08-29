@@ -1,4 +1,4 @@
-import { getAdminStats, listAllBusinesses } from '@bahikhata/db';
+import { getAdminStats, listAllBusinesses } from '@billwise/db';
 import {
   Badge,
   EmptyState,
@@ -12,7 +12,7 @@ import {
   THead,
   TR,
   Table,
-} from '@bahikhata/ui';
+} from '@billwise/ui';
 import { Activity, Building2, CreditCard, PauseCircle, SearchX, Timer } from 'lucide-react';
 import type { Metadata } from 'next';
 import { requireSuperAdmin } from '@/lib/auth/require-business';

@@ -1,12 +1,12 @@
-import { MONTHLY_PRICE_INR, TRIAL_DAYS } from '@bahikhata/shared';
-import { Badge, Button, Card } from '@bahikhata/ui';
+import { MONTHLY_PRICE_INR, TRIAL_DAYS } from '@billwise/shared';
+import { Badge, Button, Card } from '@billwise/ui';
 import { ArrowRight, Check } from 'lucide-react';
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { MarketingFooter, MarketingHeader } from '@/components/marketing-chrome';
 
 export const metadata: Metadata = {
-  title: { absolute: `Pricing — ₹${MONTHLY_PRICE_INR} a month · Bahikhata` },
+  title: { absolute: `Pricing — ₹${MONTHLY_PRICE_INR} a month · Billwise` },
   description: `One plan, everything included: ₹${MONTHLY_PRICE_INR} per month after ${TRIAL_DAYS} days free. No card required to start.`,
 };
 

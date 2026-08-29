@@ -1,7 +1,7 @@
 'use client';
 
-import { isStandardUqc } from '@bahikhata/shared';
-import { Badge, Button, Card, FormError, Input } from '@bahikhata/ui';
+import { isStandardUqc } from '@billwise/shared';
+import { Badge, Button, Card, FormError, Input } from '@billwise/ui';
 import { Trash2 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import * as React from 'react';

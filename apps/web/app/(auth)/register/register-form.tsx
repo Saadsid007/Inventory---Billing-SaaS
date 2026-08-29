@@ -1,7 +1,7 @@
 'use client';
 
-import { GST_STATES } from '@bahikhata/shared';
-import { Button, Field, FormError, Input, Select } from '@bahikhata/ui';
+import { GST_STATES } from '@billwise/shared';
+import { Button, Field, FormError, Input, Select } from '@billwise/ui';
 import { ArrowRight } from 'lucide-react';
 import * as React from 'react';
 import { registerAction } from '../actions';

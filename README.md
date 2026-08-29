@@ -1,4 +1,4 @@
-# Bahikhata
+# Billwise
 
 Multi-tenant inventory + billing SaaS for Indian small businesses, with a public
 product catalog per business.

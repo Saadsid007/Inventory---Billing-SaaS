@@ -1,4 +1,4 @@
-import { listPartyBalances } from '@bahikhata/db';
+import { listPartyBalances } from '@billwise/db';
 import {
   Badge,
   Button,
@@ -12,7 +12,7 @@ import {
   THead,
   TR,
   Table,
-} from '@bahikhata/ui';
+} from '@billwise/ui';
 import { UserPlus, Users, Wallet } from 'lucide-react';
 import type { Metadata } from 'next';
 import Link from 'next/link';

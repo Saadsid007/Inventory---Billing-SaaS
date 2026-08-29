@@ -11,7 +11,7 @@ export default [
         {
           patterns: [
             {
-              group: ['@bahikhata/db', '@bahikhata/db/*'],
+              group: ['@billwise/db', '@billwise/db/*'],
               message: 'UI components receive data as props. They never query.',
             },
           ],

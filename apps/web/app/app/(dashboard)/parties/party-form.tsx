@@ -1,7 +1,7 @@
 'use client';
 
-import { GST_STATES, partyWarnings } from '@bahikhata/shared';
-import { Button, Card, Field, FormError, Input, Select, WarningList } from '@bahikhata/ui';
+import { GST_STATES, partyWarnings } from '@billwise/shared';
+import { Button, Card, Field, FormError, Input, Select, WarningList } from '@billwise/ui';
 import { useRouter } from 'next/navigation';
 import * as React from 'react';
 import { savePartyAction } from './actions';
@@ -194,7 +194,7 @@ export function PartyForm({
           hint={
             partyId
               ? 'Set when the contact was created. Record a payment to change what they owe.'
-              : 'What they already owed you before you started using Bahikhata. Negative if you owe them.'
+              : 'What they already owed you before you started using Billwise. Negative if you owe them.'
           }
         >
           <Input

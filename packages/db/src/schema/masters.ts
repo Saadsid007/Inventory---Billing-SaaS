@@ -1,4 +1,4 @@
-import { CUSTOM_FIELD_ENTITIES, CUSTOM_FIELD_TYPES } from '@bahikhata/shared';
+import { CUSTOM_FIELD_ENTITIES, CUSTOM_FIELD_TYPES } from '@billwise/shared';
 import { relations } from 'drizzle-orm';
 import {
   boolean,

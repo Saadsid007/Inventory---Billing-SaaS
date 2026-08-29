@@ -1,6 +1,6 @@
 'use client';
 
-import { Button, Card, Input, Select } from '@bahikhata/ui';
+import { Button, Card, Input, Select } from '@billwise/ui';
 import { Search, TriangleAlert, X } from 'lucide-react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import * as React from 'react';

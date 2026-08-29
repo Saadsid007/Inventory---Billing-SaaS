@@ -1,4 +1,4 @@
-import type { TenantCtx } from '@bahikhata/shared';
+import type { TenantCtx } from '@billwise/shared';
 import { sql } from 'drizzle-orm';
 import { getDb, type Executor } from '../client';
 

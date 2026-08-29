@@ -1,7 +1,7 @@
 'use server';
 
-import { EmailAlreadyRegisteredError, registerOwner } from '@bahikhata/db';
-import { loginSchema, registerSchema } from '@bahikhata/shared';
+import { EmailAlreadyRegisteredError, registerOwner } from '@billwise/db';
+import { loginSchema, registerSchema } from '@billwise/shared';
 import { AuthError } from 'next-auth';
 import { signIn, signOut } from '@/auth';
 import { hashPassword } from '@/lib/auth/password';
@@ -10,7 +10,7 @@ import { hashPassword } from '@/lib/auth/password';
  * Auth server actions.
  *
  * Spec §2.5 hard rule 4 applies here as much as to route handlers: validate
- * with a schema from @bahikhata/shared, call into db/core, format a response.
+ * with a schema from @billwise/shared, call into db/core, format a response.
  * No business rules are decided in this file.
  */
 

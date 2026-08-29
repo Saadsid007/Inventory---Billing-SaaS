@@ -1,5 +1,5 @@
-import { findUserForLogin, resolveMembership } from '@bahikhata/db';
-import { loginSchema } from '@bahikhata/shared';
+import { findUserForLogin, resolveMembership } from '@billwise/db';
+import { loginSchema } from '@billwise/shared';
 import NextAuth from 'next-auth';
 import Credentials from 'next-auth/providers/credentials';
 import { authConfig } from './auth.config';

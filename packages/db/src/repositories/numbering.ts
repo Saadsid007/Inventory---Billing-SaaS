@@ -1,4 +1,4 @@
-import type { InvoiceKind, TenantCtx } from '@bahikhata/shared';
+import type { InvoiceKind, TenantCtx } from '@billwise/shared';
 import { sql } from 'drizzle-orm';
 import type { Executor } from '../client';
 
@@ -29,8 +29,8 @@ import type { Executor } from '../client';
  * ## This function does not format the number
  *
  * It returns the raw counter plus the series shape. Turning that into `INV-007`
- * is `formatInvoiceNumber()` in `@bahikhata/core`, because `packages/db` is only
- * allowed to depend on `@bahikhata/shared` (spec §2.5 dependency rules) — and
+ * is `formatInvoiceNumber()` in `@billwise/core`, because `packages/db` is only
+ * allowed to depend on `@billwise/shared` (spec §2.5 dependency rules) — and
  * because string formatting has no business being untestable behind a database.
  *
  * ## Caller's obligation

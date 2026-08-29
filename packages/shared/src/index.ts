@@ -5,4 +5,4 @@ export * from './catalog/index';
 
 // `./env` is intentionally NOT re-exported here. It reads process.env on
 // import, which would drag server-only config into any client bundle that
-// touches this package. Import it explicitly: `@bahikhata/shared/env`.
+// touches this package. Import it explicitly: `@billwise/shared/env`.

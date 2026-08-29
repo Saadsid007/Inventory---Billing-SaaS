@@ -1,5 +1,5 @@
-import { listProducts } from '@bahikhata/db';
-import { Alert, Button, EmptyState, PageBody, PageHeader } from '@bahikhata/ui';
+import { listProducts } from '@billwise/db';
+import { Alert, Button, EmptyState, PageBody, PageHeader } from '@billwise/ui';
 import { Info, Package, Plus } from 'lucide-react';
 import type { Metadata } from 'next';
 import Link from 'next/link';

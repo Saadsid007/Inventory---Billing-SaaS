@@ -64,7 +64,7 @@ Other rules that are easy to undo by accident:
 ## Nav is grouped, not a flat list
 
 Eight flat links all look equally important, so the eye reads all eight every
-time. Grouped into **Billing / Catalogue / Business** (plus **Bahikhata** for
+time. Grouped into **Billing / Catalogue / Business** (plus **Billwise** for
 super admins) the eye skips two thirds of the list. Groups are declared by
 `section` on each `NavItem` and rendered in the order they first appear.
 

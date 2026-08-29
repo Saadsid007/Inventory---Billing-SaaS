@@ -17,7 +17,7 @@ All three demonstrated:
 |---|---|
 | `pnpm dev` | Ready in 1.8s; page rendered in a browser with all cross-package imports resolving at runtime |
 | `pnpm typecheck` | 6/6 packages |
-| core rejects Drizzle | Verified, plus `@bahikhata/db`, `next`, `react`, `@bahikhata/ui`, `shared/env`, `node:fs`, `Math.round` |
+| core rejects Drizzle | Verified, plus `@billwise/db`, `next`, `react`, `@billwise/ui`, `shared/env`, `node:fs`, `Math.round` |
 
 Also green: `pnpm lint` 6/6, `pnpm test` 46 passing, `pnpm build` clean,
 `pnpm db:generate` reads the root `.env`.
@@ -165,7 +165,7 @@ Choices worth not undoing:
 - **Party outstanding is computed in Postgres `numeric`**, not JavaScript.
   Summing money in floats is how a ledger ends up a rupee out.
 - **`issueInvoice` takes `formatNumber` as a callback.** `packages/db` may only
-  depend on `@bahikhata/shared`, so core's formatter is injected rather than
+  depend on `@billwise/shared`, so core's formatter is injected rather than
   imported — the dependency rule stays intact without duplicating logic.
 - **Cancellation reverses the movements that were actually recorded**, not the
   invoice lines. If a line was somehow skipped on issue, un-skipping it now
@@ -357,7 +357,7 @@ cookies, exactly what a customer scanning a QR gets:
 | Shop page | Name, logo, product, price, stock badge, WhatsApp button all in the server HTML |
 | `Store` JSON-LD | Emitted with logo and an `OfferCatalog` of products |
 | `Product` JSON-LD | Emitted with images, category, brand, offer and availability |
-| SEO tags | `<title>` and `og:title` are the SHOP's, not "· Bahikhata"; canonical correct |
+| SEO tags | `<title>` and `og:title` are the SHOP's, not "· Billwise"; canonical correct |
 | WhatsApp | `wa.me/91...` with the message pre-written, product name included |
 | **Leak check** | Exact stock, cost price and GSTIN: **none present in the HTML** |
 | Catalog off | 404. Unknown shop: 404. Bad product slug: 404 |
@@ -439,7 +439,7 @@ is a formula the accountant's spreadsheet will happily execute.
 Verified in the browser end to end: grant an unknown email → "Nobody has signed
 up with that email yet"; grant the same person twice → "already an admin";
 grant a real account → appears in the list immediately; remove → gone. Email is
-trimmed and lower-cased, so `TEST2@Bahikhata.local ` matched `test2@…`. The
+trimmed and lower-cased, so `TEST2@Billwise.local ` matched `test2@…`. The
 test rows were created and deleted directly in SQL; the real business on the
 system was never touched.
 

@@ -1,6 +1,6 @@
 'use client';
 
-import { cn } from '@bahikhata/ui';
+import { cn } from '@billwise/ui';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 
@@ -23,7 +23,7 @@ export function AdminNav({ userName }: { userName: string }) {
   return (
     <header className="border-b">
       <div className="mx-auto flex max-w-6xl flex-wrap items-center gap-x-6 gap-y-2 px-6 py-3">
-        <span className="text-sm font-semibold tracking-tight">Bahikhata admin</span>
+        <span className="text-sm font-semibold tracking-tight">Billwise admin</span>
 
         <nav className="flex items-center gap-1">
           {TABS.map((tab) => {

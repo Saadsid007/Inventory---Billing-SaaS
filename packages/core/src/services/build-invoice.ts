@@ -1,4 +1,4 @@
-import type { InvoiceKind, TaxMode } from '@bahikhata/shared';
+import type { InvoiceKind, TaxMode } from '@billwise/shared';
 import { financialYear } from '../gst/financial-year';
 import { resolvePlaceOfSupply } from '../gst/place-of-supply';
 import { computeInvoice } from '../tax/engine';

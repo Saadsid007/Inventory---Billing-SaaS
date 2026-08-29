@@ -1,11 +1,11 @@
 import 'server-only';
-import { findUserById, getBusinessStatus, resolveMembership } from '@bahikhata/db';
+import { findUserById, getBusinessStatus, resolveMembership } from '@billwise/db';
 import {
   type AccessState,
   type BusinessStatus,
   type TenantCtx,
   evaluateAccess,
-} from '@bahikhata/shared';
+} from '@billwise/shared';
 import { redirect } from 'next/navigation';
 import { cache } from 'react';
 import { auth } from '@/auth';
@@ -62,7 +62,7 @@ export type Membership = {
   status: BusinessStatus;
   trialEndsAt: Date | null;
   createdAt: Date;
-  /** Derived, not stored — see `evaluateAccess` in @bahikhata/shared. */
+  /** Derived, not stored — see `evaluateAccess` in @billwise/shared. */
   access: AccessState;
 };
 

@@ -1,6 +1,6 @@
 'use client';
 
-import { productWarnings } from '@bahikhata/shared';
+import { productWarnings } from '@billwise/shared';
 import {
   Button,
   Card,
@@ -11,7 +11,7 @@ import {
   Select,
   Textarea,
   WarningList,
-} from '@bahikhata/ui';
+} from '@billwise/ui';
 import { useRouter } from 'next/navigation';
 import * as React from 'react';
 import { saveProductAction } from './actions';

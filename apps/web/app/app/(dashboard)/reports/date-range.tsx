@@ -1,6 +1,6 @@
 'use client';
 
-import { Button, Input } from '@bahikhata/ui';
+import { Button, Input } from '@billwise/ui';
 import { useRouter } from 'next/navigation';
 import * as React from 'react';
 

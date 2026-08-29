@@ -1,7 +1,7 @@
 'use client';
 
-import { INVOICE_KINDS, INVOICE_KIND_LABELS } from '@bahikhata/shared';
-import { Button, Card, Input, Select } from '@bahikhata/ui';
+import { INVOICE_KINDS, INVOICE_KIND_LABELS } from '@billwise/shared';
+import { Button, Card, Input, Select } from '@billwise/ui';
 import { Search, X } from 'lucide-react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import * as React from 'react';

@@ -1,5 +1,5 @@
-import { findCatalogBusiness, findCatalogProduct, recordCatalogView } from '@bahikhata/db';
-import { shortIdFromProductSlug } from '@bahikhata/shared';
+import { findCatalogBusiness, findCatalogProduct, recordCatalogView } from '@billwise/db';
+import { shortIdFromProductSlug } from '@billwise/shared';
 import { NextResponse } from 'next/server';
 
 /**

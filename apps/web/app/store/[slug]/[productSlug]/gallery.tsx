@@ -1,6 +1,6 @@
 'use client';
 
-import { cn } from '@bahikhata/ui';
+import { cn } from '@billwise/ui';
 import Image from 'next/image';
 import * as React from 'react';
 

@@ -5,7 +5,7 @@ import {
   PAYMENT_METHODS,
   PAYMENT_STATUSES,
   TAX_MODES,
-} from '@bahikhata/shared';
+} from '@billwise/shared';
 import { relations, sql } from 'drizzle-orm';
 import {
   bigserial,

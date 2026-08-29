@@ -1,5 +1,5 @@
-import { getBusiness, getInvoice, getSettings } from '@bahikhata/db';
-import { INVOICE_KIND_LABELS, getGstStateName } from '@bahikhata/shared';
+import { getBusiness, getInvoice, getSettings } from '@billwise/db';
+import { INVOICE_KIND_LABELS, getGstStateName } from '@billwise/shared';
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { requireBusiness } from '@/lib/auth/require-business';

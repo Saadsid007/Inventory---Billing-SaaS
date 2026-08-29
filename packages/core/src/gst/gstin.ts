@@ -1,4 +1,4 @@
-import { GST_STATES, LEGACY_GST_STATE_CODES } from '@bahikhata/shared';
+import { GST_STATES, LEGACY_GST_STATE_CODES } from '@billwise/shared';
 
 /**
  * GSTIN parsing and validation.

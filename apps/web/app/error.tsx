@@ -1,6 +1,6 @@
 'use client';
 
-import { Button } from '@bahikhata/ui';
+import { Button } from '@billwise/ui';
 import { RotateCw, TriangleAlert } from 'lucide-react';
 import Link from 'next/link';
 import * as React from 'react';

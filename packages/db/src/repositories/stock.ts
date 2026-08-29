@@ -1,4 +1,4 @@
-import type { StockReason, TenantCtx } from '@bahikhata/shared';
+import type { StockReason, TenantCtx } from '@billwise/shared';
 import { and, desc, eq, sql } from 'drizzle-orm';
 import { getDb, type Executor } from '../client';
 import { products, stockMovements } from '../schema/index';

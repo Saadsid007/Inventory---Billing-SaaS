@@ -1,5 +1,5 @@
 /**
- * @bahikhata/db — schema, migrations and repositories.
+ * @billwise/db — schema, migrations and repositories.
  *
  * The public surface of this package is repositories and schema types. The
  * connection itself (`./client`) is intentionally not exported, so no app can

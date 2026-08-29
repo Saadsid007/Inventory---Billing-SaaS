@@ -3,7 +3,7 @@ import {
   listInvoices,
   listPartyBalances,
   listProducts,
-} from '@bahikhata/db';
+} from '@billwise/db';
 import { requireBusiness } from '@/lib/auth/require-business';
 import { csvResponse, datedFilename, toCsv, type CsvColumn } from '@/lib/csv';
 
