@@ -118,7 +118,7 @@ export function InvoiceActions({
         <div className="space-y-3 rounded-lg border p-4 sm:w-80">
           <p className="text-sm">Cancelling puts the stock back and voids the invoice.</p>
           <p className="text-xs text-muted-foreground">
-            The invoice keeps its number and stays in your records — a missing number in a GST
+            The invoice keeps its number and stays in your records. A missing number in a GST
             series looks like a hidden sale.
           </p>
           <Field label="Reason" htmlFor="cancel-reason" required>

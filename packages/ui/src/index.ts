@@ -47,5 +47,14 @@ export {
   Separator,
   Skeleton,
 } from './components/page';
+export {
+  DetailPageSkeleton,
+  FormPageSkeleton,
+  FormSkeleton,
+  ListPageSkeleton,
+  PageHeaderSkeleton,
+  StatCardsSkeleton,
+  TableSkeleton,
+} from './components/skeletons';
 export { ThemeScript, ThemeToggle, type Theme } from './components/theme';
 export { AppShell, type AppShellProps, type NavItem } from './components/app-shell';

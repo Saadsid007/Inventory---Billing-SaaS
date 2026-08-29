@@ -1,4 +1,4 @@
-import { and, eq, gt, or, sql } from 'drizzle-orm';
+import { and, eq, gt, isNull, or, sql } from 'drizzle-orm';
 import { getDb } from '../client';
 import { businessSettings, businesses, catalogViews, categories, products } from '../schema/index';
 
@@ -29,7 +29,10 @@ import { businessSettings, businesses, catalogViews, categories, products } from
  */
 const catalogIsLive = () =>
   or(
-    eq(businesses.status, 'active'),
+    and(
+      eq(businesses.status, 'active'),
+      or(isNull(businesses.paidUntil), gt(businesses.paidUntil, sql`now()`)),
+    ),
     and(eq(businesses.status, 'trial'), gt(businesses.trialEndsAt, sql`now()`)),
   );
 
@@ -69,6 +72,23 @@ export async function findCatalogBusiness(slug: string): Promise<CatalogBusiness
     )
     .limit(1);
   return row;
+}
+
+/**
+ * Every live catalog, for the sitemap.
+ *
+ * Unscoped by tenant like the rest of this file, and deliberately thin: a slug
+ * and a timestamp are all a sitemap needs, and a shop's product names have no
+ * business being loaded to build one.
+ */
+export async function listLiveCatalogSlugs(): Promise<{ slug: string; updatedAt: Date }[]> {
+  const rows = await getDb()
+    .select({ slug: businesses.slug, updatedAt: businesses.createdAt })
+    .from(businesses)
+    .innerJoin(businessSettings, eq(businessSettings.businessId, businesses.id))
+    .where(and(eq(businessSettings.catalogEnabled, true), catalogIsLive()))
+    .limit(5000);
+  return rows;
 }
 
 /**

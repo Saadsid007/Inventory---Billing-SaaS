@@ -70,7 +70,7 @@ export default async function ReportsPage({
     <PageBody className="space-y-10">
       <PageHeader
         title="Reports"
-        description="Sales, tax, stock and outstanding — and the CSVs your accountant will ask for."
+        description="Sales, tax, stock and outstanding, plus the CSVs your accountant will ask for."
         actions={<ExportButtons />}
       />
 
@@ -96,7 +96,7 @@ export default async function ReportsPage({
           <EmptyState
             icon={SearchX}
             title="No sales in this range"
-            description="Try a wider date range — the picker above defaults to this month so far."
+            description="Try a wider date range. The picker above starts at this month so far."
           />
         ) : (
           <Table>
@@ -195,7 +195,7 @@ export default async function ReportsPage({
                     {r.currentStock}
                     {r.unit && <span className="ml-1 text-xs text-muted-foreground">{r.unit}</span>}
                   </TD>
-                  <TD numeric className="text-muted-foreground">{r.lowStockAlert ?? '—'}</TD>
+                  <TD numeric className="text-muted-foreground">{r.lowStockAlert ?? '-'}</TD>
                   <TD numeric>₹{r.stockValue}</TD>
                   <TD>
                     {r.isLow && (
@@ -241,7 +241,7 @@ export default async function ReportsPage({
               {owed.map((b) => (
                 <TR key={b.partyId}>
                   <TD>{b.name}</TD>
-                  <TD className="tabular text-muted-foreground">{b.phone ?? '—'}</TD>
+                  <TD className="tabular text-muted-foreground">{b.phone ?? '-'}</TD>
                   <TD numeric className="text-muted-foreground">₹{b.invoicedTotal}</TD>
                   <TD numeric className="text-muted-foreground">₹{b.paidIn}</TD>
                   <TD numeric className="font-semibold text-warning">₹{b.outstanding}</TD>

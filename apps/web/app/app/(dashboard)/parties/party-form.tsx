@@ -162,7 +162,7 @@ export function PartyForm({
               <option value="">Not recorded</option>
               {GST_STATES.map((s) => (
                 <option key={s.code} value={s.code}>
-                  {s.code} — {s.name}
+                  {s.code} - {s.name}
                 </option>
               ))}
             </Select>
@@ -222,7 +222,7 @@ export function PartyForm({
                   value={String(values.customFields[def.key] ?? '')}
                   onChange={(e) => setCustom(def.key, e.target.value)}
                 >
-                  <option value="">—</option>
+                  <option value="">Not set</option>
                   {(def.options ?? []).map((o) => (
                     <option key={o} value={o}>
                       {o}

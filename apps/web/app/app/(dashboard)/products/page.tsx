@@ -58,7 +58,7 @@ export default async function ProductsPage({
         description={
           isFiltered
             ? `${products.length} ${products.length === 1 ? 'product matches' : 'products match'} your filters.`
-            : 'What you sell — price, tax rate and how much is left on the shelf.'
+            : 'What you sell, with the price, tax rate and how much is left on the shelf.'
         }
         actions={
           <Link href="/app/products/new">
@@ -121,12 +121,12 @@ export default async function ProductsPage({
                       <span className="ml-2 text-xs text-muted-foreground">{p.sku}</span>
                     )}
                   </TD>
-                  <TD className="text-muted-foreground">{p.categoryName ?? '—'}</TD>
-                  <TD className="tabular text-muted-foreground">{p.hsnCode ?? '—'}</TD>
+                  <TD className="text-muted-foreground">{p.categoryName ?? '-'}</TD>
+                  <TD className="tabular text-muted-foreground">{p.hsnCode ?? '-'}</TD>
                   <TD numeric>₹{p.salePrice}</TD>
                   <TD numeric>
                     {state === 'untracked' ? (
-                      <span className="text-muted-foreground">—</span>
+                      <span className="text-muted-foreground">-</span>
                     ) : (
                       <>
                         {p.currentStock}

@@ -1,5 +1,6 @@
 import { MONTHLY_PRICE_INR, trialDaysRemaining } from '@billwise/shared';
 import { Clock } from 'lucide-react';
+import type { Metadata } from 'next';
 import Link from 'next/link';
 import { AppFrame } from '@/components/app-frame';
 import {
@@ -19,6 +20,9 @@ import {
  * A layout guard does not protect a mutation — every server action under /app
  * must call `requireBusiness()` itself.
  */
+/** Nothing behind a login should ever be indexed. */
+export const metadata: Metadata = { robots: { index: false, follow: false } };
+
 export default async function DashboardLayout({ children }: { children: React.ReactNode }) {
   await requireBusiness();
 
@@ -59,9 +63,9 @@ export default async function DashboardLayout({ children }: { children: React.Re
               {daysLeft === 1 ? 'Your free trial ends today.' : `Free trial ends in ${daysLeft} days.`}
             </span>
             <span className="opacity-90">
-              Keep everything for ₹{MONTHLY_PRICE_INR} a month — your data stays either way.
+              Keep everything for ₹{MONTHLY_PRICE_INR} a month. Your data stays either way.
             </span>
-            <Link href="/app/subscribe" className="font-semibold underline underline-offset-4">
+            <Link href="/app/billing" className="font-semibold underline underline-offset-4">
               Subscribe
             </Link>
           </div>

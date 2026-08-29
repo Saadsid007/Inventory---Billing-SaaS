@@ -27,8 +27,7 @@ export default async function LoginPage({
         New here?{' '}
         <Link href="/register" className="font-medium text-primary underline-offset-4 hover:underline">
           Create an account
-        </Link>{' '}
-        — {TRIAL_DAYS} days free.
+        </Link>. It is free for {TRIAL_DAYS} days.
       </p>
     </div>
   );

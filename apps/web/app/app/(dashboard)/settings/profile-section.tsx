@@ -100,7 +100,7 @@ export function ProfileSection({ initial }: { initial: Values }) {
             <option value="">Select a state…</option>
             {GST_STATES.map((s) => (
               <option key={s.code} value={s.code}>
-                {s.code} — {s.name}
+                {s.code} - {s.name}
               </option>
             ))}
           </Select>

@@ -24,7 +24,7 @@ export default async function NewProductPage() {
           </Link>
         }
         title="Add product"
-        description="Only the name and sale price are required — everything else can wait."
+        description="Only the name and sale price are required. Everything else can wait."
       />
       <ProductForm initial={EMPTY_PRODUCT} {...data} />
     </PageBody>

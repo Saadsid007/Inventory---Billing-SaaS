@@ -5,8 +5,8 @@ import { cn } from '../lib/cn';
  * Form primitives. Every form in the product repeats label + control + error +
  * hint, so it lives here once and stays consistent.
  *
- * Controls are 40px tall (`h-10`). That is above the 44px-with-padding tap
- * target this product actually needs: the primary user is billing on a phone,
+ * Controls are 38px tall (`h-9.5`), which with the surrounding field spacing
+ * still gives a comfortable tap target. The primary user is billing on a phone,
  * one-handed, sometimes with a customer waiting.
  */
 
@@ -37,7 +37,7 @@ const controlBase = [
 ];
 
 export function Input({ className, ...props }: React.ComponentProps<'input'>) {
-  return <input className={cn(controlBase, 'h-10 px-3 py-1', className)} {...props} />;
+  return <input className={cn(controlBase, 'h-9.5 px-3 py-1', className)} {...props} />;
 }
 
 export function Select({ className, children, ...props }: React.ComponentProps<'select'>) {
@@ -45,7 +45,7 @@ export function Select({ className, children, ...props }: React.ComponentProps<'
     <select
       className={cn(
         controlBase,
-        'h-10 cursor-pointer appearance-none bg-[length:1.15rem] bg-[right_0.6rem_center] bg-no-repeat py-1 pr-9 pl-3',
+        'h-9.5 cursor-pointer appearance-none bg-[length:1.15rem] bg-[right_0.6rem_center] bg-no-repeat py-1 pr-9 pl-3',
         // Inline chevron: keeps the native <select> (which is the right control
         // on a phone — the OS picker beats any custom listbox) while losing the
         // platform arrow that ignores our palette.

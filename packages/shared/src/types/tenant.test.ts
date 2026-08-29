@@ -1,5 +1,11 @@
 import { describe, expect, it } from 'vitest';
-import { TRIAL_DAYS, trialDaysRemaining, trialEndsAt } from '../constants/subscription';
+import {
+  TRIAL_DAYS,
+  addOneMonth,
+  nextPeriodEnd,
+  trialDaysRemaining,
+  trialEndsAt,
+} from '../constants/subscription';
 import { canAccessApp, evaluateAccess } from './tenant';
 
 const NOW = new Date('2026-08-28T12:00:00Z');
@@ -66,5 +72,47 @@ describe('trial window', () => {
     expect(trialDaysRemaining(days(10), NOW)).toBe(10);
     expect(trialDaysRemaining(days(0.5), NOW)).toBe(1);
     expect(trialDaysRemaining(days(-3), NOW)).toBe(0);
+  });
+});
+
+describe('paid subscription window', () => {
+  it('lets a business in while the paid month is still running', () => {
+    expect(
+      evaluateAccess({ status: 'active', trialEndsAt: null, paidUntil: days(12) }, NOW),
+    ).toBe('ok');
+  });
+
+  it('asks for payment once the paid month has run out', () => {
+    expect(
+      evaluateAccess({ status: 'active', trialEndsAt: null, paidUntil: days(-1) }, NOW),
+    ).toBe('payment_due');
+  });
+
+  it('never locks out a paid business with no end date recorded', () => {
+    // Every row created before monthly billing existed looks like this, as does
+    // anything a super admin switches on by hand. Those keep working.
+    expect(evaluateAccess({ status: 'active', trialEndsAt: null, paidUntil: null }, NOW)).toBe(
+      'ok',
+    );
+    expect(evaluateAccess({ status: 'active', trialEndsAt: null }, NOW)).toBe('ok');
+  });
+});
+
+describe('renewal dates', () => {
+  it('adds the month to the existing expiry, so paying early loses nothing', () => {
+    const end = new Date('2026-09-20T00:00:00Z');
+    expect(nextPeriodEnd(end, NOW).toISOString().slice(0, 10)).toBe('2026-10-20');
+  });
+
+  it('counts from today when the previous month has already lapsed', () => {
+    const lapsed = new Date('2026-07-01T00:00:00Z');
+    expect(nextPeriodEnd(lapsed, NOW).toISOString().slice(0, 10)).toBe('2026-09-28');
+  });
+
+  it('clamps a 31st to the end of a shorter month instead of rolling over', () => {
+    // Plain setMonth() turns 31 January into 3 March, which would silently
+    // hand out two extra days every year.
+    const jan31 = new Date('2027-01-31T00:00:00Z');
+    expect(addOneMonth(jan31).toISOString().slice(0, 10)).toBe('2027-02-28');
   });
 });

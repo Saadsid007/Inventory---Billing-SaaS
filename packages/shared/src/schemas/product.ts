@@ -85,13 +85,19 @@ export function productWarnings(input: {
 }): string[] {
   const warnings: string[] = [];
   if (!input.hsnCode) {
-    warnings.push('No HSN code. GST invoices for this product will be missing it.');
+    warnings.push(
+      'No HSN code. GST bills for this item will go out without one. Add it in the ' +
+        'HSN / SAC code box above if you are registered.',
+    );
   }
   if (!input.taxRateId) {
-    warnings.push('No tax rate set. This product will bill at 0% GST.');
+    warnings.push('No GST rate set, so this item will be billed at 0%. Pick one above.');
   }
   if (!input.trackInventory && input.openingStock && Number(input.openingStock) !== 0) {
-    warnings.push('Opening stock is ignored when inventory tracking is off.');
+    warnings.push(
+      'Opening stock is ignored while inventory tracking is off. Switch tracking on below ' +
+        'if you want stock counted.',
+    );
   }
   return warnings;
 }

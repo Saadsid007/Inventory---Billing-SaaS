@@ -30,7 +30,7 @@ export function PageHeader({
       {breadcrumb && <div className="text-sm text-muted-foreground">{breadcrumb}</div>}
       <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div className="min-w-0 space-y-1.5">
-          <h1 className="truncate text-xl font-semibold sm:text-2xl">{title}</h1>
+          <h1 className="truncate text-lg font-semibold sm:text-xl">{title}</h1>
           {description && (
             <p className="max-w-2xl text-sm leading-relaxed text-muted-foreground">{description}</p>
           )}
@@ -43,7 +43,7 @@ export function PageHeader({
 
 /** Standard vertical rhythm for a page's contents. */
 export function PageBody({ className, ...props }: React.ComponentProps<'div'>) {
-  return <div className={cn('space-y-6', className)} {...props} />;
+  return <div className={cn('space-y-5', className)} {...props} />;
 }
 
 /** A titled block within a page. */
@@ -65,7 +65,7 @@ export function Section({
       {(title || actions) && (
         <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2">
           <div className="min-w-0">
-            {title && <h2 className="text-base font-semibold">{title}</h2>}
+            {title && <h2 className="text-[0.95rem] font-semibold">{title}</h2>}
             {description && <p className="mt-0.5 text-sm text-muted-foreground">{description}</p>}
           </div>
           {actions && <div className="flex flex-wrap items-center gap-2">{actions}</div>}

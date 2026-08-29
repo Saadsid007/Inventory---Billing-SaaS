@@ -71,7 +71,7 @@ export default async function InvoicePage({ params }: { params: Promise<{ id: st
           <p className="mt-1 font-medium">{business?.name}</p>
           {business?.gstin && <p className="tabular text-sm">{business.gstin}</p>}
           <p className="text-sm text-muted-foreground">
-            State {invoice.supplierStateCode} — {getGstStateName(invoice.supplierStateCode)}
+            State {invoice.supplierStateCode}, {getGstStateName(invoice.supplierStateCode)}
           </p>
         </Card>
 
@@ -87,7 +87,7 @@ export default async function InvoicePage({ params }: { params: Promise<{ id: st
             <p className="tabular text-sm text-muted-foreground">{invoice.partyPhone}</p>
           )}
           <p className="text-sm text-muted-foreground">
-            Place of supply {invoice.placeOfSupply} — {getGstStateName(invoice.placeOfSupply)}
+            Place of supply {invoice.placeOfSupply}, {getGstStateName(invoice.placeOfSupply)}
             {showGst && (invoice.isInterstate ? ' · IGST' : ' · CGST + SGST')}
           </p>
         </Card>
@@ -116,7 +116,7 @@ export default async function InvoicePage({ params }: { params: Promise<{ id: st
                   <span className="ml-1 text-xs text-muted-foreground">({line.unit})</span>
                 )}
               </TD>
-              {showGst && <TD className="tabular text-muted-foreground">{line.hsnCode ?? '—'}</TD>}
+              {showGst && <TD className="tabular text-muted-foreground">{line.hsnCode ?? '-'}</TD>}
               <TD numeric>{line.qty}</TD>
               <TD numeric>₹{line.rate}</TD>
               <TD numeric>₹{line.taxableValue}</TD>

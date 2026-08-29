@@ -1,3 +1,5 @@
+import type { Metadata } from 'next';
+
 /**
  * Admin shell.
  *
@@ -10,6 +12,9 @@
  * React 19 rejects ("scripts inside React components are never executed when
  * rendering on the client") and logs as an error.
  */
+/** Nothing behind a login should ever be indexed. */
+export const metadata: Metadata = { robots: { index: false, follow: false } };
+
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   return <div className="min-h-dvh bg-background">{children}</div>;
 }

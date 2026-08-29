@@ -46,7 +46,7 @@ export function TH({
   return (
     <th
       className={cn(
-        'h-11 px-4 text-left align-middle text-xs font-semibold tracking-wide text-muted-foreground uppercase',
+        'h-10 px-3.5 text-left align-middle text-[0.7rem] font-semibold tracking-wide text-muted-foreground uppercase',
         numeric && 'text-right',
         className,
       )}
@@ -62,7 +62,7 @@ export function TD({
 }: React.ComponentProps<'td'> & { numeric?: boolean }) {
   return (
     <td
-      className={cn('px-4 py-3 align-middle', numeric && 'tabular text-right', className)}
+      className={cn('px-3.5 py-2.5 align-middle', numeric && 'tabular text-right', className)}
       {...props}
     />
   );
@@ -89,16 +89,16 @@ export function EmptyState({
   return (
     <div
       className={cn(
-        'flex flex-col items-center rounded-xl border border-dashed bg-card/60 px-6 py-14 text-center',
+        'flex flex-col items-center rounded-xl border border-dashed bg-card/60 px-6 py-12 text-center',
         className,
       )}
     >
       {Icon && (
-        <span className="mb-4 grid size-12 place-items-center rounded-xl bg-primary-subtle text-primary-subtle-foreground">
-          <Icon className="size-6" />
+        <span className="mb-4 grid size-11 place-items-center rounded-xl bg-primary-subtle text-primary-subtle-foreground">
+          <Icon className="size-5" />
         </span>
       )}
-      <p className="text-base font-semibold">{title}</p>
+      <p className="text-[0.95rem] font-semibold">{title}</p>
       {description && (
         <p className="mx-auto mt-1.5 max-w-sm text-sm leading-relaxed text-muted-foreground">
           {description}

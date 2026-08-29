@@ -113,7 +113,7 @@ export function ProductImages({
     if (target < 0 || target >= next.length) return;
     [next[index], next[target]] = [next[target]!, next[index]!];
 
-    setUrls(next); // optimistic — reordering should feel instant
+    setUrls(next); // optimistic: reordering should feel instant
     setBusy(true);
     const result = await reorderProductImagesAction(productId, next);
     if (!result.ok) {

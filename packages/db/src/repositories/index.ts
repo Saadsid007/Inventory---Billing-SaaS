@@ -21,3 +21,4 @@ export * from './invoices';
 export * from './catalog';
 export * from './reports';
 export * from './admin';
+export * from './billing';

@@ -1,4 +1,5 @@
-import { getDashboardStats, getRecentInvoices } from '@billwise/db';
+import { getBusiness, getDashboardStats, getRecentInvoices, getSettings } from '@billwise/db';
+import { MONTHLY_PRICE_INR, trialDaysRemaining } from '@billwise/shared';
 import {
   Alert,
   Badge,
@@ -31,6 +32,8 @@ import {
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { requireBusiness, requireMembership } from '@/lib/auth/require-business';
+import { SetupChecklist, type SetupStep } from './setup-checklist';
+import { TrialReminder } from './trial-reminder';
 
 export const metadata: Metadata = { title: 'Dashboard' };
 
@@ -54,14 +57,76 @@ export default async function DashboardPage() {
   // its own during client-side navigation, and the guard is cached.
   const ctx = await requireBusiness();
 
-  const [{ businessName, slug }, stats, recent] = await Promise.all([
-    requireMembership(),
-    getDashboardStats(ctx),
-    getRecentInvoices(ctx, 8),
-  ]);
+  const [{ businessName, slug, status, trialEndsAt }, stats, recent, business, settings] =
+    await Promise.all([
+      requireMembership(),
+      getDashboardStats(ctx),
+      getRecentInvoices(ctx, 8),
+      getBusiness(ctx),
+      getSettings(ctx),
+    ]);
+
+  /**
+   * What is still missing, and where to fix it.
+   *
+   * GSTIN is first because it is the one that changes what the product does:
+   * without it there are no tax invoices at all, and finding that out halfway
+   * through billing a customer is the worst moment to learn it.
+   */
+  const setupSteps: SetupStep[] = [
+    {
+      id: 'gstin',
+      label: 'Add your GSTIN',
+      hint: 'Needed for tax invoices. Skip it if you are not registered.',
+      href: '/app/settings',
+      done: Boolean(business?.gstin),
+    },
+    {
+      id: 'address',
+      label: 'Add your shop address and phone',
+      hint: 'Printed on every bill and shown on your catalog.',
+      href: '/app/settings',
+      done: Boolean(business?.addressLine1 && business?.phone),
+    },
+    {
+      id: 'product',
+      label: 'Add your first product',
+      hint: 'Billing gets much faster once your items are in.',
+      href: '/app/products/new',
+      done: stats.productCount > 0,
+    },
+    {
+      id: 'invoice',
+      label: 'Make your first bill',
+      hint: 'Stock goes down by itself the moment you save it.',
+      href: '/app/invoices/new',
+      done: recent.length > 0,
+    },
+    {
+      id: 'catalog',
+      label: 'Switch on your online catalog',
+      hint: 'Print the QR and put it on your counter.',
+      href: '/app/settings',
+      done: Boolean(settings?.catalogEnabled),
+    },
+  ];
+
+  const trialDaysLeft =
+    status === 'trial' && trialEndsAt ? trialDaysRemaining(trialEndsAt) : null;
 
   return (
     <PageBody>
+      {trialDaysLeft !== null && trialEndsAt && (
+        <TrialReminder
+          daysLeft={trialDaysLeft}
+          monthlyPrice={MONTHLY_PRICE_INR}
+          endsOn={trialEndsAt.toLocaleDateString('en-IN', {
+            day: 'numeric',
+            month: 'long',
+          })}
+        />
+      )}
+
       <PageHeader
         title={businessName}
         description={
@@ -83,6 +148,8 @@ export default async function DashboardPage() {
           </Link>
         }
       />
+
+      <SetupChecklist steps={setupSteps} />
 
       <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <StatCard

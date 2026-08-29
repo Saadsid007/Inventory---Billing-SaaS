@@ -34,7 +34,7 @@ export default async function PartiesPage() {
     <PageBody>
       <PageHeader
         title="Customers and suppliers"
-        description="Everyone you bill or buy from — and exactly who still owes you money."
+        description="Everyone you bill or buy from, and exactly who still owes you money."
         actions={
           <Link href="/app/parties/new">
             <Button>
@@ -66,7 +66,7 @@ export default async function PartiesPage() {
         <EmptyState
           icon={Users}
           title="No contacts yet"
-          description="Add the customers you bill and the suppliers you buy from. A walk-in cash sale does not need one — this is for the people whose khata you keep."
+          description="Add the customers you bill and the suppliers you buy from. A walk-in cash sale does not need one. This is for the people whose khata you keep."
           action={
             <Link href="/app/parties/new">
               <Button>
@@ -99,7 +99,7 @@ export default async function PartiesPage() {
                       {b.name}
                     </Link>
                   </TD>
-                  <TD className="tabular text-muted-foreground">{b.phone ?? '—'}</TD>
+                  <TD className="tabular text-muted-foreground">{b.phone ?? '-'}</TD>
                   <TD numeric className="text-muted-foreground">₹{b.invoicedTotal}</TD>
                   <TD numeric className="text-muted-foreground">₹{b.paidIn}</TD>
                   <TD numeric>

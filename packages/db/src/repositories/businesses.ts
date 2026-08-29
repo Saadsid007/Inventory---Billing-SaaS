@@ -73,6 +73,7 @@ export async function getBusinessStatus(ctx: TenantCtx) {
       slug: businesses.slug,
       status: businesses.status,
       trialEndsAt: businesses.trialEndsAt,
+      paidUntil: businesses.paidUntil,
       approvedAt: businesses.approvedAt,
       createdAt: businesses.createdAt,
     })

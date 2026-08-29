@@ -40,10 +40,10 @@ export async function generateMetadata({
 
   return {
     // Absolute, not templated: the page belongs to the shop, not to Billwise.
-    title: { absolute: `${product.name} — ${business.name}` },
+    title: { absolute: `${product.name} | ${business.name}` },
     description,
     openGraph: {
-      title: `${product.name} — ${business.name}`,
+      title: `${product.name} | ${business.name}`,
       description,
       type: 'website',
       ...(image && { images: [{ url: image }] }),

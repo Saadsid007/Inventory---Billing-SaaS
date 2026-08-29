@@ -61,6 +61,8 @@ export type Membership = {
   slug: string;
   status: BusinessStatus;
   trialEndsAt: Date | null;
+  /** End of the paid month. Null means no end recorded — see evaluateAccess. */
+  paidUntil: Date | null;
   createdAt: Date;
   /** Derived, not stored — see `evaluateAccess` in @billwise/shared. */
   access: AccessState;
@@ -112,24 +114,30 @@ export const requireMembership = cache(async function requireMembership(): Promi
     slug: row.slug,
     status: row.status,
     trialEndsAt: row.trialEndsAt,
+    paidUntil: row.paidUntil,
     createdAt: row.createdAt,
-    access: evaluateAccess({ status: row.status, trialEndsAt: row.trialEndsAt }),
+    access: evaluateAccess({
+      status: row.status,
+      trialEndsAt: row.trialEndsAt,
+      paidUntil: row.paidUntil,
+    }),
   };
 });
 
 /**
  * The standard guard for every page under `/app`.
  *
- * Returns a `TenantCtx` for a business on an open trial or a paid plan, and
- * otherwise sends them to the subscribe screen.
+ * Returns a `TenantCtx` for a business on an open trial or inside a paid month,
+ * and otherwise sends them to billing, which is the one screen that renders for
+ * a business without access.
  *
- * Call it in the layout AND in any server action that mutates data — a layout
+ * Call it in the layout AND in any server action that mutates data. A layout
  * guard does not protect a POST.
  */
 export async function requireBusiness(): Promise<TenantCtx> {
   const { ctx, access } = await requireMembership();
   if (access !== 'ok') {
-    redirect('/app/subscribe');
+    redirect('/app/billing');
   }
   return ctx;
 }

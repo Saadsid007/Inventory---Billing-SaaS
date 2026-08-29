@@ -359,3 +359,64 @@ appear there, and — non-negotiably — the button that creates the first recor
 sizing and no tokens. An invoice is a legal document: it must not change because
 someone adjusted a colour token, and it must never follow the reader's dark mode
 onto paper as a black rectangle of toner.
+
+---
+
+## D20. A paid month actually ends
+
+`businesses.paid_until` is the end of the month someone has paid for, and
+`evaluateAccess()` returns `payment_due` once it passes. Before this, `status =
+'active'` meant access forever, which for a product billed monthly is a way of
+never collecting the second month.
+
+`paid_until = NULL` on a paid business still means unlimited access, on purpose.
+That is the shape of every row created before monthly billing existed, and of
+anything a super admin switches on by hand. Nobody loses access because of when
+they signed up.
+
+Paying extends from the later of today and the current expiry, so paying early
+adds a month rather than throwing the remainder away. The month is a calendar
+month with the day clamped (31 January plus a month is 28 February, not 3
+March), because `setMonth` rolling over would quietly hand out two free days a
+year.
+
+## D21. Subscription payment is a UPI QR, not a checkout page
+
+Pressing Subscribe puts a single-use Razorpay UPI QR on the screen. No hosted
+checkout, no method picker, no redirect away and back. The shopkeeper is already
+holding a phone with a UPI app on it, so scanning a square is the entire flow.
+
+The QR is `single_use` with `fixed_amount`, so it dies after one payment of
+exactly the right amount. A reusable QR would happily take a second month's
+money from someone who scanned an old screenshot.
+
+**The webhook is the authority; the polling is a courtesy.** The browser polls
+while the QR is on screen so the page reacts while the shopkeeper is still
+looking at it. Both paths call the same `creditSubscriptionPayment()`, which is
+idempotent inside a transaction: whoever arrives first extends the month, and
+everyone after sees it is already paid. Razorpay retries webhooks until it gets
+a 2xx, so without that a retry would buy a second month for free.
+
+`/api/webhooks` is in `PUBLIC_PREFIXES`. It has to be, and it is safe because
+the handler verifies an HMAC of the **raw** body before it trusts one field.
+Without that entry the proxy would redirect the webhook to `/login` and every
+payment would silently fail to credit, which is the same bug the catalog view
+counter had.
+
+Subscription payments live in their own table, not in `payments`. That table is
+money a shopkeeper's customers paid *them*; mixing the two would put our revenue
+inside a tenant's books and into their ledger export.
+
+**Not verified against the live API.** There are no Razorpay keys in this
+environment, so the QR creation, the polling and the webhook have been written
+and typechecked but never exercised against Razorpay itself. Test with test-mode
+keys before trusting it with money.
+
+## D22. No em dashes in anything a shopkeeper reads
+
+All user-facing copy uses ordinary punctuation. Em dashes read as machine-written
+to a lot of people now, and this product is sold to shopkeepers who are deciding
+whether it looks like real software. Table placeholders are a plain `-`.
+
+Code comments are exempt. They are for whoever maintains this, not for the
+customer.

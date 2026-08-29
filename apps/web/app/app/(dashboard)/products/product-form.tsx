@@ -238,7 +238,7 @@ export function ProductForm({
 
         <Checkbox
           label="Track inventory for this product"
-          hint="Turn off for services — there is nothing to count."
+          hint="Turn this off for services. There is nothing to count."
           checked={values.trackInventory}
           onCheckedChange={(checked) => setValues((v) => ({ ...v, trackInventory: checked }))}
         />
@@ -303,7 +303,7 @@ export function ProductForm({
                   value={String(values.customFields[def.key] ?? '')}
                   onChange={(e) => setCustom(def.key, e.target.value)}
                 >
-                  <option value="">—</option>
+                  <option value="">Not set</option>
                   {(def.options ?? []).map((o) => (
                     <option key={o} value={o}>
                       {o}
@@ -338,7 +338,7 @@ export function ProductForm({
         />
         {!productId && (
           <p className="text-xs text-muted-foreground">
-            Save the product first, then add photos — they are filed under the product, so it has to
+            Save the product first, then add photos. They are filed under the product, so it has to
             exist before they can be uploaded.
           </p>
         )}

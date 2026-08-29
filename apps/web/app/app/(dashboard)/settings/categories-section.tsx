@@ -41,7 +41,7 @@ export function CategoriesSection({
       <div>
         <h2 className="text-base font-semibold">Categories</h2>
         <p className="text-sm text-muted-foreground">
-          Nothing is seeded here on purpose — a kirana store and a hardware shop have nothing in
+          Nothing is filled in for you on purpose. A kirana store and a hardware shop have nothing in
           common, and a wrong default is worse than an empty list.
         </p>
       </div>

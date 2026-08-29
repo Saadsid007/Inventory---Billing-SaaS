@@ -16,7 +16,7 @@ export default async function StockPage() {
     <PageBody className="mx-auto max-w-2xl">
       <PageHeader
         title="Stock in / out"
-        description="Record goods arriving or leaving outside a sale — a delivery from a supplier, breakage, or a stock-count correction."
+        description="Record goods arriving or leaving outside a sale: a delivery from a supplier, breakage, or a stock-count correction."
       />
 
       {products.length === 0 ? (

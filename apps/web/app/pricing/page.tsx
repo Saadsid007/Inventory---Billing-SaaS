@@ -3,11 +3,13 @@ import { Badge, Button, Card } from '@billwise/ui';
 import { ArrowRight, Check } from 'lucide-react';
 import type { Metadata } from 'next';
 import Link from 'next/link';
+import { auth } from '@/auth';
 import { MarketingFooter, MarketingHeader } from '@/components/marketing-chrome';
 
 export const metadata: Metadata = {
-  title: { absolute: `Pricing — ₹${MONTHLY_PRICE_INR} a month · Billwise` },
+  title: { absolute: `Pricing: ₹${MONTHLY_PRICE_INR} a month · Billwise` },
   description: `One plan, everything included: ₹${MONTHLY_PRICE_INR} per month after ${TRIAL_DAYS} days free. No card required to start.`,
+  alternates: { canonical: '/pricing' },
 };
 
 const INCLUDED = [
@@ -23,7 +25,10 @@ const INCLUDED = [
   'Works on phone, tablet and laptop',
 ];
 
-export default function PricingPage() {
+export default async function PricingPage() {
+  const session = await auth();
+  const signedIn = Boolean(session?.user?.id);
+
   return (
     <div className="min-h-dvh">
       <MarketingHeader />
@@ -52,16 +57,16 @@ export default function PricingPage() {
                 Free for your first {TRIAL_DAYS} days. No card needed to start, and no approval to
                 wait for.
               </p>
-              <Link href="/register" className="mt-3">
+              <Link href={signedIn ? '/app/billing' : '/register'} className="mt-3">
                 <Button
                   size="lg"
                   className="w-full bg-white text-primary shadow-sm hover:bg-white/90 active:bg-white/90"
                 >
-                  Start {TRIAL_DAYS} days free <ArrowRight />
+                  {signedIn ? 'Subscribe now' : `Start ${TRIAL_DAYS} days free`} <ArrowRight />
                 </Button>
               </Link>
               <p className="text-xs text-white/70">
-                Cancel by simply not paying — your data is never deleted.
+                Stop by simply not paying. Your data is never deleted.
               </p>
             </div>
 
@@ -94,7 +99,7 @@ export default function PricingPage() {
             />
             <Faq
               q="I am not registered for GST. Can I still use it?"
-              a="Yes. Leave the GSTIN blank and the GST fields disappear entirely — you bill with cash memos instead of tax invoices, and nothing on screen asks you about tax."
+              a="Yes. Leave the GSTIN blank and the GST fields disappear entirely. You bill with cash memos instead of tax invoices, and nothing on screen asks you about tax."
             />
             <Faq
               q="Does it file my GST returns?"
@@ -102,7 +107,7 @@ export default function PricingPage() {
             />
             <Faq
               q="Can my customers see my stock levels?"
-              a="They see whether something is in stock, low, or out — never the exact number. Your competitors read your catalog too."
+              a="They see whether something is in stock, low, or out, never the exact number. Your competitors read your catalog too."
             />
             <Faq
               q="What if I have more than one shop?"
@@ -114,11 +119,11 @@ export default function PricingPage() {
         <div className="mt-16 rounded-xl border bg-muted/30 p-8 text-center">
           <h2 className="text-lg font-semibold">Still deciding?</h2>
           <p className="mx-auto mt-2 max-w-md text-sm leading-relaxed text-muted-foreground">
-            The trial is the whole product — not a limited demo. Bill a real day with it and see.
+            The trial is the whole product, not a limited demo. Bill a real day with it and see.
           </p>
-          <Link href="/register">
+          <Link href={signedIn ? '/app/billing' : '/register'}>
             <Button className="mt-5">
-              Create an account <ArrowRight />
+              {signedIn ? 'Go to billing' : 'Create an account'} <ArrowRight />
             </Button>
           </Link>
         </div>

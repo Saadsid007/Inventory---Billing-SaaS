@@ -209,7 +209,7 @@ export default async function PrintInvoicePage({
           </div>
           <div style={{ textAlign: 'right', fontSize: '9.5pt' }}>
             <div>
-              Place of supply: {invoice.placeOfSupply} —{' '}
+              Place of supply: {invoice.placeOfSupply},{' '}
               {getGstStateName(invoice.placeOfSupply)}
             </div>
             {showGst && <div>{invoice.isInterstate ? 'Interstate (IGST)' : 'Intrastate'}</div>}
@@ -246,7 +246,7 @@ export default async function PrintInvoicePage({
               <tr key={l.id}>
                 <td>{l.lineNo}</td>
                 <td>{l.name}</td>
-                {showGst && <td>{l.hsnCode ?? '—'}</td>}
+                {showGst && <td>{l.hsnCode ?? '-'}</td>}
                 <td className="num">
                   {l.qty} {l.unit ?? ''}
                 </td>

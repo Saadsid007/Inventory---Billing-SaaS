@@ -90,7 +90,7 @@ export default async function InvoicesPage({
           description={
             isFiltered
               ? 'Try a wider date range, or clear the filters and start again.'
-              : 'Make your first bill. You do not need products first — items can be typed straight onto the invoice.'
+              : 'Make your first bill. You do not need to add products first, since items can be typed straight onto the invoice.'
           }
           action={
             !isFiltered && (
@@ -147,7 +147,7 @@ export default async function InvoicesPage({
                 </TD>
                 <TD>
                   {inv.status !== 'issued' ? (
-                    <span className="text-muted-foreground">—</span>
+                    <span className="text-muted-foreground">-</span>
                   ) : inv.paymentStatus === 'paid' ? (
                     <Badge variant="success" dot>
                       Paid

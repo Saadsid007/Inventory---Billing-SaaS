@@ -307,9 +307,21 @@ export function InvoiceForm({
       </Card>
 
       {!supplierHasGstin && (
-        <Alert variant="info" icon={Info} title="No GSTIN on file">
-          Tax invoices are unavailable and GST fields are hidden. Add a GSTIN in Settings to
-          switch them on.
+        <Alert variant="info" icon={Info} title="You have not added a GSTIN yet">
+          <p>
+            So there are no tax invoices and no GST boxes here. You can still bill normally
+            with a cash memo, and the totals are exactly the same.
+          </p>
+          <p className="mt-1.5">
+            Registered for GST?{' '}
+            <a
+              href="/app/settings"
+              className="font-medium underline underline-offset-4 hover:no-underline"
+            >
+              Add your GSTIN in Settings
+            </a>{' '}
+            and tax invoices switch on straight away.
+          </p>
         </Alert>
       )}
 
@@ -362,7 +374,7 @@ export function InvoiceForm({
               error={err('placeOfSupply')}
               hint={
                 preview
-                  ? `Currently ${preview.placeOfSupply} (${preview.placeOfSupplySource.replace('_', ' ')}) — ${preview.isInterstate ? 'IGST' : 'CGST + SGST'}`
+                  ? `Currently ${preview.placeOfSupply} (${preview.placeOfSupplySource.replace('_', ' ')}), so ${preview.isInterstate ? 'IGST' : 'CGST + SGST'}`
                   : 'Worked out from the customer unless you override it.'
               }
             >
@@ -374,7 +386,7 @@ export function InvoiceForm({
                 <option value="">Work it out automatically</option>
                 {GST_STATES.map((s) => (
                   <option key={s.code} value={s.code}>
-                    {s.code} — {s.name}
+                    {s.code} - {s.name}
                   </option>
                 ))}
               </Select>

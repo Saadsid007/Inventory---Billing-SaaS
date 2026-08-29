@@ -54,7 +54,7 @@ export default async function AdminConfigPage() {
       <EmptyState
         icon={Wrench}
         title="Nothing to change yet"
-        description="This is where site-wide settings will live — an announcement banner, a new field on a form, turning a feature on or off. It is empty until the first one exists, so that nothing here is a switch that does not actually do anything."
+        description="Site-wide settings will live here: an announcement banner, a new field on a form, turning a feature on or off. It stays empty until the first one is built, so nothing here is a switch that does not actually do anything."
       />
 
       <Section title="Planned" description="What this page is reserved for.">

@@ -4,6 +4,7 @@ import { AppShell, type NavItem } from '@billwise/ui';
 import {
   ArrowLeftRight,
   BarChart3,
+  CreditCard,
   FileText,
   LayoutDashboard,
   LogOut,
@@ -42,6 +43,7 @@ const NAV: readonly NavItem[] = [
   { href: '/app/stock', label: 'Stock in / out', icon: ArrowLeftRight, section: 'Catalogue' },
   { href: '/app/catalog', label: 'Online catalog', icon: QrCode, section: 'Catalogue' },
   { href: '/app/reports', label: 'Reports', icon: BarChart3, section: 'Business' },
+  { href: '/app/billing', label: 'Billing', icon: CreditCard, section: 'Business' },
   { href: '/app/settings', label: 'Settings', icon: Settings, section: 'Business' },
 ];
 

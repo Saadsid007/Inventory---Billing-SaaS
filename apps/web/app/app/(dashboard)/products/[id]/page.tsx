@@ -84,7 +84,7 @@ export default async function EditProductPage({
       {product.trackInventory && (
         <Section
           title="Stock history"
-          description={`Current stock is ${product.currentStock} — the sum of every movement below.`}
+          description={`Current stock is ${product.currentStock}, the sum of every movement below.`}
           className="border-t pt-6"
         >
           {movements.length === 0 ? (
@@ -110,7 +110,7 @@ export default async function EditProductPage({
                       })}
                     </TD>
                     <TD>{REASON_LABELS[m.reason] ?? m.reason}</TD>
-                    <TD className="text-muted-foreground">{m.note ?? '—'}</TD>
+                    <TD className="text-muted-foreground">{m.note ?? '-'}</TD>
                     <TD numeric className={m.qtyChange.startsWith('-') ? 'text-destructive' : ''}>
                       {m.qtyChange.startsWith('-') ? '' : '+'}
                       {m.qtyChange}

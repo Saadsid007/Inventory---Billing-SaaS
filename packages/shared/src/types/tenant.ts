@@ -37,20 +37,34 @@ export type TenantCtx = {
  * write it, and the day that job failed every trial would silently stay open.
  * Computing it means the answer is always right without anything having run.
  */
-export type AccessState = 'ok' | 'trial_expired' | 'suspended' | 'rejected' | 'unknown';
+export type AccessState =
+  | 'ok'
+  | 'trial_expired'
+  | 'payment_due'
+  | 'suspended'
+  | 'rejected'
+  | 'unknown';
 
 export type AccessInput = {
   status: BusinessStatus;
   trialEndsAt: Date | null;
+  /**
+   * End of the paid month. `null` means "paid, with no end recorded" — the
+   * shape of every row that predates monthly billing, and of anything a super
+   * admin switches on by hand. Those keep working forever on purpose; nobody
+   * should lose access because of when they signed up.
+   */
+  paidUntil?: Date | null;
 };
 
 export function evaluateAccess(
-  { status, trialEndsAt }: AccessInput,
+  { status, trialEndsAt, paidUntil }: AccessInput,
   now: Date = new Date(),
 ): AccessState {
   switch (status) {
     case 'active':
-      return 'ok';
+      if (!paidUntil) return 'ok';
+      return paidUntil.getTime() > now.getTime() ? 'ok' : 'payment_due';
     case 'trial':
       // A missing end date means the trial was never stamped. Treat that as
       // open rather than locking someone out over a data bug.

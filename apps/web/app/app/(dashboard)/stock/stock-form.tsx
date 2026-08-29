@@ -72,7 +72,7 @@ export function StockForm({ products }: { products: readonly ProductOption[] }) 
           {products.map((p) => (
             <option key={p.id} value={p.id}>
               {p.name}
-              {p.sku ? ` · ${p.sku}` : ''} — {p.currentStock}
+              {p.sku ? ` (${p.sku})` : ''}, {p.currentStock}
               {p.unit ? ` ${p.unit}` : ''}
             </option>
           ))}
@@ -86,8 +86,8 @@ export function StockForm({ products }: { products: readonly ProductOption[] }) 
             value={direction}
             onChange={(e) => setDirection(e.target.value as 'in' | 'out')}
           >
-            <option value="in">Stock in — goods arrived</option>
-            <option value="out">Stock out — goods left</option>
+            <option value="in">Stock in, goods arrived</option>
+            <option value="out">Stock out, goods left</option>
           </Select>
         </Field>
         <Field
@@ -113,8 +113,8 @@ export function StockForm({ products }: { products: readonly ProductOption[] }) 
 
       {projected !== null && Number(projected) < 0 && (
         <p className="rounded-md border border-warning/40 bg-warning/10 px-3 py-2 text-xs">
-          This takes stock below zero. That is allowed — shops often sell before entering the
-          purchase — but check the number is right.
+          This takes stock below zero. That is allowed, because shops often sell before entering the
+          purchase, but check the number is right.
         </p>
       )}
 

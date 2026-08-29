@@ -94,8 +94,9 @@ export function partyWarnings(input: {
     const fromGstin = input.gstin.slice(0, 2);
     if (fromGstin !== input.stateCode) {
       warnings.push(
-        `The GSTIN starts with ${fromGstin} but the state is set to ${input.stateCode}. ` +
-          'The state is what decides IGST vs CGST/SGST — check it is right.',
+        `This GSTIN starts with ${fromGstin} but the state says ${input.stateCode}. ` +
+          'The state decides whether their bills get IGST or CGST plus SGST, so it is ' +
+          'worth a second look.',
       );
     }
   }

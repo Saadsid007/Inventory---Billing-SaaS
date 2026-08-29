@@ -133,20 +133,24 @@ export function invoiceWarnings(input: {
     const missingHsn = input.lines.filter((l) => !l.hsnCode);
     if (missingHsn.length > 0) {
       warnings.push(
-        `${missingHsn.length} item${missingHsn.length === 1 ? '' : 's'} ` +
-          'without an HSN code. GSTR-1 needs it, and it cannot be filled in later.',
+        `${missingHsn.length} item${missingHsn.length === 1 ? '' : 's'} without an HSN code. ` +
+          'Your GSTR-1 needs it and it cannot be added to this bill afterwards. ' +
+          'You can save the item with its HSN under Products so it fills in next time.',
       );
     }
     const zeroRated = input.lines.filter((l) => !l.taxRate || Number(l.taxRate) === 0);
     if (zeroRated.length === input.lines.length && input.lines.length > 0) {
-      warnings.push('Every item is at 0% GST. Should this be a Bill of Supply instead?');
+      warnings.push(
+        'Every item is at 0% GST. If none of this is taxable, a Bill of Supply is the ' +
+          'right document. You can change the type at the top.',
+      );
     }
   }
 
   if (input.kind === 'tax_invoice' && input.isInterstate && !input.partyGstin) {
     warnings.push(
-      'Interstate sale to an unregistered buyer. Check the place of supply is right — ' +
-        'it decides IGST instead of CGST/SGST.',
+      'This is going to another state and the buyer has no GSTIN. Check the place of ' +
+        'supply above: it decides whether you charge IGST or CGST plus SGST.',
     );
   }
 

@@ -32,7 +32,7 @@ export default function GlobalError({
         </span>
         <h1 className="text-2xl font-semibold">Something went wrong</h1>
         <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
-          This screen failed to load. Nothing you had already saved is affected — bills, products
+          This screen failed to load. Nothing you had already saved is affected. Bills, products
           and payments are all still there.
         </p>
         <div className="mt-7 flex flex-wrap justify-center gap-2">

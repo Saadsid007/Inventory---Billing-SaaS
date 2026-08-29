@@ -46,6 +46,15 @@ export const serverEnvSchema = z.object({
   SUPABASE_PRIVATE_BUCKET: z.string().trim().min(1).default('invoices'),
   NEXT_PUBLIC_SUPABASE_URL: optionalString,
   NEXT_PUBLIC_SUPABASE_ANON_KEY: optionalString,
+
+  // --- Razorpay (subscription payments) ---
+  // Optional: the app runs perfectly well without them, it just cannot take a
+  // payment. The billing page says so plainly rather than showing a dead
+  // button, and `requireRazorpayEnv()` is what fails when something tries.
+  RAZORPAY_KEY_ID: optionalString,
+  RAZORPAY_KEY_SECRET: optionalString,
+  /** Set this to the same secret configured on the Razorpay webhook. */
+  RAZORPAY_WEBHOOK_SECRET: optionalString,
 });
 
 export type ServerEnv = z.infer<typeof serverEnvSchema>;
@@ -127,6 +136,32 @@ export function requireStorageEnv(): StorageEnv {
     serviceRoleKey: env.SUPABASE_SERVICE_ROLE_KEY,
     publicBucket: env.SUPABASE_PUBLIC_BUCKET,
     privateBucket: env.SUPABASE_PRIVATE_BUCKET,
+  };
+}
+
+export type RazorpayEnv = {
+  keyId: string;
+  keySecret: string;
+  webhookSecret: string | undefined;
+};
+
+/** True when payments can be taken at all. Read this before offering to. */
+export function hasRazorpay(): boolean {
+  const env = serverEnv();
+  return Boolean(env.RAZORPAY_KEY_ID && env.RAZORPAY_KEY_SECRET);
+}
+
+export function requireRazorpayEnv(): RazorpayEnv {
+  const env = serverEnv();
+  if (!env.RAZORPAY_KEY_ID || !env.RAZORPAY_KEY_SECRET) {
+    throw new EnvValidationError([
+      'RAZORPAY_KEY_ID and RAZORPAY_KEY_SECRET are required to take payments',
+    ]);
+  }
+  return {
+    keyId: env.RAZORPAY_KEY_ID,
+    keySecret: env.RAZORPAY_KEY_SECRET,
+    webhookSecret: env.RAZORPAY_WEBHOOK_SECRET,
   };
 }
 

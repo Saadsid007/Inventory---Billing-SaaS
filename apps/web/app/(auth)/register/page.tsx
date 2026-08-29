@@ -13,7 +13,7 @@ export default function RegisterPage() {
         <Badge variant="subtle">{TRIAL_DAYS} days free</Badge>
         <h1 className="text-2xl font-semibold">Create your account</h1>
         <p className="text-sm leading-relaxed text-muted-foreground">
-          No card, and nothing to wait for — you can make your first bill in a minute. ₹
+          No card, and nothing to wait for. You can make your first bill in a minute. It is ₹
           {MONTHLY_PRICE_INR} a month after the trial, only if you want to carry on.
         </p>
       </div>

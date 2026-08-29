@@ -24,9 +24,14 @@ const PUBLIC_PREFIXES = [
   '/store',
   '/pricing',
   '/api/catalog',
-  // The admin entry point, and only that path — `/admin` itself stays behind
+  // The admin entry point, and only that path. `/admin` itself stays behind
   // the session check and then behind requireSuperAdmin().
   '/admin/login',
+  // Razorpay posts here with no session. It verifies an HMAC signature of the
+  // raw body before it trusts a single field, so being public costs nothing.
+  // Without this the proxy would 307 the webhook to /login and every payment
+  // would silently fail to credit.
+  '/api/webhooks',
 ] as const;
 
 export function isPublicPath(pathname: string): boolean {

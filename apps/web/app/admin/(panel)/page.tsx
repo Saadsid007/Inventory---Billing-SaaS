@@ -51,7 +51,7 @@ export default async function AdminPage({
           month: 'short',
           year: 'numeric',
         })
-      : '—';
+      : '-';
 
   return (
     <PageBody className="mx-auto max-w-6xl p-6 sm:p-8">

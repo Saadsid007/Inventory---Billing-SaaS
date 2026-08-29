@@ -30,10 +30,10 @@ export async function generateMetadata({
   return {
     // Overrides the root layout's "%s · Billwise" template — this page belongs
     // to the shop, not to us.
-    title: { absolute: `${business.name} — Product catalog` },
+    title: { absolute: `${business.name} | Product catalog` },
     description,
     openGraph: {
-      title: `${business.name} — Product catalog`,
+      title: `${business.name} | Product catalog`,
       description,
       type: 'website',
       ...(business.logoUrl && { images: [{ url: business.logoUrl }] }),

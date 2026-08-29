@@ -79,7 +79,7 @@ export function CustomFieldsSection({
       <div>
         <h2 className="text-base font-semibold">Your own fields</h2>
         <p className="text-sm text-muted-foreground">
-          Extra fields on products and parties — brand, warranty, delivery route, whatever your
+          Extra fields on products and contacts: brand, warranty, delivery route, whatever your
           trade needs. Deliberately not available on invoices: an invoice is a legal document
           whose shape has to stay predictable for printing and for GST returns.
         </p>

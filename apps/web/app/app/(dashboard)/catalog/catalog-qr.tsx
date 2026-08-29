@@ -71,7 +71,7 @@ export function CatalogQr({
       s.replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]!);
 
     win.document.write(`<!doctype html>
-<html><head><meta charset="utf-8"><title>${esc(businessName)} — catalog QR</title>
+<html><head><meta charset="utf-8"><title>${esc(businessName)} catalog QR</title>
 <style>
   @page { size: A4; margin: 0; }
   * { box-sizing: border-box; }

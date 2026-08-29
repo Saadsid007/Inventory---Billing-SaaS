@@ -12,11 +12,43 @@ import {
 } from 'lucide-react';
 import type { Metadata } from 'next';
 import Link from 'next/link';
+import { auth } from '@/auth';
 import { MarketingFooter, MarketingHeader } from '@/components/marketing-chrome';
 
 export const metadata: Metadata = {
-  title: { absolute: 'Billwise — Billing, stock and khata for Indian shops' },
+  title: { absolute: 'Billwise: billing, stock and khata for Indian shops' },
   description: `Make GST and non-GST bills, track stock, see who owes you money, and put your products online with a QR code. ${TRIAL_DAYS} days free, then ₹${MONTHLY_PRICE_INR} a month.`,
+  alternates: { canonical: '/' },
+};
+
+/**
+ * Structured data.
+ *
+ * `SoftwareApplication` with an `offers` block is what lets a search result
+ * show the price next to the link. For a product whose entire pitch is "one
+ * plan, ₹299", having that visible before the click is worth more than any
+ * amount of copy on the page.
+ */
+const jsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'SoftwareApplication',
+  name: 'Billwise',
+  applicationCategory: 'BusinessApplication',
+  operatingSystem: 'Web',
+  description: `Billing, stock and khata software for Indian shops. ${TRIAL_DAYS} days free, then ₹${MONTHLY_PRICE_INR} a month.`,
+  offers: {
+    '@type': 'Offer',
+    price: MONTHLY_PRICE_INR,
+    priceCurrency: 'INR',
+    category: 'subscription',
+  },
+  featureList: [
+    'GST and non-GST invoicing',
+    'Automatic stock tracking',
+    'Customer khata with running balance',
+    'Public product catalog with QR code',
+    'Sales, tax and stock reports',
+  ],
 };
 
 /**
@@ -56,7 +88,7 @@ const FEATURES = [
   {
     icon: BarChart3,
     title: 'Ready for your CA',
-    body: 'Sales, tax by rate, stock value and outstanding — all exportable as CSV at year end, in a form an accountant can actually use.',
+    body: 'Sales, tax by rate, stock value and outstanding, all exportable as CSV at year end in a form an accountant can actually use.',
   },
   {
     icon: Smartphone,
@@ -68,7 +100,7 @@ const FEATURES = [
 const STEPS = [
   {
     title: 'Add what you sell',
-    body: 'Name, price, and tax rate if you are registered. Import the rest later — you can start with five things.',
+    body: 'Name, price, and tax rate if you are registered. Add the rest later. You can start with five things.',
   },
   {
     title: 'Make a bill',
@@ -80,9 +112,18 @@ const STEPS = [
   },
 ];
 
-export default function HomePage() {
+export default async function HomePage() {
+  // Someone who is already logged in should never be offered "start free" as
+  // the main action on their own product's home page.
+  const session = await auth();
+  const signedIn = Boolean(session?.user?.id);
+
   return (
     <div className="min-h-dvh">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
       <MarketingHeader />
 
       <main>
@@ -98,12 +139,13 @@ export default function HomePage() {
             </h1>
             <p className="mx-auto mt-6 max-w-xl text-lg leading-relaxed text-balance text-muted-foreground">
               Make a bill in seconds, watch your stock go down by itself, and know exactly who owes
-              you money — without a register or a spreadsheet.
+              you money, without a register or a spreadsheet.
             </p>
             <div className="mt-9 flex flex-wrap justify-center gap-3">
-              <Link href="/register">
+              <Link href={signedIn ? '/app' : '/register'}>
                 <Button size="lg">
-                  Start {TRIAL_DAYS} days free <ArrowRight />
+                  {signedIn ? 'Go to your dashboard' : `Start ${TRIAL_DAYS} days free`}
+                  <ArrowRight />
                 </Button>
               </Link>
               <Link href="/pricing">
@@ -112,9 +154,11 @@ export default function HomePage() {
                 </Button>
               </Link>
             </div>
-            <p className="mt-5 text-sm text-muted-foreground">
-              No approval to wait for. You are billing in a minute.
-            </p>
+            {!signedIn && (
+              <p className="mt-5 text-sm text-muted-foreground">
+                Nothing to approve, nothing to install. You can bill in a minute.
+              </p>
+            )}
           </div>
         </section>
 
@@ -197,12 +241,12 @@ export default function HomePage() {
                 </li>
               ))}
             </ul>
-            <Link href="/register">
+            <Link href={signedIn ? '/app' : '/register'}>
               <Button
                 size="lg"
                 className="mt-9 bg-white text-primary shadow-sm hover:bg-white/90 active:bg-white/90"
               >
-                Start free <ArrowRight />
+                {signedIn ? 'Go to your dashboard' : 'Start free'} <ArrowRight />
               </Button>
             </Link>
           </div>

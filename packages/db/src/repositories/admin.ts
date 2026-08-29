@@ -25,6 +25,7 @@ export type AdminBusinessRow = {
   ownerName: string;
   ownerEmail: string;
   trialEndsAt: string | null;
+  paidUntil: string | null;
   createdAt: string;
   /** Counts only — never the rows behind them. */
   invoiceCount: number;
@@ -41,6 +42,7 @@ export async function listAllBusinesses(opts: { search?: string } = {}) {
       b.state_code as "stateCode", b.gstin,
       u.name as "ownerName", u.email as "ownerEmail",
       b.trial_ends_at::text as "trialEndsAt",
+      b.paid_until::text as "paidUntil",
       b.created_at::text as "createdAt",
       (select count(*) from invoices i where i.business_id = b.id)::int as "invoiceCount",
       (select count(*) from products p where p.business_id = b.id)::int as "productCount",
@@ -87,7 +89,8 @@ export async function getAdminStats(): Promise<AdminStats> {
       (select count(*) from businesses
         where status = 'trial' and (trial_ends_at is null or trial_ends_at > now()))::int
         as trialing,
-      (select count(*) from businesses where status = 'active')::int as paying,
+      (select count(*) from businesses
+        where status = 'active' and (paid_until is null or paid_until > now()))::int as paying,
       (select count(*) from businesses where status = 'suspended')::int as suspended,
       (select count(*) from users)::int as users,
       (select count(*) from invoices where status = 'issued')::int as invoices,
@@ -116,7 +119,13 @@ export async function getAdminStats(): Promise<AdminStats> {
 export async function markBusinessPaid(businessId: string, adminUserId: string): Promise<void> {
   await getDb().execute(sql`
     update businesses
-    set status = 'active', approved_at = now(), approved_by = ${adminUserId}::uuid
+    set status = 'active',
+        approved_at = now(),
+        approved_by = ${adminUserId}::uuid,
+        -- One month from whichever is later: today, or whatever they have
+        -- left. Marking someone paid twice by mistake gives them two months
+        -- rather than resetting them to one.
+        paid_until = greatest(coalesce(paid_until, now()), now()) + interval '1 month'
     where id = ${businessId}::uuid
   `);
 }

@@ -76,7 +76,7 @@ export default async function AdminsPage() {
         <div>
           <h2 className="text-base font-semibold">Add an admin</h2>
           <p className="mt-1 text-sm leading-relaxed text-muted-foreground">
-            They need a Billwise account first — ask them to sign up, then enter the same email
+            They need a Billwise account first. Ask them to sign up, then enter the same email
             here. Nothing is emailed out; they simply get the Admin panel link the next time they
             log in.
           </p>

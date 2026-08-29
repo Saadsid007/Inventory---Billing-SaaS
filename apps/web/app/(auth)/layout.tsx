@@ -13,7 +13,7 @@ import Link from 'next/link';
  * below `lg`, where a phone user needs the keyboard and the fields, not a pitch.
  */
 const POINTS = [
-  'Bill in seconds — GST or plain cash memo',
+  'Bill in seconds, GST or plain cash memo',
   'Stock goes down by itself with every bill',
   'Know exactly who owes you, and how much',
   'Your products online, with a QR for the counter',

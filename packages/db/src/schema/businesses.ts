@@ -52,6 +52,15 @@ export const businesses = pgTable(
      */
     status: businessStatusEnum().notNull().default('trial'),
     trialEndsAt: timestamp({ withTimezone: true }),
+    /**
+     * End of the paid month, extended by each payment.
+     *
+     * NULL on a paid business means "no end recorded" and grants access
+     * forever: that is every row created before monthly billing existed, and
+     * anything a super admin switches on by hand. Nobody loses access because
+     * of when they signed up.
+     */
+    paidUntil: timestamp({ withTimezone: true }),
     /** Set when a payment is recorded and the business is switched to 'active'. */
     approvedAt: timestamp({ withTimezone: true }),
     approvedBy: uuid().references(() => users.id),

@@ -121,7 +121,7 @@ export default async function PartyPage({ params }: { params: Promise<{ id: stri
                   as its own row rather than folded silently into the first
                   running total. */}
               <TR>
-                <TD className="text-muted-foreground">—</TD>
+                <TD className="text-muted-foreground">-</TD>
                 <TD className="text-muted-foreground">Opening balance</TD>
                 <TD numeric className="text-muted-foreground">
                   {inr(Number(party.openingBalance))}
