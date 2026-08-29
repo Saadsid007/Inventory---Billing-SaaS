@@ -296,6 +296,25 @@ means either using the walk-in name field or creating the contact first.
 
 ---
 
+## Phase 1e — print views ✅ done (2026-08-29)
+
+A4 and 80mm thermal, both from the same route with a `?format=` switch. No PDF
+library: `@media print` plus the browser's own dialog, which every shopkeeper
+already knows how to use.
+
+- **The template reads only the invoice's own snapshot columns.** It never joins
+  back to `products` or `parties`. A price change or a corrected address must
+  not alter a document that was printed and handed over months ago — that is
+  what the snapshot columns exist for (spec §4.3).
+- **Format preference is remembered.** A counter with a thermal roll should not
+  be asked "A4 or 80mm?" on every bill.
+- Verified in a browser: A4 shows both GSTINs, place of supply, the IGST column
+  and a signature block; thermal renders at 272px (≈72mm) in monospace with
+  tabular figures; the toolbar carries `.no-print` so it never reaches paper.
+- A cancelled invoice prints **\*\* CANCELLED \*\*** and keeps its number.
+
+---
+
 ## Not started
 
 Phase 1 (core billing), Phase 2 (compliance), Phase 3 (scale). The spec's

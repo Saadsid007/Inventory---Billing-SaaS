@@ -31,9 +31,23 @@ export function InvoiceActions({
   const [pending, startTransition] = React.useTransition();
 
   const due = (Number(grandTotal) - Number(amountPaid)).toFixed(2);
+
   const [amount, setAmount] = React.useState(due);
   const [method, setMethod] = React.useState<(typeof PAYMENT_METHODS)[number]>('cash');
   const [paidOn, setPaidOn] = React.useState(new Date().toISOString().slice(0, 10));
+
+  /**
+   * Open the print view in whichever format this shop used last.
+   *
+   * A counter with a thermal roll should not be asked "A4 or 80mm?" on every
+   * bill (spec Phase 1e: the button opens the right view based on preference).
+   */
+  function openPrint() {
+    const saved =
+      typeof window === 'undefined' ? null : localStorage.getItem('bahikhata-print-format');
+    const format = saved === 'thermal' ? 'thermal' : 'a4';
+    router.push(`/app/invoices/${invoiceId}/print?format=${format}`);
+  }
 
   function run(fn: () => Promise<{ ok: boolean; formError?: string }>) {
     setError(undefined);
@@ -65,7 +79,7 @@ export function InvoiceActions({
           {status === 'issued' && (
             <>
               {Number(due) > 0 && <Button onClick={() => setMode('pay')}>Record payment</Button>}
-              <Button variant="outline" onClick={() => window.print()}>
+              <Button variant="outline" onClick={openPrint}>
                 Print
               </Button>
               <Button variant="ghost" onClick={() => setMode('cancel')}>

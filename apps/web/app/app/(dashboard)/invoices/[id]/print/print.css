@@ -1,0 +1,119 @@
+/**
+ * Print styles. Build spec Phase 1e.
+ *
+ * Two layouts, one document: A4 for a filing copy, 80mm for a thermal counter
+ * printer. No PDF library — `@media print` and the browser's own dialog do the
+ * job, and every shopkeeper already knows how to use it.
+ */
+
+.print-sheet {
+  color: #000;
+  background: #fff;
+  font-family: ui-sans-serif, system-ui, sans-serif;
+}
+
+/* Money and quantity columns must line up. */
+.print-sheet .num {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+/* ---------------------------------------------------------------- A4 ---- */
+
+.print-a4 {
+  width: 210mm;
+  min-height: 297mm;
+  padding: 12mm;
+  margin: 0 auto;
+  font-size: 11pt;
+  line-height: 1.4;
+}
+
+.print-a4 table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 6mm;
+}
+
+.print-a4 th,
+.print-a4 td {
+  border: 0.3mm solid #000;
+  padding: 1.6mm 2mm;
+  font-size: 9.5pt;
+}
+
+.print-a4 th {
+  background: #f0f0f0;
+  text-align: left;
+  font-weight: 600;
+}
+
+/* -------------------------------------------------------------- 80mm ---- */
+
+.print-thermal {
+  width: 72mm; /* 80mm paper minus the printer's own margins */
+  padding: 2mm;
+  margin: 0 auto;
+  /* Monospace so the two-column receipt layout stays aligned on a printer
+     that has no idea what proportional fonts are. */
+  font-family: ui-monospace, 'Courier New', monospace;
+  font-size: 9pt;
+  line-height: 1.35;
+}
+
+.print-thermal table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.print-thermal td,
+.print-thermal th {
+  padding: 0.6mm 0;
+  font-size: 8.5pt;
+}
+
+.print-thermal .rule {
+  border-top: 1px dashed #000;
+  margin: 1.5mm 0;
+}
+
+/* ------------------------------------------------------------- print ---- */
+
+@media print {
+  /* The toolbar is for choosing a format on screen; it must never print. */
+  .no-print {
+    display: none !important;
+  }
+
+  html,
+  body {
+    background: #fff;
+    margin: 0;
+    padding: 0;
+  }
+
+  .print-a4 {
+    width: auto;
+    min-height: auto;
+    padding: 0;
+  }
+
+  .print-thermal {
+    width: auto;
+    padding: 0;
+  }
+
+  /* A long invoice must not split a line item across two pages. */
+  tr {
+    page-break-inside: avoid;
+  }
+
+  thead {
+    display: table-header-group;
+  }
+}
+
+@page {
+  margin: 10mm;
+}

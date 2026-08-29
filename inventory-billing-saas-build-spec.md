@@ -723,11 +723,11 @@ Use the separate scaffold prompt for this. Deliverable is an empty but wired-up 
 - [x] Invoice list: filters by date range, party, kind, payment status
 - [x] Payment recording: amount, method, date → updates `amount_paid` + `payment_status`
 
-**1e. Print**
-- [ ] A4 print view — CSS `@media print`, no library needed
-- [ ] 80mm thermal print view — separate CSS, monospace, narrow
-- [ ] Print template reads only snapshot fields, never joins to `products`
-- [ ] "Print" button opens the right view based on a user preference
+**1e. Print** ✅ DONE
+- [x] A4 print view — CSS `@media print`, no library needed
+- [x] 80mm thermal print view — separate CSS, monospace, narrow
+- [x] Print template reads only snapshot fields, never joins to `products`
+- [x] "Print" button opens the right view based on a user preference
 
 **1f. Public catalog — the differentiator**
 - [ ] `/store/[slug]` — SSR, ISR revalidate 60s
@@ -835,7 +835,7 @@ Each step names the package it lands in. Do not start a step until the previous 
  8. [x] Phase 1a + 1b — masters, products               → web  (images blocked)
  9. [x] Phase 1c — parties + ledger                     → db (balance calc in SQL), web
 10. [x] Phase 1d — invoices                             → core/services, web
-11. Phase 1e — A4 + 80mm print views                     → web, ui
+11. [x] Phase 1e — A4 + 80mm print views                → web
 12. Phase 1f — public catalog + QR                       → web
 13. Phase 1g — dashboard, reports, admin, marketing      → web
 ```
