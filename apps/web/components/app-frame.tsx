@@ -1,7 +1,7 @@
 'use client';
 
 import { AppShell, type NavItem } from '@bahikhata/ui';
-import { LayoutDashboard, LogOut, Package, Settings, Users } from 'lucide-react';
+import { FileText, LayoutDashboard, LogOut, Package, Settings, Users } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import * as React from 'react';
@@ -21,6 +21,7 @@ import { signOutAction } from '@/app/(auth)/actions';
  */
 const NAV: readonly NavItem[] = [
   { href: '/app', label: 'Dashboard', icon: LayoutDashboard },
+  { href: '/app/invoices', label: 'Invoices', icon: FileText },
   { href: '/app/products', label: 'Products', icon: Package },
   { href: '/app/parties', label: 'Parties', icon: Users },
   { href: '/app/settings', label: 'Settings', icon: Settings },

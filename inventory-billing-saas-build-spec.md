@@ -712,16 +712,16 @@ Use the separate scaffold prompt for this. Deliverable is an empty but wired-up 
 - [x] Party detail page: transaction list + running balance + outstanding total
 - [x] Outstanding = `opening_balance + sum(issued unpaid invoices) - sum(payments in)`
 
-**1d. Invoices — the core**
-- [ ] Invoice create form: party picker (with inline create), line items with product autocomplete, live totals
-- [ ] Kind selector: Tax Invoice / Bill of Supply / Cash Memo / Estimate / Delivery Challan
-  - Hide GST fields entirely when the business has no GSTIN
-- [ ] Place-of-supply auto-detection + manual override
-- [ ] Tax engine per §5.3, as a **pure function with unit tests**
-- [ ] Issue flow: transaction → assign number → write stock movements → set status
-- [ ] Cancel flow: reverse stock, keep number
-- [ ] Invoice list: filters by date range, party, kind, payment status
-- [ ] Payment recording: amount, method, date → updates `amount_paid` + `payment_status`
+**1d. Invoices — the core** ⚠️ DONE except inline party create
+- [x] Invoice create form: party picker, line items with product autocomplete, live totals (inline party create: action written, UI not wired)
+- [x] Kind selector: Tax Invoice / Bill of Supply / Cash Memo / Estimate / Delivery Challan
+  - [x] Hide GST fields entirely when the business has no GSTIN
+- [x] Place-of-supply auto-detection + manual override
+- [x] Tax engine per §5.3, as a **pure function with unit tests**
+- [x] Issue flow: transaction → assign number → write stock movements → set status
+- [x] Cancel flow: reverse stock, keep number
+- [x] Invoice list: filters by date range, party, kind, payment status
+- [x] Payment recording: amount, method, date → updates `amount_paid` + `payment_status`
 
 **1e. Print**
 - [ ] A4 print view — CSS `@media print`, no library needed
@@ -834,7 +834,7 @@ Each step names the package it lands in. Do not start a step until the previous 
         proven against the real database.
  8. [x] Phase 1a + 1b — masters, products               → web  (images blocked)
  9. [x] Phase 1c — parties + ledger                     → db (balance calc in SQL), web
-10. Phase 1d — invoices (split over several sessions)    → core/services, web
+10. [x] Phase 1d — invoices                             → core/services, web
 11. Phase 1e — A4 + 80mm print views                     → web, ui
 12. Phase 1f — public catalog + QR                       → web
 13. Phase 1g — dashboard, reports, admin, marketing      → web

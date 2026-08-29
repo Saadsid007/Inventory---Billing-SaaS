@@ -255,6 +255,47 @@ first row and the list totalled it correctly.
 
 ---
 
+## Phase 1d — invoices ⚠️ done except inline party create (2026-08-29)
+
+The MVP's core. Verified end to end against Neon in a browser, and the numbers
+were checked in the database afterwards rather than trusted from the screen:
+
+| Step | Verified |
+|---|---|
+| Business had no GSTIN | Tax Invoice and Bill of Supply were **not offered**; GST fields hidden |
+| GSTIN added in Settings | All five document types appeared |
+| Party in Maharashtra, business in UP | Place of supply resolved to 27 "(party state)" → **IGST** |
+| Live preview | 10 × ₹28 = ₹280 taxable, IGST ₹50.40, round off −₹0.40, total ₹330 |
+| Issued | Number **001**, FY 2026-27; stock 48 → 38; party outstanding 1500 → 1830 |
+| Partial payment ₹100 | Paid ₹100, Due ₹230, `payment_status = partial` |
+| Cancelled | Stock back to 48 via a `sale_cancelled` reversal — the `sale` row is still there |
+| After cancelling | Invoice **keeps 001**, `next_number` stayed at 2 — the number was not reused |
+| Reconciliation | `sum(stock_movements) === current_stock` at every step |
+
+### The piece that makes this trustworthy
+
+`buildInvoice` in `packages/core/src/services` composes place of supply,
+financial year and the tax engine into the exact shape the `invoices` and
+`invoice_lines` columns take. **The browser runs the same function for its live
+preview that the server runs on save** — so the total a shopkeeper watches while
+typing cannot disagree with what gets stored, because it is not a second
+implementation of the arithmetic.
+
+The client never sends totals. It sends what a person typed; the server
+recomputes every figure. A browser must not get to decide what a customer owes.
+The party's state is read from the stored record too, not the form — otherwise a
+crafted request could flip IGST to CGST/SGST.
+
+### Not done
+
+**Inline party creation from the invoice form.** `quickCreatePartyAction` is
+written and validated, but no UI is wired to it yet; billing a new customer
+means either using the walk-in name field or creating the contact first.
+
+**100 core tests** (8 new for `buildInvoice`), 136 unit tests overall.
+
+---
+
 ## Not started
 
 Phase 1 (core billing), Phase 2 (compliance), Phase 3 (scale). The spec's
