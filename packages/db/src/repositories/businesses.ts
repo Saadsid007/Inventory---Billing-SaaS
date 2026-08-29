@@ -1,5 +1,5 @@
 import type { TenantCtx } from '@bahikhata/shared';
-import { and, eq, gt, or, sql } from 'drizzle-orm';
+import { eq } from 'drizzle-orm';
 import { getDb } from '../client';
 import { businessSettings, businesses } from '../schema/index';
 
@@ -120,47 +120,4 @@ export async function updateSettings(ctx: TenantCtx, patch: SettingsPatch): Prom
     .update(businessSettings)
     .set(patch)
     .where(eq(businessSettings.businessId, ctx.businessId));
-}
-
-/**
- * Public catalog lookup — the one intentionally unscoped read in this file.
- *
- * `/store/[slug]` is served to anonymous visitors, so there is no session and no
- * TenantCtx to scope by. It is safe only because of what it returns: a
- * business's own public identity, and nothing transactional. The access and
- * `catalog_enabled` checks are part of the query rather than the caller's job,
- * so a page cannot forget them and expose a suspended or opted-out shop.
- *
- * Trial businesses get a live catalog too — it is the feature most likely to
- * convince someone to pay, so hiding it until they do would be backwards. The
- * expiry test mirrors `evaluateAccess()` in @bahikhata/shared; the two must
- * stay in step.
- */
-export async function findPublicCatalogBusiness(slug: string) {
-  const [row] = await getDb()
-    .select({
-      id: businesses.id,
-      name: businesses.name,
-      slug: businesses.slug,
-      city: businesses.city,
-      addressLine1: businesses.addressLine1,
-      phone: businesses.phone,
-      logoUrl: businesses.logoUrl,
-      showCatalogPrices: businessSettings.showCatalogPrices,
-      catalogWhatsapp: businessSettings.catalogWhatsapp,
-    })
-    .from(businesses)
-    .innerJoin(businessSettings, eq(businessSettings.businessId, businesses.id))
-    .where(
-      and(
-        eq(businesses.slug, slug),
-        eq(businessSettings.catalogEnabled, true),
-        or(
-          eq(businesses.status, 'active'),
-          and(eq(businesses.status, 'trial'), gt(businesses.trialEndsAt, sql`now()`)),
-        ),
-      ),
-    )
-    .limit(1);
-  return row;
 }

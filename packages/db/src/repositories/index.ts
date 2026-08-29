@@ -18,3 +18,4 @@ export * from './products';
 export * from './stock';
 export * from './parties';
 export * from './invoices';
+export * from './catalog';

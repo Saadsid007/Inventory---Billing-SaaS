@@ -729,18 +729,18 @@ Use the separate scaffold prompt for this. Deliverable is an empty but wired-up 
 - [x] Print template reads only snapshot fields, never joins to `products`
 - [x] "Print" button opens the right view based on a user preference
 
-**1f. Public catalog — the differentiator**
-- [ ] `/store/[slug]` — SSR, ISR revalidate 60s
-- [ ] Product grid: image, name, description, price (respecting `show_catalog_prices`)
-- [ ] Stock shown as **In stock / Low stock / Out of stock** — never the exact number
-- [ ] Category filter + search
-- [ ] Business header: logo, name, address, phone
-- [ ] "Enquire on WhatsApp" button with prefilled message including product name
-- [ ] `schema.org` JSON-LD: `Store` + `Product` markup
-- [ ] `generateMetadata` for OG tags per business and per product
-- [ ] QR code generation (client-side, `qrcode` npm) → PNG download + printable A4 poster
-- [ ] Catalog on/off toggle; page 404s when off or business isn't active
-- [ ] View counter writing to `catalog_views`
+**1f. Public catalog — the differentiator** ✅ DONE
+- [x] `/store/[slug]` — SSR, ISR revalidate 60s
+- [x] Product grid: image, name, description, price (respecting `show_catalog_prices`)
+- [x] Stock shown as **In stock / Low stock / Out of stock** — never the exact number
+- [x] Category filter + search
+- [x] Business header: logo, name, address, phone
+- [x] "Enquire on WhatsApp" button with prefilled message including product name
+- [x] `schema.org` JSON-LD: `Store` + `Product` markup
+- [x] `generateMetadata` for OG tags per business and per product
+- [x] QR code generation (client-side, `qrcode` npm) → PNG download + printable A4 poster
+- [x] Catalog on/off toggle; page 404s when off or business isn't active
+- [x] View counter writing to `catalog_views`
 
 **1g. Basics**
 - [ ] Dashboard: today's sales, this month's sales, total outstanding, low stock count, recent invoices
@@ -836,7 +836,7 @@ Each step names the package it lands in. Do not start a step until the previous 
  9. [x] Phase 1c — parties + ledger                     → db (balance calc in SQL), web
 10. [x] Phase 1d — invoices                             → core/services, web
 11. [x] Phase 1e — A4 + 80mm print views                → web
-12. Phase 1f — public catalog + QR                       → web
+12. [x] Phase 1f — public catalog + QR                  → web
 13. Phase 1g — dashboard, reports, admin, marketing      → web
 ```
 

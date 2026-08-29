@@ -1,5 +1,5 @@
 import type { TenantCtx } from '@bahikhata/shared';
-import { and, asc, desc, eq, ilike, isNotNull, or, sql } from 'drizzle-orm';
+import { and, asc, eq, ilike, isNotNull, or, sql } from 'drizzle-orm';
 import { getDb, type Executor } from '../client';
 import { categories, products, stockMovements, taxRates, units } from '../schema/index';
 
@@ -252,55 +252,4 @@ export async function countLowStock(ctx: TenantCtx, tx: Executor = getDb()): Pro
       ),
     );
   return row?.n ?? 0;
-}
-
-/**
- * Products for the public catalog.
- *
- * Unscoped by `TenantCtx` because there is no session — `/store/[slug]`
- * resolves the business first, then calls this with its id. Note what it does
- * NOT select: cost price, and the exact stock number. Competitors read catalogs
- * too; the public sees "In stock", never "3 left" (spec Phase 1f).
- */
-export async function listCatalogProducts(
-  businessId: string,
-  opts: { categoryId?: string; search?: string; limit?: number; offset?: number } = {},
-) {
-  const where = [
-    eq(products.businessId, businessId),
-    eq(products.isActive, true),
-    eq(products.showInCatalog, true),
-  ];
-  if (opts.categoryId) where.push(eq(products.categoryId, opts.categoryId));
-  if (opts.search) where.push(ilike(products.name, `%${opts.search.trim()}%`));
-
-  return getDb()
-    .select({
-      id: products.id,
-      name: products.name,
-      description: products.description,
-      salePrice: products.salePrice,
-      imageUrls: products.imageUrls,
-      categoryId: products.categoryId,
-      categoryName: categories.name,
-      unitShortName: units.shortName,
-      customFields: products.customFields,
-      // Bucketed, never the raw figure.
-      stockStatus: sql<'in_stock' | 'low_stock' | 'out_of_stock'>`
-        case
-          when ${products.trackInventory} = false then 'in_stock'
-          when ${products.currentStock} <= 0 then 'out_of_stock'
-          when ${products.lowStockAlert} is not null
-               and ${products.currentStock} <= ${products.lowStockAlert} then 'low_stock'
-          else 'in_stock'
-        end
-      `,
-    })
-    .from(products)
-    .leftJoin(categories, eq(categories.id, products.categoryId))
-    .leftJoin(units, eq(units.id, products.unitId))
-    .where(and(...where))
-    .orderBy(desc(products.updatedAt))
-    .limit(opts.limit ?? 60)
-    .offset(opts.offset ?? 0);
 }

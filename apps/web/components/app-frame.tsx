@@ -1,7 +1,15 @@
 'use client';
 
 import { AppShell, type NavItem } from '@bahikhata/ui';
-import { FileText, LayoutDashboard, LogOut, Package, Settings, Users } from 'lucide-react';
+import {
+  FileText,
+  LayoutDashboard,
+  LogOut,
+  Package,
+  QrCode,
+  Settings,
+  Users,
+} from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import * as React from 'react';
@@ -24,6 +32,7 @@ const NAV: readonly NavItem[] = [
   { href: '/app/invoices', label: 'Invoices', icon: FileText },
   { href: '/app/products', label: 'Products', icon: Package },
   { href: '/app/parties', label: 'Parties', icon: Users },
+  { href: '/app/catalog', label: 'Catalog', icon: QrCode },
   { href: '/app/settings', label: 'Settings', icon: Settings },
 ];
 

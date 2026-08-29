@@ -10,8 +10,15 @@ import type { NextAuthConfig } from 'next-auth';
  * The full configuration, with the credentials provider, lives in ./auth.ts.
  */
 
-/** Routes reachable without a session. Everything else requires one. */
-const PUBLIC_PREFIXES = ['/login', '/register', '/store', '/pricing'] as const;
+/**
+ * Routes reachable without a session. Everything else requires one.
+ *
+ * `/api/catalog` is here because the catalog's view counter is called by
+ * anonymous visitors — without it the proxy 307s them to /login and the
+ * counter silently records nothing. The handler does its own validation and
+ * resolves the business from the slug, so being public costs nothing.
+ */
+const PUBLIC_PREFIXES = ['/login', '/register', '/store', '/pricing', '/api/catalog'] as const;
 
 export function isPublicPath(pathname: string): boolean {
   if (pathname === '/') return true;

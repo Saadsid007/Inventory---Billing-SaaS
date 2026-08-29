@@ -344,6 +344,53 @@ already knows how to use.
 
 ---
 
+## Phase 1f — public catalog and QR ✅ done (2026-08-29)
+
+The spec's differentiator. `/store/[slug]` and `/store/[slug]/[productSlug]`,
+server-rendered with 60s ISR, plus `/app/catalog` for the QR code.
+
+Verified by fetching the pages **anonymously with curl** — no session, no
+cookies, exactly what a customer scanning a QR gets:
+
+| Check | Result |
+|---|---|
+| Shop page | Name, logo, product, price, stock badge, WhatsApp button all in the server HTML |
+| `Store` JSON-LD | Emitted with logo and an `OfferCatalog` of products |
+| `Product` JSON-LD | Emitted with images, category, brand, offer and availability |
+| SEO tags | `<title>` and `og:title` are the SHOP's, not "· Bahikhata"; canonical correct |
+| WhatsApp | `wa.me/91...` with the message pre-written, product name included |
+| **Leak check** | Exact stock, cost price and GSTIN: **none present in the HTML** |
+| Catalog off | 404. Unknown shop: 404. Bad product slug: 404 |
+
+### Decisions
+
+- **Stock is a state, never a number.** Competitors read catalogs; "3 left"
+  tells them your volume and turnover. "In stock" tells a customer what they
+  need and nothing more.
+- **Trial shops get a live catalog.** It is the feature most likely to convince
+  someone to pay, so hiding it until they do would be backwards. The SQL check
+  mirrors `evaluateAccess()` — the two must stay in step.
+- **Prices are withheld from JSON-LD too** when `show_catalog_prices` is off. A
+  wholesaler hiding prices on the page must not have them leak into a search
+  result through structured data.
+- **Product URLs are `{name-slug}-{8 hex}`** — keywords in the path for SEO
+  without putting a full uuid in front of a customer.
+- **The view counter runs client-side.** The page is ISR-cached, so counting
+  during render would record one view per revalidation instead of one per
+  visitor. One view per page per browser session.
+- **The QR uses error-correction level H** (~30% recoverable). A poster taped to
+  a counter gets smudged, curled and half-covered by a card machine.
+
+### A real bug this caught
+
+`/api/catalog/view` was being 307'd to `/login` by the proxy, so the view
+counter would have silently recorded nothing in production. `/api/catalog` is
+now in `PUBLIC_PREFIXES`. **Verified after the fix**: valid shops record a view
+with referrer and resolved product id; a switched-off shop, an unknown slug,
+garbage JSON and a foreign product id all return 204 and store nothing.
+
+---
+
 ## Not started
 
 Phase 1 (core billing), Phase 2 (compliance), Phase 3 (scale). The spec's
