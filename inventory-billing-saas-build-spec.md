@@ -707,10 +707,10 @@ Use the separate scaffold prompt for this. Deliverable is an empty but wired-up 
 - [ ] Image upload to Supabase public bucket, converted to webp, max 5 per product — **BLOCKED: no Supabase credentials**
 - [x] Opening stock creates a `stock_movements` row
 
-**1c. Parties**
-- [ ] Parties CRUD with custom fields
-- [ ] Party detail page: transaction list + running balance + outstanding total
-- [ ] Outstanding = `opening_balance + sum(issued unpaid invoices) - sum(payments in)`
+**1c. Parties** ✅ DONE
+- [x] Parties CRUD with custom fields
+- [x] Party detail page: transaction list + running balance + outstanding total
+- [x] Outstanding = `opening_balance + sum(issued unpaid invoices) - sum(payments in)`
 
 **1d. Invoices — the core**
 - [ ] Invoice create form: party picker (with inline create), line items with product autocomplete, live totals
@@ -833,7 +833,7 @@ Each step names the package it lands in. Do not start a step until the previous 
         Tenant isolation (§8.3) and stock reconciliation (§8.4) both
         proven against the real database.
  8. [x] Phase 1a + 1b — masters, products               → web  (images blocked)
- 9. Phase 1c — parties + ledger                          → core (balance calc), web
+ 9. [x] Phase 1c — parties + ledger                     → db (balance calc in SQL), web
 10. Phase 1d — invoices (split over several sessions)    → core/services, web
 11. Phase 1e — A4 + 80mm print views                     → web, ui
 12. Phase 1f — public catalog + QR                       → web

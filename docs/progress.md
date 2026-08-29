@@ -227,6 +227,34 @@ upload control will go. `requireStorageEnv()` already guards the code path.
 
 ---
 
+## Phase 1c — parties and ledger ✅ done (2026-08-29)
+
+Party CRUD with custom fields, an outstanding-balance list, and a per-party
+ledger with a running balance. Verified in a browser: created a contact with a
+₹1500 opening balance; the detail page showed it carried forward as the ledger's
+first row and the list totalled it correctly.
+
+- **Outstanding is computed in Postgres `numeric`**, not JavaScript. Only
+  `status = 'issued'` counts — drafts are not owed, and cancelled invoices are
+  not either, which is why the query filters on status rather than on "has a
+  number" (cancelled invoices keep theirs). Estimates and delivery challans are
+  excluded; nobody owes money for a quotation.
+- **The running balance is recomputed, never stored.** A stored one has to be
+  rewritten whenever an older entry is corrected, and the day that rewrite is
+  missed the ledger silently stops adding up.
+- **Opening balance is locked after creation.** It is the ledger's starting
+  point; moving it later would change every running balance since, with no
+  record of why. To change what someone owes, record a payment.
+- **Cancelled invoices appear in the ledger with a zero amount.** Omitting them
+  makes it look like an invoice vanished — exactly the accusation a
+  cancellation invites.
+- A GSTIN whose state prefix disagrees with the recorded state **warns rather
+  than blocks**. It is occasionally legitimate (a Delhi-registered buyer taking
+  delivery in Haryana) but usually a typo, and it silently flips IGST vs
+  CGST/SGST on every future invoice.
+
+---
+
 ## Not started
 
 Phase 1 (core billing), Phase 2 (compliance), Phase 3 (scale). The spec's
