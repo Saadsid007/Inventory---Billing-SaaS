@@ -391,10 +391,59 @@ garbage JSON and a foreign product id all return 204 and store nothing.
 
 ---
 
-## Not started
 
-Phase 1 (core billing), Phase 2 (compliance), Phase 3 (scale). The spec's
-build order puts steps 4–6 — tax engine, place of supply, invoice numbering —
-before any Phase 1 UI, and calls them the highest-leverage work in the project.
-That ordering is not negotiable: a wrong tax engine makes every invoice ever
-issued wrong, and nobody finds out until a CA calls.
+## Phase 1g — dashboard, reports, admin, marketing ✅ done (2026-08-29)
+
+| Piece | Route |
+|---|---|
+| Dashboard with real figures | `/app` — today's and month's sales, receivables, low stock, recent bills |
+| Reports | `/app/reports` — sales summary, tax by rate, stock value, outstanding |
+| CSV export | `/app/reports/export/[kind]` — sales, tax, stock, outstanding |
+| Stock in / out | `/app/stock` — manual adjustments with a reason, plus the movement ledger |
+| Marketing | `/` and `/pricing` |
+| Super admin | `/admin`, `/admin/admins`, `/admin/config`, `/admin/login` |
+
+CSV is written by `apps/web/lib/csv.ts`: a UTF-8 BOM so Excel opens Hindi and
+rupee signs correctly, CRLF line endings, and every field beginning `=`, `+`,
+`-` or `@` prefixed with a quote. Without that last one, a party named `=cmd|…`
+is a formula the accountant's spreadsheet will happily execute.
+
+### Super admin
+
+- **The flag is read live from the database, never from the JWT.**
+  `isSuperAdminLive()` in `lib/auth/require-business.ts` — one indexed read by
+  primary key, cached per request. A 30-day token would keep granting admin
+  access for a month after a revocation, and would hide the panel for a month
+  after a grant. Both directions were tested by flipping the flag in SQL with a
+  live session open: access and the nav link followed the database immediately,
+  while the token still said `isSuperAdmin: false`.
+- **`/admin/login` is the entry point** and is the only `/admin/*` path in
+  `PUBLIC_PREFIXES`. Verified anonymously: `/admin`, `/admin/admins` and
+  `/admin/config` all 307 to `/login`; `/admin/login` returns 200. Logged in as
+  a non-admin it says so plainly instead of pretending the panel does not exist
+  — that page is the one place someone has deliberately gone looking.
+- **No separate admin password.** A second credential for the same person is one
+  more thing to leak; the flag on the user row is what grants access.
+- **Adding an admin promotes an existing account, by email.** It cannot create
+  one. There is no email delivery in this product, so an "invite" would write a
+  row nobody could ever log into — and this way the person chose their own
+  password and we never handled it.
+- **Removing an admin refuses self-revocation** (so a mis-click cannot lock you
+  out of the panel you are standing in) and refuses to remove the last admin.
+- **`/admin/config` is deliberately empty.** It is the reserved home for
+  site-wide changes — announcement banner, feature switches, an extra field on a
+  form, the price and trial length. It renders a list of what will live there
+  rather than controls that do nothing: a toggle that does not toggle is worse
+  than no toggle, because someone will flip it and believe it worked.
+
+Verified in the browser end to end: grant an unknown email → "Nobody has signed
+up with that email yet"; grant the same person twice → "already an admin";
+grant a real account → appears in the list immediately; remove → gone. Email is
+trimmed and lower-cased, so `TEST2@Bahikhata.local ` matched `test2@…`. The
+test rows were created and deleted directly in SQL; the real business on the
+system was never touched.
+
+### Still open from Phase 1d
+
+Inline party creation from the invoice form. `quickCreatePartyAction` exists and
+validates; no UI is wired to it yet.

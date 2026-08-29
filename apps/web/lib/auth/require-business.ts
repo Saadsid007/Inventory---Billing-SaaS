@@ -1,5 +1,5 @@
 import 'server-only';
-import { getBusinessStatus, resolveMembership } from '@bahikhata/db';
+import { findUserById, getBusinessStatus, resolveMembership } from '@bahikhata/db';
 import {
   type AccessState,
   type BusinessStatus,
@@ -134,12 +134,33 @@ export async function requireBusiness(): Promise<TenantCtx> {
   return ctx;
 }
 
-/** Guard for `/admin`. Super admins see metadata and counts only (spec §6). */
-export async function requireSuperAdmin(): Promise<SessionUser> {
+/**
+ * Guard for `/admin`. Super admins see metadata and counts only (spec §6).
+ *
+ * The flag is read LIVE from the database, not from the session token. It is
+ * on the JWT too, but a 30-day token would keep granting admin access for a
+ * month after the flag was revoked — which is the wrong failure mode for the
+ * one role that can suspend a paying customer's business.
+ *
+ * One indexed read by primary key, cached per request. The app layout uses it
+ * too, only to decide whether to show the Admin panel link — a grant or a
+ * revocation therefore shows up on the very next page, instead of whenever the
+ * person next happens to log in.
+ */
+export const isSuperAdminLive = cache(async function isSuperAdminLive(
+  userId: string,
+): Promise<boolean> {
+  const live = await findUserById(userId);
+  return live?.isSuperAdmin ?? false;
+});
+
+export const requireSuperAdmin = cache(async function requireSuperAdmin(): Promise<SessionUser> {
   const user = await requireUser();
-  if (!user.isSuperAdmin) {
-    // Not a 403 page: an ordinary user should not learn that /admin exists.
+
+  if (!(await isSuperAdminLive(user.id))) {
+    // Not a 403: an ordinary user should not learn that /admin exists at all.
     redirect('/app');
   }
-  return user;
-}
+
+  return { ...user, isSuperAdmin: true };
+});

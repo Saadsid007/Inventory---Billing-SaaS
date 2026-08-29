@@ -743,12 +743,13 @@ Use the separate scaffold prompt for this. Deliverable is an empty but wired-up 
 - [x] View counter writing to `catalog_views`
 
 **1g. Basics**
-- [ ] Dashboard: today's sales, this month's sales, total outstanding, low stock count, recent invoices
-- [ ] Reports: sales summary (date range), stock summary, outstanding by party
-- [ ] CSV export for products, parties, invoices
-- [ ] Simple Stock In / Stock Out form (this is **not** a purchase bill — just quantity + reason + note)
-- [ ] Super admin: business list, mark-paid/suspend, aggregate counts only
-- [ ] Marketing home page + pricing page
+- [x] Dashboard: today's sales, this month's sales, total outstanding, low stock count, recent invoices
+- [x] Reports: sales summary (date range), stock summary, outstanding by party
+- [x] CSV export for products, parties, invoices
+- [x] Simple Stock In / Stock Out form (this is **not** a purchase bill — just quantity + reason + note)
+- [x] Super admin: business list, mark-paid/suspend, aggregate counts only
+- [x] Super admin login (`/admin/login`), admin management by email, empty site-settings module
+- [x] Marketing home page + pricing page
 
 **Done when:** a real shopkeeper can bill for a full day, print it, see their stock go down, check who owes money, and share their catalog QR.
 
@@ -837,7 +838,7 @@ Each step names the package it lands in. Do not start a step until the previous 
 10. [x] Phase 1d — invoices                             → core/services, web
 11. [x] Phase 1e — A4 + 80mm print views                → web
 12. [x] Phase 1f — public catalog + QR                  → web
-13. Phase 1g — dashboard, reports, admin, marketing      → web
+13. [x] Phase 1g — dashboard, reports, admin, marketing → web
 ```
 
 Steps 4–6 are the highest-leverage work in this entire project. They are pure functions with no database and no UI, so they can be tested exhaustively in minutes. Everything downstream assumes they are correct — if the tax engine is wrong, every invoice ever issued is wrong, and you will not find out until a CA calls.

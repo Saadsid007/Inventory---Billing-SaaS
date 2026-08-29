@@ -1,6 +1,11 @@
 import { trialDaysRemaining } from '@bahikhata/shared';
 import { AppFrame } from '@/components/app-frame';
-import { requireBusiness, requireMembership, requireUser } from '@/lib/auth/require-business';
+import {
+  isSuperAdminLive,
+  requireBusiness,
+  requireMembership,
+  requireUser,
+} from '@/lib/auth/require-business';
 
 /**
  * Guard for everything inside the app.
@@ -34,6 +39,9 @@ export default async function DashboardLayout({ children }: { children: React.Re
             : `Trial · ${daysLeft} days left`
       }
       userName={user.name || user.email}
+      // Read live rather than from the token. The token only changes at login,
+      // so someone promoted this morning would not see the link for a month.
+      isSuperAdmin={await isSuperAdminLive(user.id)}
     >
       {children}
     </AppFrame>

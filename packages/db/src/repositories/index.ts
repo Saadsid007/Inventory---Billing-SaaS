@@ -19,3 +19,5 @@ export * from './stock';
 export * from './parties';
 export * from './invoices';
 export * from './catalog';
+export * from './reports';
+export * from './admin';

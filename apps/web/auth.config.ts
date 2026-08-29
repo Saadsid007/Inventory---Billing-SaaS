@@ -18,7 +18,16 @@ import type { NextAuthConfig } from 'next-auth';
  * counter silently records nothing. The handler does its own validation and
  * resolves the business from the slug, so being public costs nothing.
  */
-const PUBLIC_PREFIXES = ['/login', '/register', '/store', '/pricing', '/api/catalog'] as const;
+const PUBLIC_PREFIXES = [
+  '/login',
+  '/register',
+  '/store',
+  '/pricing',
+  '/api/catalog',
+  // The admin entry point, and only that path — `/admin` itself stays behind
+  // the session check and then behind requireSuperAdmin().
+  '/admin/login',
+] as const;
 
 export function isPublicPath(pathname: string): boolean {
   if (pathname === '/') return true;

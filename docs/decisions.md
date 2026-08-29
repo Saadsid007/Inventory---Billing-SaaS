@@ -277,3 +277,49 @@ One genuine generalisation of the spec: for **inclusive** pricing the divisor is
 whenever cess is zero, which is nearly always. With a cess, the spec's version
 leaves the grand total short of the price the shopkeeper typed — defeating the
 entire point of inclusive mode.
+
+---
+
+## D15. Super admin rights live on the user row, and are read live
+
+`users.is_super_admin` is the whole mechanism. There is no admin account type,
+no second password, no separate admin login credential.
+
+**Read from the database on every admin request, not from the session token.**
+The flag is on the JWT as well, but the JWT lasts 30 days and only changes at
+login. Trusting it would mean a revoked admin keeps the power to suspend a
+paying customer's business for a month, and a newly granted admin cannot see
+the panel until they happen to log out. `isSuperAdminLive()` is one indexed read
+by primary key, cached per request, and `/admin` is a rarely visited route.
+
+**Granting promotes an existing account, by email; it cannot create one.** This
+product sends no email. An "invite by email" would therefore write a user row
+that nobody can ever log into, and would require us to invent and transmit a
+password. The person signs up normally, then an admin promotes that same email.
+
+**Revoking refuses two cases**: yourself, so a mis-click cannot lock you out of
+the panel you are standing in; and the last remaining admin, so the list can
+never reach zero — from which the only recovery is a manual database edit. (The
+second is defence in depth: behind `requireSuperAdmin()` the acting user is
+always an admin, so a sole admin can only be themselves, which the first rule
+already blocks. It stays in place because the repository is callable from
+anywhere, and the cost of the check is one integer.)
+
+**`/admin/login` is public; nothing else under `/admin` is.** It is the entry
+point, so it cannot sit behind the guard that redirects non-admins away. To an
+ordinary user `/admin` does not 403 — it redirects to `/app`, because someone
+who is not an admin has no business learning the panel exists. `/admin/login`
+is the exception, and says plainly that the account is not an admin: a person
+who typed that URL already knows.
+
+## D16. `/admin/config` ships empty on purpose
+
+The admin panel reserves a "Site settings" page for changes that should not need
+a deploy: an announcement banner, feature switches, an extra field on a form,
+the monthly price and trial length that are constants in the code today.
+
+It renders a description of what will live there and nothing operable. Shipping
+placeholder controls would be worse than shipping nothing — someone flips a
+switch, sees it move, and believes the setting took effect. When the first real
+setting arrives it lands here, backed by a `site_settings` table read through a
+repository like every other piece of data in the system.

@@ -95,3 +95,24 @@ export function productWarnings(input: {
   }
   return warnings;
 }
+
+/**
+ * Manual stock in / out. Build spec Phase 1g.
+ *
+ * NOT a purchase bill — quantity, reason and a note, nothing else. Proper
+ * supplier invoices with ITC fields are Phase 2, and conflating the two now
+ * would mean migrating half-formed purchase records later.
+ */
+export const stockAdjustmentSchema = z.object({
+  productId: z.uuid('Pick a product'),
+  direction: z.enum(['in', 'out']),
+  qty: quantitySchema.refine((v) => Number(v) > 0, 'Enter a quantity greater than zero'),
+  note: z
+    .string()
+    .trim()
+    .max(300)
+    .optional()
+    .transform((v) => (v === '' ? undefined : v)),
+});
+
+export type StockAdjustmentInput = z.infer<typeof stockAdjustmentSchema>;

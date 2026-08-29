@@ -2,12 +2,15 @@
 
 import { AppShell, type NavItem } from '@bahikhata/ui';
 import {
+  BarChart3,
   FileText,
   LayoutDashboard,
   LogOut,
   Package,
+  PackagePlus,
   QrCode,
   Settings,
+  Shield,
   Users,
 } from 'lucide-react';
 import Link from 'next/link';
@@ -31,10 +34,19 @@ const NAV: readonly NavItem[] = [
   { href: '/app', label: 'Dashboard', icon: LayoutDashboard },
   { href: '/app/invoices', label: 'Invoices', icon: FileText },
   { href: '/app/products', label: 'Products', icon: Package },
+  { href: '/app/stock', label: 'Stock in / out', icon: PackagePlus },
   { href: '/app/parties', label: 'Parties', icon: Users },
   { href: '/app/catalog', label: 'Catalog', icon: QrCode },
+  { href: '/app/reports', label: 'Reports', icon: BarChart3 },
   { href: '/app/settings', label: 'Settings', icon: Settings },
 ];
+
+/**
+ * Shown only to super admins, and only as a shortcut — the panel guards itself.
+ * Without it the only way in is to know the URL, which is a bad thing to rely
+ * on for the people who run the service.
+ */
+const ADMIN_NAV: NavItem = { href: '/admin', label: 'Admin panel', icon: Shield };
 
 function SignOutButton() {
   const [pending, startTransition] = React.useTransition();
@@ -56,21 +68,24 @@ export function AppFrame({
   businessName,
   statusLabel,
   userName,
+  isSuperAdmin = false,
   children,
 }: {
   businessName: string;
   statusLabel?: string | undefined;
   userName: string;
+  isSuperAdmin?: boolean;
   children: React.ReactNode;
 }) {
   const pathname = usePathname();
+  const nav = isSuperAdmin ? [...NAV, ADMIN_NAV] : NAV;
 
   return (
     <AppShell
       businessName={businessName}
       statusLabel={statusLabel}
       userName={userName}
-      nav={NAV}
+      nav={nav}
       currentPath={pathname}
       // Business switching is a Phase 3 feature (multi-branch). The shell
       // renders no switcher affordance until there is something to switch to.
