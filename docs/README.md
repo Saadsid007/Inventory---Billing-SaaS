@@ -10,6 +10,8 @@ the things a spec can't know in advance.
 | [decisions.md](./decisions.md) | Every non-obvious choice and its reasoning. Read before overturning one. |
 | [architecture.md](./architecture.md) | How the monorepo hangs together and which boundaries are machine-enforced. |
 | [runbook.md](./runbook.md) | Commands, environment setup, and the traps that have already cost time. |
+| [design.md](./design.md) | The design system: palette, tokens, component rules, and what is deliberately not themed. |
+| [deploy.md](./deploy.md) | Deploying to Vercel — settings, environment variables, and what bites. |
 
 ## Rules for keeping these useful
 
