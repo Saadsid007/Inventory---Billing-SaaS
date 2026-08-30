@@ -260,7 +260,9 @@ export type SalesExportRow = {
   kind: string;
   status: string;
   partyName: string;
+  partyPhone: string | null;
   partyGstin: string | null;
+  partyAddress: string | null;
   placeOfSupply: string | null;
   isInterstate: boolean;
   itemName: string;
@@ -303,7 +305,9 @@ export async function listInvoiceLinesForExport(
            i.kind::text as "kind",
            i.status::text as "status",
            i.party_name as "partyName",
+           i.party_phone as "partyPhone",
            i.party_gstin as "partyGstin",
+           i.party_address as "partyAddress",
            i.place_of_supply as "placeOfSupply",
            i.is_interstate as "isInterstate",
            l.name as "itemName",

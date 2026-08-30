@@ -249,7 +249,9 @@ export type ReturnExportRow = {
   invoiceNo: string | null;
   invoiceDate: string | null;
   partyName: string | null;
+  partyPhone: string | null;
   partyGstin: string | null;
+  partyAddress: string | null;
   placeOfSupply: string | null;
   isInterstate: boolean | null;
   itemName: string;
@@ -284,8 +286,12 @@ export async function listReturnLinesForExport(
            i.invoice_no as "invoiceNo",
            i.invoice_date::text as "invoiceDate",
            coalesce(p.name, i.party_name) as "partyName",
+           coalesce(i.party_phone, p.phone) as "partyPhone",
            i.party_gstin as "partyGstin",
-           i.place_of_supply as "placeOfSupply",
+           coalesce(i.party_address, p.city) as "partyAddress",
+           -- A return can exist without a bill, in which case there is no
+           -- snapshot to read and the party's own state is the best answer.
+           coalesce(i.place_of_supply, p.state_code) as "placeOfSupply",
            i.is_interstate as "isInterstate",
            l.name as "itemName",
            l.hsn_code as "hsnCode",

@@ -117,6 +117,8 @@ export type PartyBalance = {
   partyId: string;
   name: string;
   phone: string | null;
+  gstin: string | null;
+  city: string | null;
   openingBalance: string;
   invoicedTotal: string;
   paidIn: string;
@@ -176,6 +178,8 @@ export async function listPartyBalances(
       p.id    as "partyId",
       p.name  as "name",
       p.phone as "phone",
+      p.gstin as "gstin",
+      p.city  as "city",
       p.opening_balance::text                       as "openingBalance",
       coalesce(i.total, 0)::numeric(12,2)::text     as "invoicedTotal",
       coalesce(r.paid_in, 0)::numeric(12,2)::text   as "paidIn",
