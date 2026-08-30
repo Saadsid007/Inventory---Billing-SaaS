@@ -38,6 +38,30 @@
   line-height: 1.4;
 }
 
+/*
+ * Two-column rows: business against invoice number, bill-to against place of
+ * supply, notes against signature.
+ *
+ * `min-width: 0` is the whole point. A flex item defaults to min-width:auto, so
+ * a long unwrapped shop address refuses to shrink, forces the row wider than
+ * the printable area, and pushes the right-hand column off the edge of the
+ * paper. It fitted on a 210mm screen sheet and lost 20mm to the page margins
+ * the moment it was printed.
+ */
+.print-a4 .sheet-row {
+  justify-content: space-between;
+}
+
+.print-a4 .sheet-row > * {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.print-a4 .sheet-row > *:last-child {
+  flex-shrink: 0;
+  text-align: right;
+}
+
 .print-a4 .sheet-footer {
   margin-top: auto;
   padding-top: 10mm;
@@ -115,10 +139,17 @@
    * a one-item invoice ended up printing a second page containing nothing but
    * the signature line.
    */
+  /*
+   * `height: 100%` here resolved against a parent that is not the page box, so
+   * it is a min-height instead: enough to push the signature near the foot of
+   * the sheet, and comfortably inside the shortest printable area a browser
+   * will hand us even with generous margins. Anything taller risks spilling a
+   * one-item invoice onto a second page, which is the bug this replaced.
+   */
   .print-a4 {
     width: auto;
-    min-height: 0;
-    height: 100%;
+    height: auto;
+    min-height: 230mm;
     padding: 0;
   }
 

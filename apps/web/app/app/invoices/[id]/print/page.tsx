@@ -175,7 +175,7 @@ export default async function PrintInvoicePage({
     <>
       <PrintToolbar invoiceId={invoice.id} current="a4" />
       <div className="print-sheet print-a4">
-        <div style={{ display: 'flex', justifyContent: 'space-between', gap: '10mm' }}>
+        <div className="sheet-row" style={{ display: 'flex', gap: '8mm' }}>
           <div>{header}</div>
           <div style={{ textAlign: 'right' }}>
             <div style={{ fontSize: '14pt', fontWeight: 700 }}>
@@ -193,12 +193,8 @@ export default async function PrintInvoicePage({
         </div>
 
         <div
-          style={{
-            marginTop: '8mm',
-            display: 'flex',
-            justifyContent: 'space-between',
-            gap: '10mm',
-          }}
+          className="sheet-row"
+          style={{ marginTop: '8mm', display: 'flex', gap: '8mm' }}
         >
           <div>
             <div style={{ fontSize: '9pt', fontWeight: 600 }}>BILL TO</div>
@@ -350,8 +346,8 @@ export default async function PrintInvoicePage({
         {/* Pushed to the bottom of the sheet by `.sheet-footer`, so a short
             invoice fills the page instead of trailing off halfway down. */}
         <div
-          className="sheet-footer"
-          style={{ display: 'flex', justifyContent: 'space-between', gap: '10mm', fontSize: '9pt' }}
+          className="sheet-footer sheet-row"
+          style={{ display: 'flex', gap: '8mm', fontSize: '9pt' }}
         >
           <div style={{ alignSelf: 'flex-end' }}>{settings?.invoiceFooter}</div>
           <div style={{ textAlign: 'center', minWidth: '55mm' }}>
