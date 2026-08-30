@@ -1,4 +1,5 @@
 import { TRIAL_DAYS } from '@billwise/shared';
+import { Alert } from '@billwise/ui';
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { LoginForm } from './login-form';
@@ -8,9 +9,9 @@ export const metadata: Metadata = { title: 'Login' };
 export default async function LoginPage({
   searchParams,
 }: {
-  searchParams: Promise<{ next?: string }>;
+  searchParams: Promise<{ next?: string; ended?: string }>;
 }) {
-  const { next } = await searchParams;
+  const { next, ended } = await searchParams;
 
   return (
     <div className="space-y-7">
@@ -20,6 +21,14 @@ export default async function LoginPage({
           Log in to carry on billing where you left off.
         </p>
       </div>
+
+      {/* Set by /session-ended. Without a word here, being logged out mid-work
+          looks like the app threw you out for no reason. */}
+      {ended === '1' && (
+        <Alert variant="info" title="You were signed out">
+          Your session pointed to an account that is no longer there. Please log in again.
+        </Alert>
+      )}
 
       <LoginForm next={next} />
 
