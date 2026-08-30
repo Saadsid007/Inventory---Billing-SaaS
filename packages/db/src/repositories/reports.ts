@@ -67,6 +67,10 @@ export async function getDashboardStats(
       from invoices
       where business_id = ${ctx.businessId}::uuid and ${SALES_FILTER}
     ),
+    -- Must stay the same arithmetic as listPartyBalances() in parties.ts.
+    -- Two places computing "who owes us" from different formulas is worse than
+    -- either being wrong on its own: the dashboard and the khata disagree, and
+    -- a shopkeeper has no way to tell which one to believe.
     owed as (
       select coalesce(sum(
         p.opening_balance
@@ -74,6 +78,11 @@ export async function getDashboardStats(
                     where i.party_id = p.id and ${SALES_FILTER}), 0)
         - coalesce((select sum(case when pay.direction = 'in' then pay.amount else -pay.amount end)
                     from payments pay where pay.party_id = p.id), 0)
+        -- Returned goods reduce what a customer owes exactly like a payment
+        -- does, without any money having moved. Leaving them out overstates
+        -- the figure by the whole value of every return ever recorded.
+        - coalesce((select sum(sr.total_amount) from sales_returns sr
+                    where sr.party_id = p.id), 0)
       ), 0)::numeric(12,2) as outstanding
       from parties p
       where p.business_id = ${ctx.businessId}::uuid and p.is_active = true
