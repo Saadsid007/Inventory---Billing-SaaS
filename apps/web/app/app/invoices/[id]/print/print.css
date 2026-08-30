@@ -149,8 +149,13 @@
   .print-a4 {
     width: auto;
     height: auto;
-    min-height: 230mm;
-    padding: 0;
+    min-height: 250mm;
+    /* The sheet carries its own margin as padding rather than leaning on the
+       page box, because the print dialog's Margins dropdown overrides @page.
+       Someone printing with Margins: None was getting an invoice with text
+       against the edge of the paper. This way the result is the same whatever
+       they pick. */
+    padding: 12mm;
   }
 
   /*
@@ -160,7 +165,7 @@
    */
   .print-thermal {
     width: 72mm;
-    padding: 0;
+    padding: 3mm 2mm;
   }
 
   /* A long invoice must not split a line item across two pages. */
@@ -186,12 +191,14 @@
   page: sheet-thermal;
 }
 
+/* Zero, because the sheet supplies its own. Anything here is a suggestion the
+   print dialog is free to overrule; padding on the element is not. */
 @page sheet-a4 {
   size: A4;
-  margin: 10mm;
+  margin: 0;
 }
 
 @page sheet-thermal {
   size: 80mm auto;
-  margin: 3mm;
+  margin: 0;
 }
