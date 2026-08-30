@@ -58,6 +58,9 @@ one later needs a redeploy, not just a restart.
 | `SUPABASE_PRIVATE_BUCKET` | `invoices` |
 | `NEXT_PUBLIC_SUPABASE_URL` | same as `SUPABASE_URL` |
 | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Supabase anon key |
+| `RAZORPAY_KEY_ID` | Razorpay API key id. `rzp_test_…` until you go live |
+| `RAZORPAY_KEY_SECRET` | Its secret. Server only, never `NEXT_PUBLIC_` |
+| `RAZORPAY_WEBHOOK_SECRET` | Whatever you typed when creating the webhook |
 
 Do not set `NODE_ENV` (Vercel sets it) and never set `SKIP_ENV_VALIDATION` on a
 running server — that flag exists so a CI image can compile without secrets, and
@@ -67,6 +70,37 @@ boot.
 `instrumentation.ts` validates all of this once per server process. A missing or
 malformed value fails the deployment immediately with the exact field named,
 which is the intended behaviour.
+
+## 3b. Razorpay
+
+Payments are optional. Without keys the billing page says so and the Pay button
+is disabled, which is the correct behaviour for a deploy that is not taking
+money yet.
+
+1. **Keys.** Razorpay Dashboard → Account & Settings → API Keys → Generate.
+   Start in **Test mode**; the toggle is at the top of the dashboard. You get a
+   key id and a secret, and the secret is shown **once**.
+2. **Webhook.** Dashboard → Account & Settings → Webhooks → Add.
+   - URL: `https://yourdomain.com/api/webhooks/razorpay`
+   - Secret: any long random string. The same value goes in
+     `RAZORPAY_WEBHOOK_SECRET`.
+   - Events: **`qr_code.credited`**. That is the only one this app acts on.
+3. **QR Codes must be enabled on the account.** It is a standard feature but
+   not switched on for every account by default. If QR creation fails with a
+   permission error, that is what to ask Razorpay support for.
+
+Locally there is no webhook, because Razorpay cannot reach `localhost`. The
+billing page polls while the QR is on screen, so a test payment still credits;
+it just arrives through the poll rather than the webhook. Use `ngrok` or a
+preview deployment if you want to exercise the webhook itself.
+
+**Test mode does not move real money.** Scanning a test QR with a real UPI app
+will not work, and it is not meant to: use Razorpay's test-payment tooling from
+the dashboard to mark the QR paid, then watch the billing page flip to Active.
+
+Going live is a separate step: complete KYC, switch the dashboard to Live mode,
+generate live keys, and update both the keys and the webhook URL on Vercel.
+Nothing in the code changes.
 
 ## 4. Deploy, then verify
 
@@ -80,6 +114,7 @@ which is the intended behaviour.
    - `/app/products/[id]` upload an image → Supabase credentials.
    - `/store/<slug>` in a private window → the public catalog, unauthenticated.
    - `/admin/login` → admin entry.
+   - `/app/billing` → the plan, and Pay by UPI if Razorpay keys are set.
 4. Promote yourself to admin on the production database, once:
    ```sql
    update users set is_super_admin = true where email = 'you@example.com';
