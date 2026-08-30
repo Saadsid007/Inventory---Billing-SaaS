@@ -3,6 +3,7 @@
 import { Menu, PanelLeftClose, PanelLeftOpen, X } from 'lucide-react';
 import * as React from 'react';
 import { cn } from '../lib/cn';
+import { LogoMark } from './logo';
 import { ThemeToggle } from './theme';
 
 /**
@@ -151,9 +152,7 @@ export function AppShell({
             rail ? 'justify-center px-2' : 'gap-2.5 px-4',
           )}
         >
-          <span className="grid size-7 shrink-0 place-items-center rounded-lg bg-sidebar-primary text-[0.8rem] font-bold text-sidebar-primary-foreground shadow-xs">
-            B
-          </span>
+          <LogoMark className="size-7 shrink-0" />
           {!rail && <span className="text-[0.95rem] font-semibold tracking-tight">Billwise</span>}
         </div>
 

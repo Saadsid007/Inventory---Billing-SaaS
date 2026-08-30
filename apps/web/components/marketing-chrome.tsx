@@ -1,4 +1,5 @@
-import { ThemeToggle } from '@billwise/ui';
+import { MONTHLY_PRICE_INR, TRIAL_DAYS } from '@billwise/shared';
+import { Logo, ThemeToggle } from '@billwise/ui';
 import { LayoutDashboard } from 'lucide-react';
 import Link from 'next/link';
 import { auth } from '@/auth';
@@ -19,11 +20,8 @@ import { auth } from '@/auth';
 
 export function BrandMark({ className }: { className?: string }) {
   return (
-    <Link href="/" className={`flex items-center gap-2.5 ${className ?? ''}`}>
-      <span className="grid size-8 place-items-center rounded-lg bg-primary text-sm font-bold text-primary-foreground shadow-xs">
-        B
-      </span>
-      <span className="text-lg font-semibold tracking-tight">Billwise</span>
+    <Link href="/" aria-label="Billwise home" className={className}>
+      <Logo />
     </Link>
   );
 }
@@ -34,16 +32,16 @@ export async function MarketingHeader() {
 
   return (
     <header className="sticky top-0 z-40 border-b bg-background/80 backdrop-blur-md">
-      <div className="mx-auto flex h-16 max-w-5xl items-center justify-between gap-4 px-5 sm:px-8">
+      <div className="mx-auto flex h-16 max-w-6xl items-center justify-between gap-4 px-5 sm:px-8">
         <BrandMark />
-        <nav className="flex items-center gap-2 sm:gap-4">
+        <nav className="flex items-center gap-1 sm:gap-4">
           <Link
             href="/pricing"
             className="hidden text-sm text-muted-foreground transition-colors hover:text-foreground sm:block"
           >
             Pricing
           </Link>
-          <ThemeToggle className="hidden sm:inline-flex" />
+          <ThemeToggle />
 
           {signedIn ? (
             <Link
@@ -51,7 +49,8 @@ export async function MarketingHeader() {
               className="inline-flex h-9 items-center gap-2 rounded-md bg-primary px-4 text-sm font-medium text-primary-foreground shadow-xs transition-colors hover:bg-primary-hover"
             >
               <LayoutDashboard className="size-4" />
-              Go to dashboard
+              <span className="hidden sm:inline">Go to dashboard</span>
+              <span className="sm:hidden">Dashboard</span>
             </Link>
           ) : (
             <>
@@ -75,38 +74,94 @@ export async function MarketingHeader() {
   );
 }
 
+const PRODUCT_LINKS = [
+  { href: '/pricing', label: 'Pricing' },
+  { href: '/register', label: 'Create an account' },
+  { href: '/login', label: 'Log in' },
+];
+
 export async function MarketingFooter() {
   const session = await auth();
   const signedIn = Boolean(session?.user?.id);
 
   return (
     <footer className="border-t bg-muted/30">
-      <div className="mx-auto flex max-w-5xl flex-col gap-4 px-5 py-10 sm:flex-row sm:items-center sm:justify-between sm:px-8">
-        <div className="space-y-2">
-          <BrandMark />
-          <p className="text-sm text-muted-foreground">
-            Billing, stock and khata for Indian shops.
+      <div className="mx-auto max-w-6xl px-5 py-12 sm:px-8">
+        <div className="grid gap-10 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="lg:col-span-2">
+            <BrandMark />
+            <p className="mt-3 max-w-sm text-sm leading-relaxed text-muted-foreground">
+              GST billing, stock and khata software for Indian shops. {TRIAL_DAYS} days free, then
+              ₹{MONTHLY_PRICE_INR} a month, everything included.
+            </p>
+          </div>
+
+          <div>
+            <h2 className="text-xs font-semibold tracking-widest text-muted-foreground uppercase">
+              Product
+            </h2>
+            <ul className="mt-3 space-y-2 text-sm">
+              {signedIn ? (
+                <>
+                  <li>
+                    <Link
+                      href="/app"
+                      className="text-muted-foreground transition-colors hover:text-foreground"
+                    >
+                      Go to dashboard
+                    </Link>
+                  </li>
+                  <li>
+                    <Link
+                      href="/pricing"
+                      className="text-muted-foreground transition-colors hover:text-foreground"
+                    >
+                      Pricing
+                    </Link>
+                  </li>
+                </>
+              ) : (
+                PRODUCT_LINKS.map((link) => (
+                  <li key={link.href}>
+                    <Link
+                      href={link.href}
+                      className="text-muted-foreground transition-colors hover:text-foreground"
+                    >
+                      {link.label}
+                    </Link>
+                  </li>
+                ))
+              )}
+            </ul>
+          </div>
+
+          <div>
+            <h2 className="text-xs font-semibold tracking-widest text-muted-foreground uppercase">
+              What it does
+            </h2>
+            <ul className="mt-3 space-y-2 text-sm text-muted-foreground">
+              <li>GST and non-GST billing</li>
+              <li>Stock and low-stock alerts</li>
+              <li>Customer khata</li>
+              <li>Online catalog with QR</li>
+            </ul>
+          </div>
+        </div>
+
+        <div className="mt-10 flex flex-col gap-3 border-t pt-6 text-sm text-muted-foreground sm:flex-row sm:items-center sm:justify-between">
+          <p>© {new Date().getFullYear()} Billwise. All rights reserved.</p>
+          <p>
+            Powered by{' '}
+            <a
+              href="https://www.growthtechnos.com/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="font-medium text-foreground underline-offset-4 hover:underline"
+            >
+              Growth Technos
+            </a>
           </p>
         </div>
-        <nav className="flex flex-wrap gap-x-6 gap-y-2 text-sm text-muted-foreground">
-          <Link href="/pricing" className="transition-colors hover:text-foreground">
-            Pricing
-          </Link>
-          {signedIn ? (
-            <Link href="/app" className="transition-colors hover:text-foreground">
-              Go to dashboard
-            </Link>
-          ) : (
-            <>
-              <Link href="/login" className="transition-colors hover:text-foreground">
-                Log in
-              </Link>
-              <Link href="/register" className="transition-colors hover:text-foreground">
-                Create an account
-              </Link>
-            </>
-          )}
-        </nav>
       </div>
     </footer>
   );

@@ -1,5 +1,5 @@
 import { MONTHLY_PRICE_INR, TRIAL_DAYS } from '@billwise/shared';
-import { ThemeToggle } from '@billwise/ui';
+import { Logo, LogoMark, ThemeToggle } from '@billwise/ui';
 import { Check } from 'lucide-react';
 import Link from 'next/link';
 
@@ -25,9 +25,12 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
       {/* Brand panel. Second in the DOM on purpose — a screen reader and a
           keyboard should reach the form first. */}
       <aside className="brand-wash relative hidden flex-col justify-between p-10 text-white lg:order-first lg:flex xl:p-14">
-        <Link href="/" className="flex items-center gap-2.5">
-          <span className="grid size-8 place-items-center rounded-lg bg-white/15 text-sm font-bold backdrop-blur">
-            B
+        {/* On the blue panel the mark's own tile would vanish into the
+            background, so it is inverted: a translucent white tile with the
+            slip drawn in blue. */}
+        <Link href="/" aria-label="Billwise home" className="flex items-center gap-2.5">
+          <span className="grid size-9 place-items-center rounded-lg bg-white/15 backdrop-blur">
+            <LogoMark className="size-6 [&>rect]:fill-white [&_path]:fill-white" />
           </span>
           <span className="text-lg font-semibold tracking-tight">Billwise</span>
         </Link>
@@ -55,11 +58,8 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
 
       <div className="flex min-h-dvh flex-col">
         <header className="flex items-center justify-between px-5 py-4 sm:px-8">
-          <Link href="/" className="flex items-center gap-2 lg:invisible">
-            <span className="grid size-7 place-items-center rounded-lg bg-primary text-xs font-bold text-primary-foreground">
-              B
-            </span>
-            <span className="font-semibold tracking-tight">Billwise</span>
+          <Link href="/" aria-label="Billwise home" className="lg:invisible">
+            <Logo markClassName="size-7" />
           </Link>
           <ThemeToggle />
         </header>

@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
+  <!--
+    Favicon. Deliberately not the app's LogoMark component: this file is read by
+    a browser with no stylesheet, so the CSS variables that colour the mark in
+    the app do not exist here and the blues are written out literally.
+    Rendered at 16px in a tab, so it is a silhouette and nothing finer.
+  -->
+  <defs>
+    <linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#2f6bed"/>
+      <stop offset="100%" stop-color="#1d51d4"/>
+    </linearGradient>
+  </defs>
+  <rect width="32" height="32" rx="8" fill="url(#g)"/>
+  <path d="M10 7.5h12a1 1 0 0 1 1 1v15.8l-2.4-1.5-2.3 1.5-2.3-1.5-2.3 1.5-2.4-1.5V8.5a1 1 0 0 1 1-1Z" fill="#fff"/>
+  <rect x="12.6" y="11.6" width="6.8" height="1.9" rx=".95" fill="#2f6bed"/>
+  <rect x="12.6" y="15.6" width="4.4" height="1.9" rx=".95" fill="#2f6bed"/>
+</svg>

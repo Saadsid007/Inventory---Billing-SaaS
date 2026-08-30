@@ -36,6 +36,7 @@ export {
   WarningList,
   type CheckboxProps,
 } from './components/form-controls';
+export { Logo, LogoMark, type LogoProps } from './components/logo';
 export { EmptyState, TBody, TD, TH, THead, TR, Table } from './components/table';
 export {
   Alert,

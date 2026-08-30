@@ -32,6 +32,12 @@ const PUBLIC_PREFIXES = [
   // Without this the proxy would 307 the webhook to /login and every payment
   // would silently fail to credit.
   '/api/webhooks',
+  // The share card. Generated at these paths with no file extension, so the
+  // matcher does not skip them the way it skips /icon.svg. A scraper fetching
+  // it has no session, and a 307 to /login means WhatsApp shows a link with no
+  // picture and no title.
+  '/opengraph-image',
+  '/twitter-image',
 ] as const;
 
 export function isPublicPath(pathname: string): boolean {
