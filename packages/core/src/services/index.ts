@@ -6,3 +6,11 @@
  * no config. Anything that needs those is passed in or done by the caller.
  */
 export { buildInvoice, type BuildInvoiceInput, type BuiltInvoice } from './build-invoice';
+export {
+  allocatePayment,
+  type Allocation,
+  type AllocationPart,
+  type OpenInvoice,
+  type PaymentAllocation,
+  type Tender,
+} from './allocate-payment';

@@ -110,6 +110,45 @@ export const paymentInputSchema = z.object({
 
 export type PaymentFormInput = z.infer<typeof paymentInputSchema>;
 
+/**
+ * One way money was handed over. A single payment can be several of these:
+ * part cash, part UPI, part cheque, which is ordinary when a credit customer
+ * comes in to settle up.
+ */
+export const tenderInputSchema = z.object({
+  method: z.enum(PAYMENT_METHODS),
+  amount: moneySchema,
+  /** Cheque number, UPI reference. Carried onto every row this tender funds. */
+  reference: optionalText(80),
+});
+
+/**
+ * A payment received from a customer, to be spread across their open bills.
+ *
+ * Note what is absent: which invoices it pays. That is worked out on the server
+ * from bills read in the same request — a browser must not get to name the
+ * invoice it is settling, and a page that has been open for ten minutes has a
+ * stale idea of what is still owed.
+ */
+export const partyPaymentSchema = z.object({
+  paidOn: dateStringSchema,
+  note: optionalText(300),
+  tenders: z
+    .array(tenderInputSchema)
+    .min(1, 'Add at least one payment method')
+    .max(6)
+    .refine(
+      (rows) => rows.some((r) => Number(r.amount) > 0),
+      'Enter an amount greater than zero',
+    )
+    .refine(
+      (rows) => rows.every((r) => Number(r.amount) >= 0),
+      'An amount cannot be negative',
+    ),
+});
+
+export type PartyPaymentInput = z.infer<typeof partyPaymentSchema>;
+
 export const cancelInvoiceSchema = z.object({
   reason: z.string().trim().min(3, 'Say why — this is permanent').max(300),
 });

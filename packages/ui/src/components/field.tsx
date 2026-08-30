@@ -65,6 +65,15 @@ export type FieldProps = {
   error?: string | undefined;
   hint?: string | undefined;
   required?: boolean;
+  /**
+   * Hide the label visually, keeping it for screen readers.
+   *
+   * For repeating rows — several "Amount" fields stacked under one heading —
+   * where printing the word again on every line is noise. Dropping the label
+   * entirely instead would leave the control unnamed, which is exactly the
+   * case a screen reader cannot recover from.
+   */
+  labelHidden?: boolean;
   /** Right-aligned extra, e.g. a character count or a "why?" link. */
   aside?: React.ReactNode;
   className?: string;
@@ -77,13 +86,19 @@ export function Field({
   error,
   hint,
   required,
+  labelHidden,
   aside,
   className,
   children,
 }: FieldProps) {
   return (
     <div className={cn('space-y-1.5', className)}>
-      <div className="flex items-baseline justify-between gap-3">
+      <div
+        className={cn(
+          'flex items-baseline justify-between gap-3',
+          labelHidden && 'sr-only',
+        )}
+      >
         <Label htmlFor={htmlFor}>
           {label}
           {required && (

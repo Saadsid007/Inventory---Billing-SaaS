@@ -514,6 +514,170 @@ export async function refreshPaymentStatus(
   `);
 }
 
+// -------------------------------------------- payment against a party ------
+
+export type OpenInvoiceRow = {
+  id: string;
+  invoiceNo: string | null;
+  invoiceDate: string;
+  grandTotal: string;
+  amountPaid: string;
+  /** grand_total − amount_paid. What is still owed on this bill alone. */
+  due: string;
+};
+
+/**
+ * A party's unsettled bills, oldest first.
+ *
+ * Ordered by date and then by invoice number, not by `created_at`: a backdated
+ * bill entered on Tuesday for Sunday's sale is older than Monday's, and paying
+ * off the oldest debt has to mean the oldest *sale*.
+ *
+ * Cancelled and draft invoices are excluded, as are estimates and delivery
+ * challans — nobody owes money for a quotation.
+ */
+export async function listOpenInvoices(
+  ctx: TenantCtx,
+  partyId: string,
+  tx: Executor = getDb(),
+): Promise<OpenInvoiceRow[]> {
+  const rows = await tx.execute<OpenInvoiceRow>(sql`
+    select id::text                                       as "id",
+           invoice_no                                     as "invoiceNo",
+           invoice_date::text                             as "invoiceDate",
+           grand_total::text                              as "grandTotal",
+           amount_paid::text                              as "amountPaid",
+           (grand_total - amount_paid)::numeric(12,2)::text as "due"
+    from invoices
+    where business_id = ${ctx.businessId}::uuid
+      and party_id = ${partyId}::uuid
+      and status = 'issued'
+      and kind not in ('estimate', 'delivery_challan')
+      and grand_total - amount_paid > 0
+    order by invoice_date asc, invoice_no asc
+  `);
+  return [...rows];
+}
+
+/** One stored row: this much, by this method, against this bill. */
+export type PaymentPart = {
+  method: PaymentMethod;
+  amount: string;
+  reference?: string | null;
+};
+
+export type PartyPaymentInput = {
+  partyId: string;
+  paidOn: string;
+  note?: string | null;
+  /**
+   * Computed by `allocatePayment` in @billwise/core.
+   *
+   * Each invoice carries its own parts, because one bill can be settled partly
+   * in cash and partly by cheque and both facts have to survive: the invoice
+   * needs the total to mark itself paid, and the day's reconciliation needs to
+   * know how much of it was actually cash.
+   */
+  allocations: readonly { invoiceId: string; parts: readonly PaymentPart[] }[];
+  /** Money left after every open bill is settled. Stored with no invoice. */
+  unallocatedParts: readonly PaymentPart[];
+};
+
+/**
+ * Record one payment spread across several bills.
+ *
+ * ## Why several rows and not one
+ *
+ * It would be tidier to store a single ₹50,000 row and work out later which
+ * bills it covered. But `amount_paid` and `payment_status` on an invoice are
+ * recomputed from the payments that name it — that is what keeps them from
+ * drifting — so a payment that names no invoice leaves every one of those bills
+ * still reading "unpaid". The split has to be recorded, not inferred.
+ *
+ * They stay findable as one receipt through the shared `reference`, which is
+ * what a customer's slip actually has on it.
+ *
+ * ## Why one transaction
+ *
+ * A payment that cleared four bills out of nine, then failed, would leave the
+ * shopkeeper with no way to know how much of the money had landed. Either the
+ * whole receipt is recorded or none of it is.
+ */
+export async function recordPartyPayment(
+  ctx: TenantCtx,
+  input: PartyPaymentInput,
+): Promise<{ invoiceIds: string[] }> {
+  return getDb().transaction(async (tx) => {
+    const touched: string[] = [];
+
+    for (const allocation of input.allocations) {
+      const parts = allocation.parts.filter((p) => Number(p.amount) > 0);
+      if (parts.length === 0) continue;
+
+      // Re-check ownership inside the transaction. The allocation was computed
+      // from a list read earlier, and an invoice id that arrived from a form is
+      // not evidence that it belongs to this business.
+      const [invoice] = await tx
+        .select({ id: invoices.id })
+        .from(invoices)
+        .where(
+          and(
+            eq(invoices.id, allocation.invoiceId),
+            eq(invoices.businessId, ctx.businessId),
+            eq(invoices.status, 'issued'),
+          ),
+        )
+        .for('update')
+        .limit(1);
+
+      if (!invoice) throw new InvoiceNotFoundError(allocation.invoiceId);
+
+      await tx.insert(payments).values(
+        parts.map((part) => ({
+          businessId: ctx.businessId,
+          partyId: input.partyId,
+          invoiceId: allocation.invoiceId,
+          amount: part.amount,
+          direction: 'in' as const,
+          method: part.method,
+          reference: part.reference ?? null,
+          paidOn: input.paidOn,
+          note: input.note ?? null,
+          createdBy: ctx.userId,
+        })),
+      );
+
+      // Once, after all of this bill's parts — it recomputes from the table,
+      // so running it per part would just do the same work several times.
+      await refreshPaymentStatus(ctx, tx, allocation.invoiceId);
+      touched.push(allocation.invoiceId);
+    }
+
+    // Anything left over sits against the party with no invoice. It shows in
+    // the khata as credit and comes off whatever they are billed next. Still
+    // one row per method: an advance paid by cheque is not cash in the drawer.
+    const advance = input.unallocatedParts.filter((p) => Number(p.amount) > 0);
+    if (advance.length > 0) {
+      await tx.insert(payments).values(
+        advance.map((part) => ({
+          businessId: ctx.businessId,
+          partyId: input.partyId,
+          invoiceId: null,
+          amount: part.amount,
+          direction: 'in' as const,
+          method: part.method,
+          reference: part.reference ?? null,
+          paidOn: input.paidOn,
+          note: input.note ?? 'Advance — no bill outstanding',
+          createdBy: ctx.userId,
+        })),
+      );
+    }
+
+    return { invoiceIds: touched };
+  });
+}
+
 // ------------------------------------------------------------- audit ------
 
 async function writeAudit(
