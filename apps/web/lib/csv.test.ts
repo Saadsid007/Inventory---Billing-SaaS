@@ -42,3 +42,44 @@ describe('toCsv', () => {
     expect(toCsv([], cols)).toBe('Name,Qty,Note');
   });
 });
+
+describe('text columns', () => {
+  type T = { v: string | null };
+  const textCols = [{ header: 'V', value: (r: T) => r.v, text: true }];
+  const body = (v: string | null) => toCsv([{ v }], textCols).split('\r\n')[1]!;
+
+  it('writes ="value" WITHOUT surrounding CSV quotes', () => {
+    // The regression this file exists for. Excel only evaluates ="0713" as a
+    // formula when the field is unquoted; wrapped as "=""0713""" it imports
+    // the field verbatim and the cell literally reads ="0713". Every date,
+    // HSN and invoice number in the reports export looked like that.
+    expect(body('0713')).toBe('="0713"');
+    expect(body('30-08-2026')).toBe('="30-08-2026"');
+    expect(body('SKS-0717')).toBe('="SKS-0717"');
+    expect(body('09')).toBe('="09"');
+  });
+
+  it('never wraps the formula form in quotes', () => {
+    expect(body('2026-27').startsWith('"')).toBe(false);
+  });
+
+  it('keeps blanks blank rather than writing =""', () => {
+    expect(body(null)).toBe('');
+    expect(body('')).toBe('');
+  });
+
+  it('falls back to an ordinary cell when the value cannot be written unquoted', () => {
+    // A comma would split the row and a quote would end the field early —
+    // neither is escapable inside an unquoted field. Correctness of the value
+    // beats keeping it out of Excel's autoformatter.
+    expect(body('a,b')).toBe('"a,b"');
+    expect(body('say "hi"')).toBe('"say ""hi"""');
+  });
+
+  it('cannot be used to smuggle in an expression', () => {
+    // Anything with a quote takes the fallback path, so a value can never
+    // close the formula's string literal and continue as an expression.
+    const out = body('" & cmd|" /c calc"!A0 & "');
+    expect(out.startsWith('="')).toBe(false);
+  });
+});
