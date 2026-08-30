@@ -9,7 +9,9 @@ import {
   getInvoice,
   getParty,
   issueInvoice,
+  listReturnsForInvoice,
   recordPayment,
+  recordSalesReturn,
   updateDraft,
 } from '@billwise/db';
 import {
@@ -17,6 +19,7 @@ import {
   invoiceInputSchema,
   partySchema,
   paymentInputSchema,
+  salesReturnSchema,
 } from '@billwise/shared';
 import { revalidatePath } from 'next/cache';
 import { requireBusiness } from '@/lib/auth/require-business';
@@ -243,4 +246,83 @@ export async function quickCreatePartyAction(
       phone: created!.phone,
     },
   };
+}
+
+/**
+ * Record a sales return.
+ *
+ * The quantity check is here, not in the schema: only the server knows what
+ * this invoice actually sold and how much has already come back. A client that
+ * posts "return 500 of an item we sold 2 of" gets refused rather than quietly
+ * inflating stock.
+ */
+export async function recordReturnAction(
+  raw: unknown,
+): Promise<{ ok: true; returnId: string } | { ok: false; error: string }> {
+  const ctx = await requireBusiness();
+
+  const parsed = salesReturnSchema.safeParse(raw);
+  if (!parsed.success) {
+    return { ok: false, error: parsed.error.issues[0]?.message ?? 'Check the return details.' };
+  }
+  const input = parsed.data;
+  if (!input.invoiceId) return { ok: false, error: 'A return needs an invoice.' };
+
+  const invoice = await getInvoice(ctx, input.invoiceId);
+  if (!invoice) return { ok: false, error: 'That invoice no longer exists.' };
+  if (invoice.status !== 'issued') {
+    return { ok: false, error: 'Only an issued invoice can take a return.' };
+  }
+
+  const previous = await listReturnsForInvoice(ctx, input.invoiceId);
+
+  // Sold, minus what has already come back, per line name. Names are the only
+  // key a typed-in line has, and they are snapshots on both sides.
+  const remaining = new Map<string, number>();
+  for (const line of invoice.lines) {
+    remaining.set(line.name, (remaining.get(line.name) ?? 0) + Number(line.qty));
+  }
+  for (const ret of previous) {
+    for (const line of ret.lines) {
+      remaining.set(line.name, (remaining.get(line.name) ?? 0) - Number(line.qty));
+    }
+  }
+
+  for (const line of input.lines) {
+    const left = remaining.get(line.name) ?? 0;
+    if (Number(line.qty) > left + 1e-9) {
+      return {
+        ok: false,
+        error: `Only ${left} of ${line.name} can still be returned against this bill.`,
+      };
+    }
+  }
+
+  try {
+    const { returnId } = await recordSalesReturn(ctx, {
+      invoiceId: input.invoiceId,
+      partyId: invoice.partyId,
+      returnDate: input.returnDate,
+      reason: input.reason,
+      note: input.note,
+      lines: input.lines.map((line) => ({
+        productId: line.productId,
+        name: line.name,
+        qty: line.qty,
+        rate: line.rate,
+        amount: (Number(line.qty) * Number(line.rate)).toFixed(2),
+        restock: line.restock,
+      })),
+    });
+
+    revalidatePath(`/app/invoices/${input.invoiceId}`);
+    revalidatePath('/app/returns');
+    revalidatePath('/app/parties');
+    revalidatePath('/app/products');
+    revalidatePath('/app');
+    return { ok: true, returnId };
+  } catch (error) {
+    console.error('recordReturn failed', error);
+    return { ok: false, error: 'Could not save that return. Please try again.' };
+  }
 }

@@ -12,6 +12,7 @@ import {
   QrCode,
   Settings,
   Shield,
+  Undo2,
   Users,
 } from 'lucide-react';
 import Link from 'next/link';
@@ -39,6 +40,7 @@ const NAV: readonly NavItem[] = [
   { href: '/app', label: 'Dashboard', icon: LayoutDashboard },
   { href: '/app/invoices', label: 'Invoices', icon: FileText, section: 'Billing' },
   { href: '/app/parties', label: 'Customers', icon: Users, section: 'Billing' },
+  { href: '/app/returns', label: 'Returns', icon: Undo2, section: 'Billing' },
   { href: '/app/products', label: 'Products', icon: Package, section: 'Catalogue' },
   { href: '/app/stock', label: 'Stock in / out', icon: ArrowLeftRight, section: 'Catalogue' },
   { href: '/app/catalog', label: 'Online catalog', icon: QrCode, section: 'Catalogue' },

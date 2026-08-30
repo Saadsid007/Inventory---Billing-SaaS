@@ -10,7 +10,24 @@
 export type CsvColumn<T> = {
   header: string;
   value: (row: T) => string | number | null | undefined;
+  /**
+   * Force Excel to keep the value exactly as written.
+   *
+   * Excel converts anything that looks like a number or a date the moment the
+   * file opens: invoice `001` becomes `1`, and a date becomes a serial that
+   * renders as `########` in a narrow column. Neither is something the
+   * shopkeeper reading the sheet can undo, and the first one silently changes
+   * a document number that has to match a printed bill.
+   */
+  text?: boolean;
 };
+
+/** `2026-08-30` becomes `30-08-2026`, the way a date is written in India. */
+export function indianDate(iso: string | null | undefined): string {
+  if (!iso) return '';
+  const [y, m, d] = iso.slice(0, 10).split('-');
+  return y && m && d ? `${d}-${m}-${y}` : iso;
+}
 
 /**
  * Escape one cell.
@@ -28,10 +45,25 @@ function cell(value: string | number | null | undefined): string {
   return text;
 }
 
+/**
+ * A literal-text cell, written as `="value"`.
+ *
+ * That form is the one every spreadsheet honours as text rather than
+ * converting. It is itself a formula, but it cannot be an injection vector:
+ * the value goes inside a quoted string and its own quotes are doubled, so
+ * nothing in it can escape and become an expression.
+ */
+function textCell(value: string | number | null | undefined): string {
+  if (value === null || value === undefined || value === '') return '';
+  return `"=""${String(value).replace(/"/g, '""""')}"""`;
+}
+
 export function toCsv<T>(rows: readonly T[], columns: readonly CsvColumn<T>[]): string {
   const lines = [columns.map((c) => cell(c.header)).join(',')];
   for (const row of rows) {
-    lines.push(columns.map((c) => cell(c.value(row))).join(','));
+    lines.push(
+      columns.map((c) => (c.text ? textCell(c.value(row)) : cell(c.value(row)))).join(','),
+    );
   }
   // CRLF: Excel is still the target, and it is the format it expects.
   return lines.join('\r\n');

@@ -4,8 +4,9 @@ import {
   listPartyBalances,
   listProducts,
 } from '@billwise/db';
+import { INVOICE_KIND_LABELS } from '@billwise/shared';
 import { requireBusiness } from '@/lib/auth/require-business';
-import { csvResponse, datedFilename, toCsv, type CsvColumn } from '@/lib/csv';
+import { csvResponse, datedFilename, indianDate, toCsv, type CsvColumn } from '@/lib/csv';
 
 /**
  * CSV export. Build spec Phase 1g.
@@ -70,15 +71,17 @@ export async function GET(
     case 'invoices': {
       const rows = await listInvoices(ctx, { limit: 5000 });
       const columns: CsvColumn<(typeof rows)[number]>[] = [
-        { header: 'Number', value: (r) => r.invoiceNo },
-        { header: 'Date', value: (r) => r.invoiceDate },
-        { header: 'Type', value: (r) => r.kind },
+        // Text, both of them: Excel strips the leading zeros off 001 and turns
+        // a date into a serial that shows as ######## in a narrow column.
+        { header: 'Number', value: (r) => r.invoiceNo, text: true },
+        { header: 'Date', value: (r) => indianDate(r.invoiceDate), text: true },
+        { header: 'Type', value: (r) => INVOICE_KIND_LABELS[r.kind] },
         { header: 'Status', value: (r) => r.status },
         { header: 'Customer', value: (r) => r.partyName },
         { header: 'Total', value: (r) => r.grandTotal },
         { header: 'Paid', value: (r) => r.amountPaid },
         { header: 'Payment status', value: (r) => r.paymentStatus },
-        { header: 'Due date', value: (r) => r.dueDate },
+        { header: 'Due date', value: (r) => indianDate(r.dueDate), text: true },
       ];
       return csvResponse(datedFilename('invoices'), toCsv(rows, columns));
     }

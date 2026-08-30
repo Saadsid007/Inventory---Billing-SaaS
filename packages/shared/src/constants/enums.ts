@@ -67,6 +67,7 @@ export const STOCK_REASONS = [
   'stock_out',
   'adjustment',
   'sale_cancelled',
+  'sale_return',
 ] as const;
 export type StockReason = (typeof STOCK_REASONS)[number];
 

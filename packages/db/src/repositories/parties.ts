@@ -121,6 +121,8 @@ export type PartyBalance = {
   invoicedTotal: string;
   paidIn: string;
   paidOut: string;
+  /** Goods sent back, which reduce what they owe without any money moving. */
+  returned: string;
   /** Positive means they owe the business. */
   outstanding: string;
 };
@@ -161,6 +163,14 @@ export async function listPartyBalances(
       from payments
       where business_id = ${ctx.businessId}::uuid
       group by party_id
+    ),
+    -- Goods that came back. A return reduces what the customer owes exactly
+    -- like a payment does, without any money having moved.
+    returned as (
+      select party_id, sum(total_amount) total
+      from sales_returns
+      where business_id = ${ctx.businessId}::uuid
+      group by party_id
     )
     select
       p.id    as "partyId",
@@ -170,17 +180,21 @@ export async function listPartyBalances(
       coalesce(i.total, 0)::numeric(12,2)::text     as "invoicedTotal",
       coalesce(r.paid_in, 0)::numeric(12,2)::text   as "paidIn",
       coalesce(r.paid_out, 0)::numeric(12,2)::text  as "paidOut",
+      coalesce(rt.total, 0)::numeric(12,2)::text    as "returned",
       (p.opening_balance
         + coalesce(i.total, 0)
         - coalesce(r.paid_in, 0)
-        + coalesce(r.paid_out, 0))::numeric(12,2)::text as "outstanding"
+        + coalesce(r.paid_out, 0)
+        - coalesce(rt.total, 0))::numeric(12,2)::text as "outstanding"
     from parties p
     left join invoiced i on i.party_id = p.id
     left join received r on r.party_id = p.id
+    left join returned rt on rt.party_id = p.id
     where p.business_id = ${ctx.businessId}::uuid
       and p.is_active = true
     order by (p.opening_balance
         + coalesce(i.total, 0)
+        - coalesce(rt.total, 0)
         - coalesce(r.paid_in, 0)
         + coalesce(r.paid_out, 0)) desc
   `);
@@ -196,7 +210,7 @@ export async function getPartyBalance(
 }
 
 export type LedgerEntry = {
-  kind: 'invoice' | 'payment';
+  kind: 'invoice' | 'payment' | 'return';
   id: string;
   date: string;
   label: string;
@@ -242,6 +256,19 @@ export async function listPartyLedger(
     from payments p
     where p.business_id = ${ctx.businessId}::uuid
       and p.party_id = ${partyId}::uuid
+
+    union all
+
+    select 'return' as kind,
+           r.id::text,
+           r.return_date::text,
+           ('Return' || coalesce(' against ' || i.invoice_no, '')) as label,
+           (-r.total_amount)::numeric(12,2)::text,
+           i.invoice_no as reference
+    from sales_returns r
+    left join invoices i on i.id = r.invoice_id
+    where r.business_id = ${ctx.businessId}::uuid
+      and r.party_id = ${partyId}::uuid
 
     order by date asc, kind desc
   `);

@@ -156,3 +156,28 @@ export function invoiceWarnings(input: {
 
   return warnings;
 }
+
+/**
+ * Recording a sales return.
+ *
+ * Quantities are validated against the invoice on the server, not here: this
+ * schema cannot know what was sold. It only guarantees the shape is sane and
+ * that somebody is returning a positive amount of something.
+ */
+export const returnLineSchema = z.object({
+  productId: z.uuid().nullable(),
+  name: z.string().trim().min(1, 'Every line needs a name'),
+  qty: quantitySchema.refine((v) => Number(v) > 0, 'Enter a quantity greater than zero'),
+  rate: moneySchema,
+  restock: z.boolean(),
+});
+
+export const salesReturnSchema = z.object({
+  invoiceId: z.uuid().nullable(),
+  returnDate: dateStringSchema,
+  reason: optionalText(200),
+  note: optionalText(500),
+  lines: z.array(returnLineSchema).min(1, 'Pick at least one item to return'),
+});
+
+export type SalesReturnInput = z.infer<typeof salesReturnSchema>;

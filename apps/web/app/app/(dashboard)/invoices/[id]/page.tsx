@@ -1,4 +1,5 @@
-import { getBusiness, getInvoice } from '@billwise/db';
+import { getBusiness, getInvoice, listReturnsForInvoice } from '@billwise/db';
+import { todayInIndia } from '@billwise/core';
 import { INVOICE_KIND_LABELS, getGstStateName } from '@billwise/shared';
 import { Alert, Badge, Card, PageBody, PageHeader, TBody, TD, TH, THead, TR, Table } from '@billwise/ui';
 import { ArrowLeft, Ban } from 'lucide-react';
@@ -7,6 +8,7 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { requireBusiness } from '@/lib/auth/require-business';
 import { InvoiceActions } from './invoice-actions';
+import { ReturnForm } from './return-form';
 
 export const metadata: Metadata = { title: 'Invoice' };
 
@@ -17,6 +19,17 @@ export default async function InvoicePage({ params }: { params: Promise<{ id: st
   const [invoice, business] = await Promise.all([getInvoice(ctx, id), getBusiness(ctx)]);
   // Business-scoped, so a foreign id is indistinguishable from a missing one.
   if (!invoice) notFound();
+
+  const returns = invoice.status === 'issued' ? await listReturnsForInvoice(ctx, invoice.id) : [];
+  const returnedTotal = returns.reduce((sum, r) => sum + Number(r.totalAmount), 0);
+
+  /** Per line name, how much of it has already come back. */
+  const returnedQty = new Map<string, number>();
+  for (const ret of returns) {
+    for (const line of ret.lines) {
+      returnedQty.set(line.name, (returnedQty.get(line.name) ?? 0) + Number(line.qty));
+    }
+  }
 
   const showGst = invoice.kind === 'tax_invoice';
   const due = (Number(invoice.grandTotal) - Number(invoice.amountPaid)).toFixed(2);
@@ -171,6 +184,55 @@ export default async function InvoicePage({ params }: { params: Promise<{ id: st
           </>
         )}
       </dl>
+
+      {returns.length > 0 && (
+        <Card className="space-y-3 p-4">
+          <div className="flex flex-wrap items-baseline justify-between gap-2">
+            <h2 className="text-xs font-semibold tracking-wide text-muted-foreground uppercase">
+              Returned
+            </h2>
+            <p className="tabular text-sm">
+              Credit of <span className="font-semibold">₹{returnedTotal.toFixed(2)}</span>
+            </p>
+          </div>
+          <ul className="space-y-2 text-sm">
+            {returns.map((ret) => (
+              <li key={ret.id} className="rounded-lg border bg-muted/30 p-3">
+                <div className="flex flex-wrap items-baseline justify-between gap-2">
+                  <span className="tabular text-xs text-muted-foreground">
+                    {ret.returnDate}
+                    {ret.reason ? ` · ${ret.reason}` : ''}
+                  </span>
+                  <span className="tabular font-medium">₹{ret.totalAmount}</span>
+                </div>
+                <ul className="mt-1.5 space-y-0.5 text-xs text-muted-foreground">
+                  {ret.lines.map((line) => (
+                    <li key={line.id}>
+                      {line.qty} × {line.name}
+                      {line.restock === 'no' && ' (not restocked)'}
+                    </li>
+                  ))}
+                </ul>
+              </li>
+            ))}
+          </ul>
+        </Card>
+      )}
+
+      {invoice.status === 'issued' && (
+        <ReturnForm
+          invoiceId={invoice.id}
+          today={todayInIndia()}
+          lines={invoice.lines.map((line) => ({
+            productId: line.productId,
+            name: line.name,
+            rate: line.rate,
+            soldQty: line.qty,
+            alreadyReturned: String(returnedQty.get(line.name) ?? 0),
+            unit: line.unit,
+          }))}
+        />
+      )}
 
       {(invoice.notes || invoice.terms) && (
         <Card className="space-y-4 p-4 text-sm">
