@@ -293,6 +293,28 @@
     color: var(--color-primary-subtle-foreground);
   }
 
+  /*
+   * Native <select> popups in dark mode.
+   *
+   * The list itself is drawn by the OS, not by us. Because the control has an
+   * explicit background-color, Chrome stops inheriting the page's colour-scheme
+   * for the popup and paints white behind our light-on-dark option text, which
+   * comes out as grey on white and is close to unreadable.
+   *
+   * Setting the colours on `option` directly is the only thing that reaches
+   * that popup. `color-scheme` on the select keeps the scrollbar and the
+   * highlight bar in the same family.
+   */
+  select {
+    color-scheme: light dark;
+  }
+
+  select option,
+  select optgroup {
+    background-color: var(--color-popover);
+    color: var(--color-popover-foreground);
+  }
+
   /* Money and quantity columns everywhere in the app. */
   .tabular {
     font-variant-numeric: tabular-nums;
