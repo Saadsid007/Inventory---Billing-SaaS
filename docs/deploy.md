@@ -135,9 +135,14 @@ fixed value, so a preview build with production's `AUTH_URL` will bounce sign-in
 to production. Either give the Preview environment its own `AUTH_URL`, or accept
 that previews are for looking at pages and not for logging in.
 
-**Payments are still manual.** Nothing about deployment changes the subscription
-model: a shop pays out of band, and someone marks them paid in `/admin`. Spec §7
-rules out in-app checkout until Phase 3.
+**Both payment paths stay open.** A shop can pay by UPI on `/app/billing`, and a
+super admin can still mark one paid in `/admin`. Keep the second: money arrives
+by bank transfer and by cash more often than a payment page admits, and both
+routes extend the paid month the same way.
+
+**Nothing renews on its own.** There is no stored card and no auto-debit. Each
+payment buys one month, and `paid_until` decides access. A shop that stops
+paying loses access and loses nothing else.
 
 **Print output.** Verify one A4 and one 80mm print on the deployed site before
 telling anyone to use it. It is the one screen where a CSS regression produces
