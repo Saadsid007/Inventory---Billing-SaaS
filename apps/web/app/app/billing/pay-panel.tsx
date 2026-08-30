@@ -136,11 +136,21 @@ export function PayPanel({
   return (
     <Card className="space-y-4 p-4 sm:p-5">
       <div className="flex flex-col gap-5 sm:flex-row">
-        <div className="mx-auto shrink-0 rounded-xl border bg-white p-3 shadow-xs sm:mx-0">
+        <div className="mx-auto shrink-0 rounded-xl border bg-white p-2 shadow-xs sm:mx-0">
           {/* Plain <img>: the QR is generated per payment on Razorpay's own
-              domain, so there is nothing for next/image to optimise. */}
+              domain, so there is nothing for next/image to optimise.
+
+              `h-auto` matters. Razorpay returns a portrait poster with its own
+              branding around the code, and forcing that into a square squeezes
+              the QR itself out of shape until a phone camera cannot lock onto
+              it. Width is set, height follows. */}
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={qr.imageUrl} alt={`UPI QR for ₹${qr.amount}`} className="size-52" />
+          <img
+            src={qr.imageUrl}
+            alt={`UPI QR for ₹${qr.amount}`}
+            width={288}
+            className="h-auto w-72 max-w-full"
+          />
         </div>
 
         <div className="min-w-0 flex-1 space-y-3">
