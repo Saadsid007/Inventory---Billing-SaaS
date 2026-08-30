@@ -11,7 +11,7 @@ import { requireBusiness } from '@/lib/auth/require-business';
 import { CategoriesSection } from './categories-section';
 import { CustomFieldsSection } from './custom-fields-section';
 import { InvoiceSettingsSection } from './invoice-settings-section';
-import { LogoSection } from './logo-section';
+import { BusinessImageSection } from './logo-section';
 import { ProfileSection } from './profile-section';
 import { UnitsSection } from './units-section';
 
@@ -51,7 +51,21 @@ export default async function SettingsPage() {
         }}
       />
 
-      <LogoSection initialUrl={business?.logoUrl ?? null} />
+      <BusinessImageSection
+        slot="logo"
+        title="Logo"
+        description="Printed on your invoices and shown at the top of your public catalog."
+        initialUrl={business?.logoUrl ?? null}
+      />
+
+      <BusinessImageSection
+        slot="signature"
+        title="Signature"
+        description="Printed above your name at the bottom of an A4 invoice, so a bill can go out already signed."
+        hint="A photo or scan of a signature or rubber stamp works. Sign on plain white paper, crop it close, and it will print cleanly. It is not used on 80mm thermal bills, where the print quality is too coarse for it."
+        initialUrl={business?.signatureUrl ?? null}
+        wide
+      />
 
       <InvoiceSettingsSection
         initial={{

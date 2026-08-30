@@ -21,13 +21,28 @@
 
 /* ---------------------------------------------------------------- A4 ---- */
 
+/*
+ * A column, not a block. The signature sits in an `margin-top: auto` footer, so
+ * on a one-line invoice it drops to the bottom of the sheet instead of floating
+ * under the totals with 150mm of blank paper beneath it. Filling the page on
+ * purpose is what makes a short bill look deliberate rather than unfinished.
+ */
 .print-a4 {
+  display: flex;
+  flex-direction: column;
   width: 210mm;
   min-height: 297mm;
   padding: 12mm;
   margin: 0 auto;
   font-size: 11pt;
   line-height: 1.4;
+}
+
+.print-a4 .sheet-footer {
+  margin-top: auto;
+  padding-top: 10mm;
+  page-break-inside: avoid;
+  break-inside: avoid;
 }
 
 .print-a4 table {
@@ -93,14 +108,27 @@
     padding: 0;
   }
 
+  /*
+   * The page box supplies the margin, so the sheet's own padding has to go or
+   * the two add up. Height comes from the page box too: `min-height: 297mm`
+   * plus a 10mm page margin is 317mm of content on a 297mm sheet, which is how
+   * a one-item invoice ended up printing a second page containing nothing but
+   * the signature line.
+   */
   .print-a4 {
     width: auto;
-    min-height: auto;
+    min-height: 0;
+    height: 100%;
     padding: 0;
   }
 
+  /*
+   * Thermal keeps its 72mm width on paper. Letting it go `width: auto` on an
+   * A4 printer stretched a receipt designed for a 80mm roll across a full page,
+   * which is what made the printout look broken.
+   */
   .print-thermal {
-    width: auto;
+    width: 72mm;
     padding: 0;
   }
 
@@ -114,6 +142,25 @@
   }
 }
 
-@page {
+/*
+ * Named pages, so each format gets the paper it was designed for. A thermal
+ * roll is 80mm wide and as long as the bill needs; asking for A4 there wastes
+ * most of a page per sale.
+ */
+.print-a4 {
+  page: sheet-a4;
+}
+
+.print-thermal {
+  page: sheet-thermal;
+}
+
+@page sheet-a4 {
+  size: A4;
   margin: 10mm;
+}
+
+@page sheet-thermal {
+  size: 80mm auto;
+  margin: 3mm;
 }

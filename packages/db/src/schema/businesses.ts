@@ -40,6 +40,13 @@ export const businesses = pgTable(
     phone: text(),
     email: text(),
     logoUrl: text(),
+    /**
+     * Signature or stamp, printed above the "For <business>" line on an A4
+     * invoice. A separate image from the logo: one is branding at the top of
+     * the page, the other is an authorised signatory at the bottom, and a shop
+     * often has one without the other.
+     */
+    signatureUrl: text(),
 
     /**
      * Signup grants a 10-day trial immediately — there is no approval queue.

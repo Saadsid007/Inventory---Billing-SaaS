@@ -33,6 +33,7 @@ export type BusinessProfile = {
   phone: string | null;
   email: string | null;
   logoUrl: string | null;
+  signatureUrl: string | null;
 };
 
 export async function getBusiness(ctx: TenantCtx): Promise<BusinessProfile | undefined> {
@@ -51,6 +52,7 @@ export async function getBusiness(ctx: TenantCtx): Promise<BusinessProfile | und
       phone: businesses.phone,
       email: businesses.email,
       logoUrl: businesses.logoUrl,
+      signatureUrl: businesses.signatureUrl,
     })
     .from(businesses)
     .where(eq(businesses.id, ctx.businessId))

@@ -347,17 +347,26 @@ export default async function PrintInvoicePage({
           </div>
         )}
 
+        {/* Pushed to the bottom of the sheet by `.sheet-footer`, so a short
+            invoice fills the page instead of trailing off halfway down. */}
         <div
-          style={{
-            marginTop: '14mm',
-            display: 'flex',
-            justifyContent: 'space-between',
-            fontSize: '9pt',
-          }}
+          className="sheet-footer"
+          style={{ display: 'flex', justifyContent: 'space-between', gap: '10mm', fontSize: '9pt' }}
         >
-          <div>{settings?.invoiceFooter}</div>
-          <div style={{ textAlign: 'center' }}>
-            <div style={{ height: '14mm' }} />
+          <div style={{ alignSelf: 'flex-end' }}>{settings?.invoiceFooter}</div>
+          <div style={{ textAlign: 'center', minWidth: '55mm' }}>
+            {business?.signatureUrl ? (
+              /* Plain <img>: this is a print template, and next/image adds a
+                 wrapper and lazy loading that a printer has no use for. */
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                src={business.signatureUrl}
+                alt=""
+                style={{ height: '16mm', objectFit: 'contain', margin: '0 auto 1mm' }}
+              />
+            ) : (
+              <div style={{ height: '17mm' }} />
+            )}
             <div style={{ borderTop: '0.3mm solid #000', paddingTop: '1.5mm' }}>
               For {business?.name}
             </div>

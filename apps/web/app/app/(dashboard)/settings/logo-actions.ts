@@ -7,22 +7,41 @@ import { requireBusiness } from '@/lib/auth/require-business';
 import { isWebp } from '@/lib/storage/image-format';
 import {
   businessLogoPath,
+  businessSignaturePath,
   deletePublicObject,
   pathFromPublicUrl,
   uploadPublicObject,
 } from '@/lib/storage/supabase-storage';
 
 /**
- * Business logo. Build spec §2: public bucket — it prints on invoices and
- * shows on the public catalog, so it cannot live behind a signed URL.
+ * The two images a business owns: its logo and its signature.
+ *
+ * Both are in the public bucket (spec §2). The logo prints on invoices and
+ * shows on the public catalog, and the signature prints on invoices, so neither
+ * can live behind a signed URL.
+ *
+ * One implementation for both, because everything except the column and the
+ * storage folder is identical, and two copies of an upload-validate-replace
+ * routine is two places for the delete-the-old-file step to be forgotten.
  */
 
-export type LogoResult = { ok: true; logoUrl: string | null } | { ok: false; error: string };
+export type ImageSlot = 'logo' | 'signature';
+export type ImageResult = { ok: true; url: string | null } | { ok: false; error: string };
 
-export async function uploadLogoAction(formData: FormData): Promise<LogoResult> {
+const SLOTS = {
+  logo: { path: businessLogoPath, field: 'logoUrl' as const, label: 'logo' },
+  signature: { path: businessSignaturePath, field: 'signatureUrl' as const, label: 'signature' },
+};
+
+export async function uploadBusinessImageAction(
+  slot: ImageSlot,
+  formData: FormData,
+): Promise<ImageResult> {
   const ctx = await requireBusiness();
+  const { path, field, label } = SLOTS[slot];
+
   if (ctx.role !== 'owner') {
-    return { ok: false, error: 'Only the owner can change the logo.' };
+    return { ok: false, error: `Only the owner can change the ${label}.` };
   }
 
   const file = formData.get('file');
@@ -35,19 +54,16 @@ export async function uploadLogoAction(formData: FormData): Promise<LogoResult> 
     return { ok: false, error: 'Only webp images are accepted.' };
   }
 
-  const previous = (await getBusiness(ctx))?.logoUrl ?? null;
+  const previous = (await getBusiness(ctx))?.[field] ?? null;
 
   try {
-    const logoUrl = await uploadPublicObject(
-      businessLogoPath(ctx.businessId),
-      buffer,
-      'image/webp',
-    );
-    await updateBusinessProfile(ctx, { logoUrl });
+    const url = await uploadPublicObject(path(ctx.businessId), buffer, 'image/webp');
+    await updateBusinessProfile(ctx, { [field]: url });
 
-    // Replace, don't accumulate — a shop has one logo, and old versions would
-    // otherwise pile up in storage forever. Done after the row is updated so a
-    // failure here only orphans a file rather than breaking the live logo.
+    // Replace, don't accumulate. A shop has one logo and one signature, and old
+    // versions would otherwise pile up in storage forever. Done after the row
+    // is updated so a failure here only orphans a file rather than breaking the
+    // live image.
     const oldPath = previous ? pathFromPublicUrl(previous) : undefined;
     if (oldPath && oldPath.startsWith(`${ctx.businessId}/`)) {
       await deletePublicObject(oldPath);
@@ -55,21 +71,23 @@ export async function uploadLogoAction(formData: FormData): Promise<LogoResult> 
 
     revalidatePath('/app/settings');
     revalidatePath('/app');
-    return { ok: true, logoUrl };
+    return { ok: true, url };
   } catch (error) {
-    console.error('logo upload failed', error);
+    console.error(`${label} upload failed`, error);
     return { ok: false, error: 'Upload failed. Please try again.' };
   }
 }
 
-export async function removeLogoAction(): Promise<LogoResult> {
+export async function removeBusinessImageAction(slot: ImageSlot): Promise<ImageResult> {
   const ctx = await requireBusiness();
+  const { field, label } = SLOTS[slot];
+
   if (ctx.role !== 'owner') {
-    return { ok: false, error: 'Only the owner can change the logo.' };
+    return { ok: false, error: `Only the owner can change the ${label}.` };
   }
 
-  const current = (await getBusiness(ctx))?.logoUrl ?? null;
-  await updateBusinessProfile(ctx, { logoUrl: null });
+  const current = (await getBusiness(ctx))?.[field] ?? null;
+  await updateBusinessProfile(ctx, { [field]: null });
 
   const path = current ? pathFromPublicUrl(current) : undefined;
   if (path && path.startsWith(`${ctx.businessId}/`)) {
@@ -78,5 +96,5 @@ export async function removeLogoAction(): Promise<LogoResult> {
 
   revalidatePath('/app/settings');
   revalidatePath('/app');
-  return { ok: true, logoUrl: null };
+  return { ok: true, url: null };
 }

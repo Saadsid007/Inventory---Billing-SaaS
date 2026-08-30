@@ -1,0 +1,1 @@
+ALTER TABLE "businesses" ADD COLUMN "signature_url" text;

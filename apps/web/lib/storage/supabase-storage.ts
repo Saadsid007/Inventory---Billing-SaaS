@@ -33,6 +33,11 @@ export function businessLogoPath(businessId: string): string {
   return `${businessId}/logo/${crypto.randomUUID()}.webp`;
 }
 
+export function businessSignaturePath(businessId: string): string {
+  assertUuid(businessId);
+  return `${businessId}/signature/${crypto.randomUUID()}.webp`;
+}
+
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 function assertUuid(value: string): void {
