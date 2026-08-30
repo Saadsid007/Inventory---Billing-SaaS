@@ -3,6 +3,7 @@ import {
   listInvoices,
   listPartyBalances,
   listProducts,
+  listReturnLinesForExport,
 } from '@billwise/db';
 import { INVOICE_KIND_LABELS } from '@billwise/shared';
 import { requireBusiness } from '@/lib/auth/require-business';
@@ -17,7 +18,7 @@ import { csvResponse, datedFilename, indianDate, toCsv, type CsvColumn } from '@
  * layout guard.
  */
 
-const EXPORTS = ['products', 'parties', 'invoices', 'stock'] as const;
+const EXPORTS = ['products', 'parties', 'invoices', 'stock', 'returns'] as const;
 type ExportKind = (typeof EXPORTS)[number];
 
 export async function GET(
@@ -84,6 +85,42 @@ export async function GET(
         { header: 'Due date', value: (r) => indianDate(r.dueDate), text: true },
       ];
       return csvResponse(datedFilename('invoices'), toCsv(rows, columns));
+    }
+
+    /**
+     * Returns, one row per item, laid out like the sales-return files a CA
+     * already reconciles from: HSN, rate, taxable value and the tax split, with
+     * both the return date and the date of the bill it came off.
+     *
+     * Summary totals are no use here. Net taxable sales is worked out line by
+     * line, and a return that cannot be matched to an HSN and a rate cannot be
+     * subtracted from anything.
+     */
+    case 'returns': {
+      const rows = await listReturnLinesForExport(ctx);
+      const columns: CsvColumn<(typeof rows)[number]>[] = [
+        { header: 'Return date', value: (r) => indianDate(r.returnDate), text: true },
+        { header: 'Invoice no', value: (r) => r.invoiceNo, text: true },
+        { header: 'Invoice date', value: (r) => indianDate(r.invoiceDate), text: true },
+        { header: 'Customer', value: (r) => r.partyName },
+        { header: 'Customer GSTIN', value: (r) => r.partyGstin, text: true },
+        { header: 'Place of supply', value: (r) => r.placeOfSupply, text: true },
+        { header: 'Supply type', value: (r) => (r.isInterstate ? 'Interstate' : 'Intrastate') },
+        { header: 'Item', value: (r) => r.itemName },
+        { header: 'HSN', value: (r) => r.hsnCode, text: true },
+        { header: 'Quantity', value: (r) => r.qty },
+        { header: 'Rate', value: (r) => r.rate },
+        { header: 'GST %', value: (r) => r.taxRate },
+        { header: 'Taxable value', value: (r) => r.taxableValue },
+        { header: 'CGST', value: (r) => r.cgstAmount },
+        { header: 'SGST', value: (r) => r.sgstAmount },
+        { header: 'IGST', value: (r) => r.igstAmount },
+        { header: 'Cess', value: (r) => r.cessAmount },
+        { header: 'Total returned', value: (r) => r.amount },
+        { header: 'Back in stock', value: (r) => (r.restock === 'yes' ? 'Yes' : 'No') },
+        { header: 'Reason', value: (r) => r.reason },
+      ];
+      return csvResponse(datedFilename('sales-returns'), toCsv(rows, columns));
     }
 
     case 'stock': {

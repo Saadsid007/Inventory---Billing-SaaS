@@ -34,7 +34,11 @@ export default async function InvoicePage({
   const returnedQty = new Map<string, number>();
   for (const ret of returns) {
     for (const line of ret.lines) {
-      returnedQty.set(line.name, (returnedQty.get(line.name) ?? 0) + Number(line.qty));
+      if (!line.invoiceLineId) continue;
+      returnedQty.set(
+        line.invoiceLineId,
+        (returnedQty.get(line.invoiceLineId) ?? 0) + Number(line.qty),
+      );
     }
   }
 
@@ -232,11 +236,12 @@ export default async function InvoicePage({
           today={todayInIndia()}
           defaultOpen={openReturn === '1'}
           lines={invoice.lines.map((line) => ({
+            lineId: line.id,
             productId: line.productId,
             name: line.name,
             rate: line.rate,
             soldQty: line.qty,
-            alreadyReturned: String(returnedQty.get(line.name) ?? 0),
+            alreadyReturned: String(returnedQty.get(line.id) ?? 0),
             unit: line.unit,
           }))}
         />

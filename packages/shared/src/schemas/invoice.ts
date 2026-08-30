@@ -165,10 +165,15 @@ export function invoiceWarnings(input: {
  * that somebody is returning a positive amount of something.
  */
 export const returnLineSchema = z.object({
-  productId: z.uuid().nullable(),
-  name: z.string().trim().min(1, 'Every line needs a name'),
+  /**
+   * The invoice line being returned.
+   *
+   * Everything else about the line, including price and the tax split, is read
+   * off the invoice on the server. Nothing about what a return is worth comes
+   * from the browser, and two lines with the same product name stay distinct.
+   */
+  lineId: z.uuid('Pick an item from the bill'),
   qty: quantitySchema.refine((v) => Number(v) > 0, 'Enter a quantity greater than zero'),
-  rate: moneySchema,
   restock: z.boolean(),
 });
 

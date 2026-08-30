@@ -7,7 +7,8 @@ const EXPORTS = [
   { kind: 'products', label: 'Products' },
   { kind: 'stock', label: 'Stock' },
   { kind: 'parties', label: 'Outstanding' },
-  { kind: 'invoices', label: 'Invoices' },
+  { kind: 'invoices', label: 'Sales' },
+  { kind: 'returns', label: 'Sales returns' },
 ] as const;
 
 /**

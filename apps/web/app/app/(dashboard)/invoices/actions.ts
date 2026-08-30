@@ -276,26 +276,61 @@ export async function recordReturnAction(
 
   const previous = await listReturnsForInvoice(ctx, input.invoiceId);
 
-  // Sold, minus what has already come back, per line name. Names are the only
-  // key a typed-in line has, and they are snapshots on both sides.
-  const remaining = new Map<string, number>();
-  for (const line of invoice.lines) {
-    remaining.set(line.name, (remaining.get(line.name) ?? 0) + Number(line.qty));
-  }
+  // How much of each invoice line has already come back.
+  const returnedSoFar = new Map<string, number>();
   for (const ret of previous) {
     for (const line of ret.lines) {
-      remaining.set(line.name, (remaining.get(line.name) ?? 0) - Number(line.qty));
+      if (!line.invoiceLineId) continue;
+      returnedSoFar.set(
+        line.invoiceLineId,
+        (returnedSoFar.get(line.invoiceLineId) ?? 0) + Number(line.qty),
+      );
     }
   }
 
-  for (const line of input.lines) {
-    const left = remaining.get(line.name) ?? 0;
-    if (Number(line.qty) > left + 1e-9) {
+  const byId = new Map(invoice.lines.map((line) => [line.id, line]));
+  const lines = [];
+
+  for (const requested of input.lines) {
+    const line = byId.get(requested.lineId);
+    if (!line) return { ok: false, error: 'That item is not on this bill.' };
+
+    const qty = Number(requested.qty);
+    const left = Number(line.qty) - (returnedSoFar.get(line.id) ?? 0);
+    if (qty > left + 1e-9) {
       return {
         ok: false,
         error: `Only ${left} of ${line.name} can still be returned against this bill.`,
       };
     }
+
+    /*
+     * Tax in proportion to what came back.
+     *
+     * Taken from the amounts actually charged on the line rather than
+     * recomputed from the rate: the invoice rounded its tax per line, and
+     * recomputing here would drift a paisa at a time away from the figure on
+     * the paper the customer is holding.
+     */
+    const share = Number(line.qty) === 0 ? 0 : qty / Number(line.qty);
+    const part = (value: string) => (Number(value) * share).toFixed(2);
+
+    lines.push({
+      productId: line.productId,
+      invoiceLineId: line.id,
+      name: line.name,
+      qty: requested.qty,
+      rate: line.rate,
+      amount: part(line.lineTotal),
+      hsnCode: line.hsnCode,
+      taxRate: line.taxRate,
+      taxableValue: part(line.taxableValue),
+      cgstAmount: part(line.cgstAmount),
+      sgstAmount: part(line.sgstAmount),
+      igstAmount: part(line.igstAmount),
+      cessAmount: part(line.cessAmount),
+      restock: requested.restock,
+    });
   }
 
   try {
@@ -305,18 +340,12 @@ export async function recordReturnAction(
       returnDate: input.returnDate,
       reason: input.reason,
       note: input.note,
-      lines: input.lines.map((line) => ({
-        productId: line.productId,
-        name: line.name,
-        qty: line.qty,
-        rate: line.rate,
-        amount: (Number(line.qty) * Number(line.rate)).toFixed(2),
-        restock: line.restock,
-      })),
+      lines,
     });
 
     revalidatePath(`/app/invoices/${input.invoiceId}`);
     revalidatePath('/app/returns');
+    revalidatePath('/app/reports');
     revalidatePath('/app/parties');
     revalidatePath('/app/products');
     revalidatePath('/app');

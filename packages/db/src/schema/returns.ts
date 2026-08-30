@@ -58,12 +58,31 @@ export const salesReturnLines = pgTable(
       .notNull()
       .references(() => businesses.id),
     productId: uuid().references(() => products.id),
+    /** The invoice line this came off, so tax can be traced back to the sale. */
+    invoiceLineId: uuid(),
     /** Snapshot, like an invoice line. A renamed product must not rewrite history. */
     name: text().notNull(),
     qty: numeric({ precision: 12, scale: 3 }).notNull(),
     rate: numeric({ precision: 12, scale: 2 }).notNull().default('0'),
     amount: numeric({ precision: 12, scale: 2 }).notNull().default('0'),
     restock: text().notNull().default('yes'),
+
+    /*
+     * Tax, snapshotted at the same grain as the invoice line and worked out in
+     * proportion to how much came back.
+     *
+     * Without these a return is only a number in the khata: an accountant
+     * computing net taxable sales, or reconciling GSTR-1, has nothing to
+     * subtract. Recomputing them later from a rate would drift by a paisa per
+     * line against the tax actually charged.
+     */
+    hsnCode: text(),
+    taxRate: numeric({ precision: 5, scale: 2 }).notNull().default('0'),
+    taxableValue: numeric({ precision: 12, scale: 2 }).notNull().default('0'),
+    cgstAmount: numeric({ precision: 12, scale: 2 }).notNull().default('0'),
+    sgstAmount: numeric({ precision: 12, scale: 2 }).notNull().default('0'),
+    igstAmount: numeric({ precision: 12, scale: 2 }).notNull().default('0'),
+    cessAmount: numeric({ precision: 12, scale: 2 }).notNull().default('0'),
   },
   (t) => [index('sales_return_lines_return_idx').on(t.returnId)],
 );

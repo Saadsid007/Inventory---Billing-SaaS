@@ -18,6 +18,7 @@ import { recordReturnAction } from '../actions';
  * saved without being read.
  */
 export type ReturnableLine = {
+  lineId: string;
   productId: string | null;
   name: string;
   rate: string;
@@ -84,10 +85,8 @@ export function ReturnForm({
         reason: reason.trim() || undefined,
         note: note.trim() || undefined,
         lines: picked.map((p) => ({
-          productId: p.line.productId,
-          name: p.line.name,
+          lineId: p.line.lineId,
           qty: String(p.qty),
-          rate: p.line.rate,
           restock: restock[p.i] ?? true,
         })),
       });

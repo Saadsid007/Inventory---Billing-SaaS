@@ -1,4 +1,5 @@
 import {
+  getReturnsSummary,
   getSalesSummary,
   getStockSummary,
   getTaxSummary,
@@ -19,7 +20,15 @@ import {
   TR,
   Table,
 } from '@billwise/ui';
-import { CheckCircle2, FileText, IndianRupee, Package, Receipt, SearchX } from 'lucide-react';
+import {
+  CheckCircle2,
+  FileText,
+  IndianRupee,
+  Package,
+  Receipt,
+  SearchX,
+  Undo2,
+} from 'lucide-react';
 import type { Metadata } from 'next';
 import { requireBusiness } from '@/lib/auth/require-business';
 import { DateRangePicker } from './date-range';
@@ -45,11 +54,12 @@ export default async function ReportsPage({
   const fallback = defaultRange();
   const range = { from: sp.from || fallback.from, to: sp.to || fallback.to };
 
-  const [sales, tax, stock, balances] = await Promise.all([
+  const [sales, tax, stock, balances, returns] = await Promise.all([
     getSalesSummary(ctx, range),
     getTaxSummary(ctx, range),
     getStockSummary(ctx),
     listPartyBalances(ctx),
+    getReturnsSummary(ctx, range),
   ]);
 
   const totals = sales.reduce(
@@ -61,6 +71,29 @@ export default async function ReportsPage({
     }),
     { invoices: 0, taxable: 0, tax: 0, grand: 0 },
   );
+
+  const returnTotals = returns.reduce(
+    (a, r) => ({
+      count: a.count + r.returnCount,
+      taxable: a.taxable + Number(r.taxableValue),
+      tax: a.tax + Number(r.taxTotal),
+      grand: a.grand + Number(r.grandTotal),
+    }),
+    { count: 0, taxable: 0, tax: 0, grand: 0 },
+  );
+
+  /**
+   * Net of returns, which is the figure an accountant actually books.
+   *
+   * Gross sales on its own overstates the month by whatever came back, and
+   * subtracting it by hand from two separate reports is where mistakes get
+   * made.
+   */
+  const net = {
+    taxable: totals.taxable - returnTotals.taxable,
+    tax: totals.tax - returnTotals.tax,
+    grand: totals.grand - returnTotals.grand,
+  };
 
   const stockValue = stock.reduce((a, r) => a + Number(r.stockValue), 0);
   const owed = balances.filter((b) => Number(b.outstanding) > 0);
@@ -117,6 +150,73 @@ export default async function ReportsPage({
                   <TD numeric>₹{r.taxableValue}</TD>
                   <TD numeric>₹{r.taxTotal}</TD>
                   <TD numeric className="font-medium">
+                    ₹{r.grandTotal}
+                  </TD>
+                </TR>
+              ))}
+            </TBody>
+          </Table>
+        )}
+      </Section>
+
+      <Section
+        title="Returns and net sales"
+        description="What came back in this range, and what the sales figure is after it."
+      >
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          <StatCard
+            label="Returns"
+            value={String(returnTotals.count)}
+            hint={returnTotals.count === 1 ? 'return recorded' : 'returns recorded'}
+            icon={Undo2}
+          />
+          <StatCard
+            label="Returned value"
+            value={inr(returnTotals.grand.toFixed(2))}
+            hint={`Taxable ${inr(returnTotals.taxable.toFixed(2))}`}
+            icon={Undo2}
+            tone={returnTotals.grand > 0 ? 'warning' : 'default'}
+          />
+          <StatCard
+            label="Net taxable"
+            value={inr(net.taxable.toFixed(2))}
+            hint="Sales minus returns"
+            icon={Receipt}
+          />
+          <StatCard
+            label="Net sales"
+            value={inr(net.grand.toFixed(2))}
+            hint={`Net tax ${inr(net.tax.toFixed(2))}`}
+            icon={IndianRupee}
+            tone="success"
+          />
+        </div>
+
+        {returns.length === 0 ? (
+          <EmptyState
+            icon={Undo2}
+            title="Nothing came back in this range"
+            description="Net sales is the same as gross sales. Returns are recorded on the bill they were sold on."
+          />
+        ) : (
+          <Table>
+            <THead>
+              <TR>
+                <TH>Date</TH>
+                <TH numeric>Returns</TH>
+                <TH numeric>Taxable</TH>
+                <TH numeric>Tax</TH>
+                <TH numeric>Total</TH>
+              </TR>
+            </THead>
+            <TBody>
+              {returns.map((r) => (
+                <TR key={r.date}>
+                  <TD className="tabular">{r.date}</TD>
+                  <TD numeric>{r.returnCount}</TD>
+                  <TD numeric>₹{r.taxableValue}</TD>
+                  <TD numeric>₹{r.taxTotal}</TD>
+                  <TD numeric className="font-medium text-warning">
                     ₹{r.grandTotal}
                   </TD>
                 </TR>

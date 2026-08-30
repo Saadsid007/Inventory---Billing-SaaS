@@ -16,10 +16,18 @@ import { recordMovement } from './stock';
 
 export type ReturnLineInput = {
   productId: string | null;
+  invoiceLineId: string | null;
   name: string;
   qty: string;
   rate: string;
   amount: string;
+  hsnCode: string | null;
+  taxRate: string;
+  taxableValue: string;
+  cgstAmount: string;
+  sgstAmount: string;
+  igstAmount: string;
+  cessAmount: string;
   /** False for damaged goods, which come off the bill but never back on a shelf. */
   restock: boolean;
 };
@@ -70,10 +78,18 @@ export async function recordSalesReturn(
         returnId: head.id,
         businessId: ctx.businessId,
         productId: line.productId,
+        invoiceLineId: line.invoiceLineId,
         name: line.name,
         qty: line.qty,
         rate: line.rate,
         amount: line.amount,
+        hsnCode: line.hsnCode,
+        taxRate: line.taxRate,
+        taxableValue: line.taxableValue,
+        cgstAmount: line.cgstAmount,
+        sgstAmount: line.sgstAmount,
+        igstAmount: line.igstAmount,
+        cessAmount: line.cessAmount,
         restock: line.restock ? 'yes' : 'no',
       });
 
@@ -102,7 +118,15 @@ export type SalesReturnRow = {
   reason: string | null;
   note: string | null;
   createdAt: Date;
-  lines: { id: string; name: string; qty: string; rate: string; amount: string; restock: string }[];
+  lines: {
+    id: string;
+    invoiceLineId: string | null;
+    name: string;
+    qty: string;
+    rate: string;
+    amount: string;
+    restock: string;
+  }[];
 };
 
 /** Everything returned against one invoice, so the bill can show it. */
@@ -131,6 +155,7 @@ export async function listReturnsForInvoice(
     .select({
       id: salesReturnLines.id,
       returnId: salesReturnLines.returnId,
+      invoiceLineId: salesReturnLines.invoiceLineId,
       name: salesReturnLines.name,
       qty: salesReturnLines.qty,
       rate: salesReturnLines.rate,
@@ -177,6 +202,112 @@ export async function listSalesReturns(ctx: TenantCtx, limit = 200) {
     where r.business_id = ${ctx.businessId}::uuid
     order by r.return_date desc, r.created_at desc
     limit ${limit}
+  `);
+  return [...rows];
+}
+
+export type ReturnsSummaryRow = {
+  date: string;
+  returnCount: number;
+  taxableValue: string;
+  taxTotal: string;
+  grandTotal: string;
+};
+
+/**
+ * Returns per day, for the reports page.
+ *
+ * Mirrors `getSalesSummary` column for column on purpose: the two are read
+ * side by side, and net sales is one minus the other.
+ */
+export async function getReturnsSummary(
+  ctx: TenantCtx,
+  range: { from: string; to: string },
+): Promise<ReturnsSummaryRow[]> {
+  const { sql } = await import('drizzle-orm');
+  const rows = await getDb().execute<ReturnsSummaryRow>(sql`
+    select r.return_date as "date",
+           count(distinct r.id)::int as "returnCount",
+           coalesce(sum(l.taxable_value), 0)::numeric(12,2)::text as "taxableValue",
+           coalesce(sum(l.cgst_amount + l.sgst_amount + l.igst_amount + l.cess_amount), 0)
+             ::numeric(12,2)::text as "taxTotal",
+           -- Line amounts, not r.total_amount: the join to lines would
+           -- multiply the head total by the number of lines on it.
+           coalesce(sum(l.amount), 0)::numeric(12,2)::text as "grandTotal"
+    from sales_returns r
+    left join sales_return_lines l on l.return_id = r.id
+    where r.business_id = ${ctx.businessId}::uuid
+      and r.return_date between ${range.from} and ${range.to}
+    group by r.return_date
+    order by r.return_date
+  `);
+  return [...rows];
+}
+
+export type ReturnExportRow = {
+  returnDate: string;
+  invoiceNo: string | null;
+  invoiceDate: string | null;
+  partyName: string | null;
+  partyGstin: string | null;
+  placeOfSupply: string | null;
+  isInterstate: boolean | null;
+  itemName: string;
+  hsnCode: string | null;
+  qty: string;
+  rate: string;
+  taxRate: string;
+  taxableValue: string;
+  cgstAmount: string;
+  sgstAmount: string;
+  igstAmount: string;
+  cessAmount: string;
+  amount: string;
+  restock: string;
+  reason: string | null;
+};
+
+/**
+ * One row per returned item, for the accountant.
+ *
+ * Line level, with HSN, rate and the tax split, because that is the grain at
+ * which net taxable sales is worked out. A summary total is not something a CA
+ * can reconcile against GSTR-1.
+ */
+export async function listReturnLinesForExport(
+  ctx: TenantCtx,
+  range?: { from: string; to: string },
+): Promise<ReturnExportRow[]> {
+  const { sql } = await import('drizzle-orm');
+  const rows = await getDb().execute<ReturnExportRow>(sql`
+    select r.return_date as "returnDate",
+           i.invoice_no as "invoiceNo",
+           i.invoice_date::text as "invoiceDate",
+           coalesce(p.name, i.party_name) as "partyName",
+           i.party_gstin as "partyGstin",
+           i.place_of_supply as "placeOfSupply",
+           i.is_interstate as "isInterstate",
+           l.name as "itemName",
+           l.hsn_code as "hsnCode",
+           l.qty::text as "qty",
+           l.rate::text as "rate",
+           l.tax_rate::text as "taxRate",
+           l.taxable_value::text as "taxableValue",
+           l.cgst_amount::text as "cgstAmount",
+           l.sgst_amount::text as "sgstAmount",
+           l.igst_amount::text as "igstAmount",
+           l.cess_amount::text as "cessAmount",
+           l.amount::text as "amount",
+           l.restock,
+           r.reason
+    from sales_return_lines l
+    join sales_returns r on r.id = l.return_id
+    left join invoices i on i.id = r.invoice_id
+    left join parties p on p.id = r.party_id
+    where r.business_id = ${ctx.businessId}::uuid
+      ${range ? sql`and r.return_date between ${range.from} and ${range.to}` : sql``}
+    order by r.return_date desc, r.created_at desc
+    limit 5000
   `);
   return [...rows];
 }
