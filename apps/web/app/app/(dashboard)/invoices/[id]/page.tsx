@@ -12,9 +12,16 @@ import { ReturnForm } from './return-form';
 
 export const metadata: Metadata = { title: 'Invoice' };
 
-export default async function InvoicePage({ params }: { params: Promise<{ id: string }> }) {
+export default async function InvoicePage({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ id: string }>;
+  searchParams: Promise<{ return?: string }>;
+}) {
   const ctx = await requireBusiness();
   const { id } = await params;
+  const { return: openReturn } = await searchParams;
 
   const [invoice, business] = await Promise.all([getInvoice(ctx, id), getBusiness(ctx)]);
   // Business-scoped, so a foreign id is indistinguishable from a missing one.
@@ -223,6 +230,7 @@ export default async function InvoicePage({ params }: { params: Promise<{ id: st
         <ReturnForm
           invoiceId={invoice.id}
           today={todayInIndia()}
+          defaultOpen={openReturn === '1'}
           lines={invoice.lines.map((line) => ({
             productId: line.productId,
             name: line.name,

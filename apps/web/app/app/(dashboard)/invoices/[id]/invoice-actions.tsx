@@ -2,6 +2,7 @@
 
 import { PAYMENT_METHODS, PAYMENT_METHOD_LABELS } from '@billwise/shared';
 import { Button, Field, FormError, Input, Select } from '@billwise/ui';
+import { Printer, Undo2, Wallet } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import * as React from 'react';
 import { cancelInvoiceAction, issueInvoiceAction, recordPaymentAction } from '../actions';
@@ -78,9 +79,22 @@ export function InvoiceActions({
           )}
           {status === 'issued' && (
             <>
-              {Number(due) > 0 && <Button onClick={() => setMode('pay')}>Record payment</Button>}
+              {Number(due) > 0 && (
+                <Button onClick={() => setMode('pay')}>
+                  <Wallet /> Record payment
+                </Button>
+              )}
               <Button variant="outline" onClick={openPrint}>
-                Print
+                <Printer /> Print
+              </Button>
+              {/* Through the URL rather than shared state: the form lives further
+                  down the page in its own component, and a query parameter also
+                  makes "open the return form" a link somebody can be sent. */}
+              <Button
+                variant="outline"
+                onClick={() => router.replace(`/app/invoices/${invoiceId}?return=1#return`)}
+              >
+                <Undo2 /> Record return
               </Button>
               <Button variant="ghost" onClick={() => setMode('cancel')}>
                 Cancel invoice

@@ -30,13 +30,23 @@ export function ReturnForm({
   invoiceId,
   lines,
   today,
+  defaultOpen = false,
 }: {
   invoiceId: string;
   lines: readonly ReturnableLine[];
   today: string;
+  /** Set by ?return=1, which is what the header button links to. */
+  defaultOpen?: boolean;
 }) {
   const router = useRouter();
-  const [open, setOpen] = React.useState(false);
+  const [open, setOpen] = React.useState(defaultOpen);
+  const cardRef = React.useRef<HTMLDivElement>(null);
+
+  // Opened from the header, which is a screen away on a long invoice. Scrolling
+  // to it is the difference between "nothing happened" and "there it is".
+  React.useEffect(() => {
+    if (defaultOpen) cardRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }, [defaultOpen]);
   const [qty, setQty] = React.useState<Record<number, string>>({});
   const [restock, setRestock] = React.useState<Record<number, boolean>>({});
   const [returnDate, setReturnDate] = React.useState(today);
@@ -94,14 +104,16 @@ export function ReturnForm({
 
   if (!open) {
     return (
-      <Button variant="outline" onClick={() => setOpen(true)}>
-        <Undo2 /> Record a return
-      </Button>
+      <div id="return">
+        <Button variant="outline" onClick={() => setOpen(true)}>
+          <Undo2 /> Record a return
+        </Button>
+      </div>
     );
   }
 
   return (
-    <Card className="space-y-4 p-4 sm:p-5">
+    <Card id="return" ref={cardRef} className="space-y-4 p-4 sm:p-5">
       <div>
         <h2 className="text-[0.95rem] font-semibold">Record a return</h2>
         <p className="mt-1 text-sm leading-relaxed text-muted-foreground">
