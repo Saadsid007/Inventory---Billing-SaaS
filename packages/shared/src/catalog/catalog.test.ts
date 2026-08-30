@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
+  appOrigin,
   catalogProductUrl,
   enquiryMessage,
   productSlug,
@@ -61,5 +62,21 @@ describe('whatsappEnquiryUrl', () => {
     const url = whatsappEnquiryUrl('9876543210', enquiryMessage('Sharma & Sons', 'Salt 1kg'))!;
     expect(url).toContain('%26'); // &
     expect(url).toContain('%22'); // "
+  });
+});
+
+describe('appOrigin', () => {
+  it('drops a trailing slash, however many were typed', () => {
+    expect(appOrigin('https://shop.example.com/')).toBe('https://shop.example.com');
+    expect(appOrigin('https://shop.example.com///')).toBe('https://shop.example.com');
+  });
+
+  it('leaves a clean origin alone', () => {
+    expect(appOrigin('https://shop.example.com')).toBe('https://shop.example.com');
+  });
+
+  it('falls back to localhost when unset or blank', () => {
+    expect(appOrigin(undefined)).toBe('http://localhost:3000');
+    expect(appOrigin('   ')).toBe('http://localhost:3000');
   });
 });

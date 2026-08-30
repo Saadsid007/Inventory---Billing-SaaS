@@ -1,4 +1,4 @@
-import { MONTHLY_PRICE_INR, TRIAL_DAYS } from '@billwise/shared';
+import { MONTHLY_PRICE_INR, TRIAL_DAYS, appOrigin } from '@billwise/shared';
 import { ThemeScript } from '@billwise/ui';
 import type { Metadata, Viewport } from 'next';
 import './globals.css';
@@ -12,7 +12,7 @@ import './globals.css';
  * the catalog QR codes use, so a deploy cannot have one right and the other
  * wrong.
  */
-const appUrl = process.env['NEXT_PUBLIC_APP_URL'] || 'http://localhost:3000';
+const appUrl = appOrigin(process.env['NEXT_PUBLIC_APP_URL']);
 
 const description = `Make GST and non-GST bills in seconds, track stock automatically, see who owes you money, and put your products online with a QR code. ${TRIAL_DAYS} days free, then ₹${MONTHLY_PRICE_INR} a month.`;
 

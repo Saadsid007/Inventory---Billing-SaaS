@@ -79,3 +79,18 @@ export const STOCK_STATUS_LABELS: Record<
   low_stock: 'Only a few left',
   out_of_stock: 'Out of stock',
 };
+
+/**
+ * The app's own origin, without a trailing slash.
+ *
+ * `NEXT_PUBLIC_APP_URL` is typed by a human into a deployment dashboard, and
+ * `https://example.com/` is just as natural to type as `https://example.com`.
+ * Everything downstream concatenates a path onto it, so one stray slash turns
+ * every sitemap entry, canonical link and catalog QR into a double-slashed URL.
+ *
+ * Normalising once here is cheaper than being careful at eight call sites.
+ */
+export function appOrigin(value: string | undefined): string {
+  const raw = value?.trim() || 'http://localhost:3000';
+  return raw.replace(/\/+$/, '');
+}

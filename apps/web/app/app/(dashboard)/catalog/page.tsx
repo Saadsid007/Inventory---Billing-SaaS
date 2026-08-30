@@ -1,5 +1,5 @@
 import { getBusiness, getSettings, listProducts } from '@billwise/db';
-import { catalogUrl } from '@billwise/shared';
+import { appOrigin, catalogUrl } from '@billwise/shared';
 import { Alert, Badge, PageBody, PageHeader, StatCard } from '@billwise/ui';
 import { Camera, EyeOff, Image as ImageIcon, TriangleAlert } from 'lucide-react';
 import type { Metadata } from 'next';
@@ -18,7 +18,7 @@ export default async function CatalogSettingsPage() {
     listProducts(ctx, { limit: 500 }),
   ]);
 
-  const appUrl = process.env['NEXT_PUBLIC_APP_URL'] || 'http://localhost:3000';
+  const appUrl = appOrigin(process.env['NEXT_PUBLIC_APP_URL']);
   const url = catalogUrl(appUrl, business?.slug ?? membership.slug);
 
   const published = products.filter((p) => p.showInCatalog).length;
