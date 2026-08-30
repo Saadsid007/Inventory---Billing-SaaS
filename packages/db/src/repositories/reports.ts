@@ -244,3 +244,82 @@ export async function getRecentInvoices(ctx: TenantCtx, limit = 8) {
   `);
   return [...rows];
 }
+
+export type SalesExportRow = {
+  invoiceNo: string | null;
+  invoiceDate: string;
+  kind: string;
+  status: string;
+  partyName: string;
+  partyGstin: string | null;
+  placeOfSupply: string | null;
+  isInterstate: boolean;
+  itemName: string;
+  hsnCode: string | null;
+  qty: string;
+  unit: string | null;
+  rate: string;
+  taxRate: string;
+  taxableValue: string;
+  cgstAmount: string;
+  sgstAmount: string;
+  igstAmount: string;
+  cessAmount: string;
+  lineTotal: string;
+  invoiceTotal: string;
+  amountPaid: string;
+  paymentStatus: string;
+  fy: string;
+};
+
+/**
+ * Sales, one row per item sold.
+ *
+ * Deliberately the same grain and the same columns as the returns export, so
+ * the two files subtract from each other line by line. That is how an
+ * accountant works out net taxable sales, and how the TCS files from a
+ * marketplace are laid out for the same reason.
+ *
+ * Cancelled invoices are included with their status, not filtered out. A CA
+ * reconciling a numbered series needs to see that 007 exists and is void;
+ * a missing row looks like a hidden sale.
+ */
+export async function listInvoiceLinesForExport(
+  ctx: TenantCtx,
+  range?: { from: string; to: string },
+): Promise<SalesExportRow[]> {
+  const rows = await getDb().execute<SalesExportRow>(sql`
+    select i.invoice_no as "invoiceNo",
+           i.invoice_date::text as "invoiceDate",
+           i.kind::text as "kind",
+           i.status::text as "status",
+           i.party_name as "partyName",
+           i.party_gstin as "partyGstin",
+           i.place_of_supply as "placeOfSupply",
+           i.is_interstate as "isInterstate",
+           l.name as "itemName",
+           l.hsn_code as "hsnCode",
+           l.qty::text as "qty",
+           l.unit as "unit",
+           l.rate::text as "rate",
+           l.tax_rate::text as "taxRate",
+           l.taxable_value::text as "taxableValue",
+           l.cgst_amount::text as "cgstAmount",
+           l.sgst_amount::text as "sgstAmount",
+           l.igst_amount::text as "igstAmount",
+           l.cess_amount::text as "cessAmount",
+           l.line_total::text as "lineTotal",
+           i.grand_total::text as "invoiceTotal",
+           i.amount_paid::text as "amountPaid",
+           i.payment_status::text as "paymentStatus",
+           i.fy as "fy"
+    from invoice_lines l
+    join invoices i on i.id = l.invoice_id
+    where i.business_id = ${ctx.businessId}::uuid
+      and i.status <> 'draft'
+      ${range ? sql`and i.invoice_date between ${range.from} and ${range.to}` : sql``}
+    order by i.invoice_date desc, i.invoice_no desc, l.line_no
+    limit 5000
+  `);
+  return [...rows];
+}

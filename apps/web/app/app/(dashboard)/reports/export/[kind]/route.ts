@@ -1,11 +1,11 @@
 import {
   getStockSummary,
-  listInvoices,
+  listInvoiceLinesForExport,
   listPartyBalances,
   listProducts,
   listReturnLinesForExport,
 } from '@billwise/db';
-import { INVOICE_KIND_LABELS } from '@billwise/shared';
+import { INVOICE_KIND_LABELS, type InvoiceKind } from '@billwise/shared';
 import { requireBusiness } from '@/lib/auth/require-business';
 import { csvResponse, datedFilename, indianDate, toCsv, type CsvColumn } from '@/lib/csv';
 
@@ -69,22 +69,43 @@ export async function GET(
       return csvResponse(datedFilename('outstanding'), toCsv(rows, columns));
     }
 
+    /**
+     * Sales, one row per item sold, in the same shape as the returns export.
+     *
+     * The two are meant to be read together: net taxable sales is this file
+     * minus that one, line by line. An invoice-level summary cannot do that,
+     * because a bill with three items at three GST rates is one row with no
+     * rate at all.
+     */
     case 'invoices': {
-      const rows = await listInvoices(ctx, { limit: 5000 });
+      const rows = await listInvoiceLinesForExport(ctx);
       const columns: CsvColumn<(typeof rows)[number]>[] = [
-        // Text, both of them: Excel strips the leading zeros off 001 and turns
-        // a date into a serial that shows as ######## in a narrow column.
-        { header: 'Number', value: (r) => r.invoiceNo, text: true },
-        { header: 'Date', value: (r) => indianDate(r.invoiceDate), text: true },
-        { header: 'Type', value: (r) => INVOICE_KIND_LABELS[r.kind] },
+        { header: 'Invoice no', value: (r) => r.invoiceNo, text: true },
+        { header: 'Invoice date', value: (r) => indianDate(r.invoiceDate), text: true },
+        { header: 'Type', value: (r) => INVOICE_KIND_LABELS[r.kind as InvoiceKind] ?? r.kind },
         { header: 'Status', value: (r) => r.status },
         { header: 'Customer', value: (r) => r.partyName },
-        { header: 'Total', value: (r) => r.grandTotal },
+        { header: 'Customer GSTIN', value: (r) => r.partyGstin, text: true },
+        { header: 'Place of supply', value: (r) => r.placeOfSupply, text: true },
+        { header: 'Supply type', value: (r) => (r.isInterstate ? 'Interstate' : 'Intrastate') },
+        { header: 'Item', value: (r) => r.itemName },
+        { header: 'HSN', value: (r) => r.hsnCode, text: true },
+        { header: 'Quantity', value: (r) => r.qty },
+        { header: 'Unit', value: (r) => r.unit },
+        { header: 'Rate', value: (r) => r.rate },
+        { header: 'GST %', value: (r) => r.taxRate },
+        { header: 'Taxable value', value: (r) => r.taxableValue },
+        { header: 'CGST', value: (r) => r.cgstAmount },
+        { header: 'SGST', value: (r) => r.sgstAmount },
+        { header: 'IGST', value: (r) => r.igstAmount },
+        { header: 'Cess', value: (r) => r.cessAmount },
+        { header: 'Line total', value: (r) => r.lineTotal },
+        { header: 'Invoice total', value: (r) => r.invoiceTotal },
         { header: 'Paid', value: (r) => r.amountPaid },
         { header: 'Payment status', value: (r) => r.paymentStatus },
-        { header: 'Due date', value: (r) => indianDate(r.dueDate), text: true },
+        { header: 'Financial year', value: (r) => r.fy, text: true },
       ];
-      return csvResponse(datedFilename('invoices'), toCsv(rows, columns));
+      return csvResponse(datedFilename('sales'), toCsv(rows, columns));
     }
 
     /**
