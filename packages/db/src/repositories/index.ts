@@ -23,3 +23,6 @@ export * from './reports';
 export * from './admin';
 export * from './billing';
 export * from './returns';
+// Bulk writer for `apps/web/scripts/seed-demo.ts`. Guarded so it can only ever
+// touch accounts on the demo email domain.
+export * from './demo-seed';
