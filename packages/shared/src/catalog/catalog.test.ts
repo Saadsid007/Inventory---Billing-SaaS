@@ -4,6 +4,7 @@ import {
   catalogProductUrl,
   enquiryMessage,
   productSlug,
+  resolveStoreWhatsapp,
   shortIdFromProductSlug,
   whatsappEnquiryUrl,
 } from './index';
@@ -62,6 +63,21 @@ describe('whatsappEnquiryUrl', () => {
     const url = whatsappEnquiryUrl('9876543210', enquiryMessage('Sharma & Sons', 'Salt 1kg'))!;
     expect(url).toContain('%26'); // &
     expect(url).toContain('%22'); // "
+  });
+});
+
+describe('resolveStoreWhatsapp', () => {
+  it('uses vendor profile phone first', () => {
+    expect(resolveStoreWhatsapp('9999888877', '9839112204')).toBe('9999888877');
+  });
+
+  it('falls back to catalog whatsapp when profile phone is empty', () => {
+    expect(resolveStoreWhatsapp(null, '9839112204')).toBe('9839112204');
+    expect(resolveStoreWhatsapp('', '9839112204')).toBe('9839112204');
+  });
+
+  it('returns null when no number is available', () => {
+    expect(resolveStoreWhatsapp(null, null)).toBeNull();
   });
 });
 

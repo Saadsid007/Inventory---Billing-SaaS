@@ -6,6 +6,7 @@ import {
   Check,
   CreditCard,
   Flame,
+  MapPin,
   Minus,
   PackageCheck,
   Plus,
@@ -28,6 +29,8 @@ export function InteractiveBuyBox({
   currentStock,
   trackInventory,
   unitShortName,
+  storeCity,
+  storeAddress,
 }: {
   businessName: string;
   businessPhone: string | null;
@@ -39,6 +42,8 @@ export function InteractiveBuyBox({
   currentStock: string;
   trackInventory: boolean;
   unitShortName: string | null;
+  storeCity?: string | null;
+  storeAddress?: string | null;
 }) {
   const rawStock = Number.parseFloat(currentStock) || 0;
   const formattedStock = formatCatalogStock(rawStock);
@@ -116,7 +121,9 @@ export function InteractiveBuyBox({
               <p className="text-[11px] opacity-80 mt-0.5">
                 {rawStock <= 0
                   ? 'Send WhatsApp message to be notified when fresh stock arrives.'
-                  : 'Counter pickup ready in 15 mins • Fast Kanpur doorstep delivery.'}
+                  : storeCity
+                    ? `Counter pickup ready in 15 mins • Fast ${storeCity} doorstep delivery.`
+                    : 'Counter pickup ready in 15 mins • Fast local doorstep delivery.'}
               </p>
             </div>
           </div>
@@ -272,7 +279,9 @@ export function InteractiveBuyBox({
       <div className="space-y-2.5 pt-2 border-t text-xs text-muted-foreground">
         <div className="flex items-center gap-2.5">
           <Truck className="size-4 text-emerald-600 shrink-0" />
-          <span>Counter Pickup in 15 mins • Local Kanpur Delivery Available</span>
+          <span>
+            Counter Pickup in 15 mins • {storeCity ? `Local ${storeCity}` : 'Local'} Doorstep Delivery
+          </span>
         </div>
         <div className="flex items-center gap-2.5">
           <ShieldCheck className="size-4 text-emerald-600 shrink-0" />
@@ -282,6 +291,12 @@ export function InteractiveBuyBox({
           <CreditCard className="size-4 text-emerald-600 shrink-0" />
           <span>Pay at Counter or on Delivery with Cash / UPI</span>
         </div>
+        {storeAddress && (
+          <div className="flex items-start gap-2.5 pt-1 text-[11px]">
+            <MapPin className="size-3.5 text-primary shrink-0 mt-0.5" />
+            <span className="truncate leading-tight">Pick up at: {storeAddress}</span>
+          </div>
+        )}
       </div>
     </div>
   );

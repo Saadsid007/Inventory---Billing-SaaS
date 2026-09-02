@@ -112,7 +112,7 @@ export function InvoiceSettingsSection({ initial }: { initial: Values }) {
           label="WhatsApp number for enquiries"
           htmlFor="s-whatsapp"
           error={err('catalogWhatsapp')}
-          hint="Catalog visitors get an Enquire button that opens a chat with you."
+          hint="Optional override only. Your profile phone (Settings → Profile) is used for Call and WhatsApp on the storefront."
         >
           <Input
             id="s-whatsapp"

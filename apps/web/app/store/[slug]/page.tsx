@@ -2,6 +2,7 @@ import { findCatalogBusiness, listCatalogCategories, listCatalogProducts } from 
 import {
   DEFAULT_STOREFRONT_CONFIG,
   enquiryMessage,
+  resolveStoreWhatsapp,
   storefrontDisplayText,
   whatsappEnquiryUrl,
 } from '@billwise/shared';
@@ -45,8 +46,10 @@ export default async function CatalogPage({
     'Browse products and order on WhatsApp for quick pickup or local delivery.',
   );
 
+  const whatsappNumber = resolveStoreWhatsapp(business.phone, business.catalogWhatsapp);
+
   const defaultWhatsapp = whatsappEnquiryUrl(
-    business.catalogWhatsapp,
+    whatsappNumber,
     enquiryMessage(business.name),
   );
 
@@ -56,11 +59,16 @@ export default async function CatalogPage({
     name: business.name,
     ...(business.logoUrl && { image: business.logoUrl }),
     ...(business.phone && { telephone: business.phone }),
+    ...(business.email && { email: business.email }),
     ...((business.addressLine1 || business.city) && {
       address: {
         '@type': 'PostalAddress',
-        ...(business.addressLine1 && { streetAddress: business.addressLine1 }),
+        ...(business.addressLine1 && {
+          streetAddress: [business.addressLine1, business.addressLine2].filter(Boolean).join(', '),
+        }),
         ...(business.city && { addressLocality: business.city }),
+        ...(business.stateCode && { addressRegion: business.stateCode }),
+        ...(business.pincode && { postalCode: business.pincode }),
         addressCountry: 'IN',
       },
     }),
@@ -153,7 +161,7 @@ export default async function CatalogPage({
                 key={p.id}
                 slug={slug}
                 businessName={business.name}
-                catalogWhatsapp={business.catalogWhatsapp}
+                catalogWhatsapp={whatsappNumber}
                 showPrice={business.showCatalogPrices}
                 showStockCount={cfg.showStockCount !== false}
                 product={p}

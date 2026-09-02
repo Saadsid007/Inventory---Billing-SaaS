@@ -2,6 +2,8 @@ import { findCatalogBusiness } from '@billwise/db';
 import {
   DEFAULT_STOREFRONT_CONFIG,
   enquiryMessage,
+  formatStoreAddress,
+  resolveStoreWhatsapp,
   storefrontDisplayText,
   whatsappEnquiryUrl,
 } from '@billwise/shared';
@@ -58,10 +60,11 @@ export default async function CatalogLayout({
   const business = await findCatalogBusiness(slug);
   if (!business) notFound();
 
-  const address = [business.addressLine1, business.city].filter(Boolean).join(', ');
+  const address = formatStoreAddress(business);
   const cfg = { ...DEFAULT_STOREFRONT_CONFIG, ...(business.storefrontConfig || {}) };
+  const whatsappNumber = resolveStoreWhatsapp(business.phone, business.catalogWhatsapp);
   const whatsapp = whatsappEnquiryUrl(
-    business.catalogWhatsapp,
+    whatsappNumber,
     enquiryMessage(business.name),
   );
 
@@ -180,7 +183,16 @@ export default async function CatalogLayout({
                   href={`tel:${business.phone}`}
                   className="block font-semibold text-foreground hover:text-primary"
                 >
-                  {business.phone}
+                  📞 {business.phone}
+                </a>
+              )}
+              {business.email && (
+                <a
+                  href={`mailto:${business.email}`}
+                  className="block text-muted-foreground hover:text-primary truncate"
+                  title="Send email"
+                >
+                  ✉️ {business.email}
                 </a>
               )}
               {whatsapp && (
@@ -191,7 +203,7 @@ export default async function CatalogLayout({
                   className="inline-flex items-center gap-1 font-medium text-emerald-600 dark:text-emerald-400 hover:underline"
                 >
                   <MessageCircle className="size-3.5" />
-                  WhatsApp us
+                  Chat on WhatsApp
                 </a>
               )}
             </div>

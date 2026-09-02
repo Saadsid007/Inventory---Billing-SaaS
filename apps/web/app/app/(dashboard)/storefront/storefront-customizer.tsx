@@ -15,7 +15,6 @@ import {
   CardHeader,
   CardTitle,
   Input,
-  Switch,
   Tabs,
   TabsContent,
   TabsList,
@@ -28,15 +27,50 @@ import {
   ExternalLink,
   Globe,
   Layout,
+  Mail,
+  MapPin,
   PackageCheck,
   Paintbrush,
+  Phone,
   Save,
   ShieldCheck,
+  Smartphone,
   Sparkles,
   Store,
+  Truck,
 } from 'lucide-react';
+import Link from 'next/link';
 import * as React from 'react';
 import { saveStorefrontCustomizationAction } from './actions';
+
+function ToggleSwitch({
+  checked,
+  onChange,
+  disabled,
+}: {
+  checked: boolean;
+  onChange: (checked: boolean) => void;
+  disabled?: boolean;
+}) {
+  return (
+    <button
+      type="button"
+      role="switch"
+      aria-checked={checked}
+      disabled={disabled}
+      onClick={() => onChange(!checked)}
+      className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-hidden disabled:opacity-40 disabled:cursor-not-allowed ${
+        checked ? 'bg-primary' : 'bg-muted'
+      }`}
+    >
+      <span
+        className={`pointer-events-none inline-block size-5 transform rounded-full bg-background shadow-md ring-0 transition duration-200 ease-in-out ${
+          checked ? 'translate-x-5' : 'translate-x-0'
+        }`}
+      />
+    </button>
+  );
+}
 
 const TEMPLATES: {
   id: StorefrontTemplate;
@@ -91,21 +125,30 @@ const ACCENT_COLORS: {
 
 export function StorefrontCustomizer({
   initialConfig,
+  businessName,
   slug,
+  phone,
+  email,
   logoUrl: initialLogoUrl,
-  catalogWhatsapp: initialWhatsapp,
   showCatalogPrices: initialShowPrices,
   catalogEnabled: initialCatalogEnabled,
+  city,
+  addressLine1,
+  addressLine2,
+  pincode,
 }: {
   initialConfig: StorefrontConfig | null;
+  businessName: string;
   slug: string;
   phone: string | null;
+  email: string | null;
   logoUrl: string | null;
-  catalogWhatsapp: string | null;
   showCatalogPrices: boolean;
   catalogEnabled: boolean;
   city: string | null;
   addressLine1: string | null;
+  addressLine2: string | null;
+  pincode: string | null;
 }) {
   const [config, setConfig] = React.useState<StorefrontConfig>({
     ...DEFAULT_STOREFRONT_CONFIG,
@@ -113,10 +156,10 @@ export function StorefrontCustomizer({
   });
 
   const [logoUrl, setLogoUrl] = React.useState(initialLogoUrl ?? '');
-  const [whatsapp, setWhatsapp] = React.useState(initialWhatsapp ?? '');
   const [showPrices, setShowPrices] = React.useState(initialShowPrices);
   const [catalogEnabled, setCatalogEnabled] = React.useState(initialCatalogEnabled);
 
+  const [device, setDevice] = React.useState<'desktop' | 'mobile'>('desktop');
   const [isPending, startTransition] = React.useTransition();
   const [saveStatus, setSaveStatus] = React.useState<'idle' | 'success' | 'error'>('idle');
   const [errorMessage, setErrorMessage] = React.useState<string | null>(null);
@@ -132,7 +175,6 @@ export function StorefrontCustomizer({
     startTransition(async () => {
       const res = await saveStorefrontCustomizationAction({
         config,
-        catalogWhatsapp: whatsapp || null,
         showCatalogPrices: showPrices,
         catalogEnabled,
         logoUrl: logoUrl || null,
@@ -148,6 +190,8 @@ export function StorefrontCustomizer({
     });
   };
 
+  const profileAddress = [addressLine1, addressLine2, city, pincode].filter(Boolean).join(', ');
+  const contactPhone = phone?.trim() || '';
   const storeUrl = `/store/${slug}`;
 
   return (
@@ -215,8 +259,11 @@ export function StorefrontCustomizer({
         </div>
       )}
 
-      {/* Editor tabs */}
-      <Tabs defaultValue="templates" className="space-y-6">
+      {/* Main Studio Grid: Editor Tabs (Left 7 cols) + Live Interactive Preview (Right 5 cols) */}
+      <div className="grid gap-8 xl:grid-cols-12">
+        {/* Editor Controls (7 columns) */}
+        <div className="xl:col-span-7 space-y-6">
+          <Tabs defaultValue="templates" className="space-y-6">
             <TabsList className="grid grid-cols-5 h-auto p-1 bg-muted/60 rounded-2xl">
               <TabsTrigger value="templates" className="rounded-xl py-2 text-xs font-semibold">
                 Templates
@@ -323,13 +370,14 @@ export function StorefrontCustomizer({
                 <CardHeader>
                   <CardTitle className="text-base font-bold flex items-center gap-2">
                     <Store className="size-4 text-primary" />
-                    Store Identity & Logos
+                    Store Identity & Vendor Profile Details
                   </CardTitle>
                   <CardDescription className="text-xs">
-                    Showcase your brand identity so customers immediately recognize your store.
+                    Contact information, phone numbers, and physical address are dynamically pulled from your registered vendor profile.
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
+                  {/* Status Toggle */}
                   <div className="flex items-center justify-between rounded-2xl border p-4 bg-muted/20">
                     <div className="space-y-0.5">
                       <p className="text-xs font-bold text-foreground">Online Store Status (Live / Public)</p>
@@ -337,7 +385,49 @@ export function StorefrontCustomizer({
                         When enabled, your store is publicly accessible at /store/{slug}.
                       </p>
                     </div>
-                    <Switch checked={catalogEnabled} onCheckedChange={setCatalogEnabled} />
+                    <ToggleSwitch
+                      checked={catalogEnabled}
+                      onChange={(c: boolean) => setCatalogEnabled(c)}
+                    />
+                  </div>
+
+                  {/* Vendor Profile Synced Details Card */}
+                  <div className="rounded-2xl border border-primary/20 bg-primary/5 p-4 space-y-2.5">
+                    <div className="flex items-center justify-between">
+                      <p className="text-xs font-bold text-foreground flex items-center gap-1.5">
+                        <CheckCircle2 className="size-3.5 text-primary" />
+                        Connected Vendor Profile Details (Live Sync)
+                      </p>
+                      <Link
+                        href="/app/settings"
+                        className="text-[11px] font-semibold text-primary hover:underline"
+                      >
+                        Edit in Settings →
+                      </Link>
+                    </div>
+                    <div className="grid gap-2 sm:grid-cols-2 text-xs">
+                      <div className="flex items-start gap-2 text-muted-foreground">
+                        <Phone className="size-3.5 shrink-0 mt-0.5 text-primary" />
+                        <div>
+                          <span className="font-medium text-foreground">Profile Phone: </span>
+                          <span>{phone || 'Not set in profile'}</span>
+                        </div>
+                      </div>
+                      <div className="flex items-start gap-2 text-muted-foreground">
+                        <Mail className="size-3.5 shrink-0 mt-0.5 text-primary" />
+                        <div>
+                          <span className="font-medium text-foreground">Profile Email: </span>
+                          <span className="truncate">{email || 'Not set in profile'}</span>
+                        </div>
+                      </div>
+                      <div className="flex items-start gap-2 text-muted-foreground sm:col-span-2">
+                        <MapPin className="size-3.5 shrink-0 mt-0.5 text-primary" />
+                        <div>
+                          <span className="font-medium text-foreground">Profile Address: </span>
+                          <span>{profileAddress || 'Not set in profile'}</span>
+                        </div>
+                      </div>
+                    </div>
                   </div>
 
                   <div className="space-y-1.5">
@@ -345,45 +435,82 @@ export function StorefrontCustomizer({
                     <Input
                       value={config.tagline ?? ''}
                       onChange={(e) => updateField('tagline', e.target.value)}
-                      placeholder="e.g. Kanpur's Trusted Neighborhood Kirana Store"
+                      placeholder="Your trusted neighborhood store for groceries and essentials"
                       className="rounded-xl text-xs h-10"
                     />
-                    <p className="text-[11px] text-muted-foreground">Appears under your store name in the footer and meta tags.</p>
                   </div>
 
                   <div className="space-y-1.5">
-                    <label className="text-xs font-bold text-foreground">Store Logo URL</label>
+                    <label className="text-xs font-bold text-foreground">Store Logo Image URL</label>
                     <Input
                       value={logoUrl}
                       onChange={(e) => setLogoUrl(e.target.value)}
                       placeholder="https://.../logo.png"
                       className="rounded-xl text-xs h-10"
                     />
-                    <p className="text-[11px] text-muted-foreground">Direct image URL for your shop icon or logo.</p>
                   </div>
 
-                  <div className="grid gap-4 sm:grid-cols-2 pt-2">
-                    <div className="space-y-1.5">
-                      <label className="text-xs font-bold text-foreground">Verified Badge Label</label>
-                      <Input
-                        value={config.badgeText ?? ''}
-                        onChange={(e) => updateField('badgeText', e.target.value)}
-                        placeholder="e.g. Verified Local Merchant"
-                        className="rounded-xl text-xs h-10"
-                      />
+                  <div className="rounded-2xl border bg-muted/20 p-4 space-y-2 text-xs">
+                    <p className="font-bold text-foreground">Store contact (from vendor profile)</p>
+                    <p className="text-muted-foreground">
+                      Call and WhatsApp buttons on your storefront use these details from Settings → Profile.
+                    </p>
+                    <div className="space-y-1.5 pt-1">
+                      <div className="flex items-center gap-2 text-muted-foreground">
+                        <Phone className="size-3.5 shrink-0" />
+                        <span>{contactPhone || 'No phone set'}</span>
+                      </div>
+                      {email && (
+                        <div className="flex items-center gap-2 text-muted-foreground">
+                          <Mail className="size-3.5 shrink-0" />
+                          <span>{email}</span>
+                        </div>
+                      )}
+                      {profileAddress && (
+                        <div className="flex items-start gap-2 text-muted-foreground">
+                          <MapPin className="size-3.5 shrink-0 mt-0.5" />
+                          <span>{profileAddress}</span>
+                        </div>
+                      )}
                     </div>
-
-                    <div className="space-y-1.5">
-                      <label className="text-xs font-bold text-foreground">WhatsApp Order Phone Number</label>
-                      <Input
-                        value={whatsapp}
-                        onChange={(e) => setWhatsapp(e.target.value)}
-                        placeholder="e.g. 9839112204"
-                        className="rounded-xl text-xs h-10"
-                      />
-                    </div>
+                    <Link
+                      href="/app/settings"
+                      className="inline-flex text-xs font-semibold text-primary hover:underline pt-1"
+                    >
+                      Edit in Settings → Profile
+                    </Link>
                   </div>
 
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-bold text-foreground">Verified Badge Label</label>
+                    <Input
+                      value={config.badgeText ?? ''}
+                      onChange={(e) => updateField('badgeText', e.target.value)}
+                      placeholder="Verified Local Merchant"
+                      className="rounded-xl text-xs h-10"
+                    />
+                  </div>
+
+                  <div className="space-y-1.5 pt-2">
+                    <label className="text-xs font-bold text-foreground">Hero Headline</label>
+                    <Input
+                      value={config.heroHeadline ?? ''}
+                      onChange={(e) => updateField('heroHeadline', e.target.value)}
+                      placeholder={`Welcome to ${businessName}`}
+                      className="rounded-xl text-xs h-10"
+                    />
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-bold text-foreground">Hero Description</label>
+                    <Textarea
+                      rows={3}
+                      value={config.heroDescription ?? ''}
+                      onChange={(e) => updateField('heroDescription', e.target.value)}
+                      placeholder="Browse products and order on WhatsApp with fast counter pickup and local delivery."
+                      className="rounded-xl text-xs"
+                    />
+                  </div>
                 </CardContent>
               </Card>
             </TabsContent>
@@ -394,7 +521,7 @@ export function StorefrontCustomizer({
                 <CardHeader>
                   <CardTitle className="text-base font-bold flex items-center gap-2">
                     <Sparkles className="size-4 text-primary" />
-                    Announcement Bar & Store Header
+                    Announcement Bar & Header Settings
                   </CardTitle>
                   <CardDescription className="text-xs">
                     Configure the top banner that visitors see immediately upon landing on your site.
@@ -408,9 +535,9 @@ export function StorefrontCustomizer({
                         Display a high-visibility banner for discounts, timings, and delivery notices.
                       </p>
                     </div>
-                    <Switch
+                    <ToggleSwitch
                       checked={config.showAnnouncement ?? true}
-                      onCheckedChange={(c) => updateField('showAnnouncement', c)}
+                      onChange={(c: boolean) => updateField('showAnnouncement', c)}
                     />
                   </div>
 
@@ -420,7 +547,7 @@ export function StorefrontCustomizer({
                       <Input
                         value={config.announcementText ?? ''}
                         onChange={(e) => updateField('announcementText', e.target.value)}
-                        placeholder="⚡ Live Catalog & Instant WhatsApp Orders • Fast Counter Pickup in Kanpur"
+                        placeholder="⚡ Live Catalog & Instant WhatsApp Orders • Fast Counter Pickup & Delivery"
                         className="rounded-xl text-xs h-10"
                       />
                     </div>
@@ -434,11 +561,6 @@ export function StorefrontCustomizer({
                       placeholder="e.g. Open 8:00 AM – 10:00 PM Daily"
                       className="rounded-xl text-xs h-10"
                     />
-                  </div>
-
-                  <div className="rounded-2xl bg-muted/40 p-4 border text-xs text-muted-foreground space-y-1">
-                    <p className="font-semibold text-foreground">Header Action Buttons</p>
-                    <p>The header automatically features your direct <strong>Call Store</strong> button and <strong>Chat on WhatsApp</strong> button based on your business phone and WhatsApp number.</p>
                   </div>
                 </CardContent>
               </Card>
@@ -464,9 +586,9 @@ export function StorefrontCustomizer({
                         Show exact inventory number (e.g. <code>🟢 60 in stock</code> or <code>60 units available</code>).
                       </p>
                     </div>
-                    <Switch
+                    <ToggleSwitch
                       checked={config.showStockCount ?? true}
-                      onCheckedChange={(c) => updateField('showStockCount', c)}
+                      onChange={(c: boolean) => updateField('showStockCount', c)}
                     />
                   </div>
 
@@ -474,12 +596,12 @@ export function StorefrontCustomizer({
                     <div className="space-y-0.5">
                       <p className="text-xs font-bold text-foreground">Low Stock Urgency Alert</p>
                       <p className="text-[11px] text-muted-foreground">
-                        Show a flame badge <code>🔥 Only 4 left!</code> when inventory is 10 or less to create healthy buyer urgency.
+                        Show a flame badge <code>🔥 Only 4 left!</code> when inventory is 10 or less to create buyer urgency.
                       </p>
                     </div>
-                    <Switch
+                    <ToggleSwitch
                       checked={config.showLowStockUrgency ?? true}
-                      onCheckedChange={(c) => updateField('showLowStockUrgency', c)}
+                      onChange={(c: boolean) => updateField('showLowStockUrgency', c)}
                     />
                   </div>
 
@@ -490,7 +612,7 @@ export function StorefrontCustomizer({
                         Show retail prices on the catalog. (Turn off for wholesale enquiry mode).
                       </p>
                     </div>
-                    <Switch checked={showPrices} onCheckedChange={setShowPrices} />
+                    <ToggleSwitch checked={showPrices} onChange={(c: boolean) => setShowPrices(c)} />
                   </div>
 
                   <div className="space-y-1.5 pt-2">
@@ -590,7 +712,7 @@ export function StorefrontCustomizer({
                     <Input
                       value={config.deliveryNotice ?? ''}
                       onChange={(e) => updateField('deliveryNotice', e.target.value)}
-                      placeholder="e.g. Free local delivery to Naveen Market, Swaroop Nagar, and Civil Lines Kanpur."
+                      placeholder={city ? `Free local delivery across ${city}` : 'Local doorstep delivery available'}
                       className="rounded-xl text-xs h-10"
                     />
                   </div>
@@ -609,6 +731,199 @@ export function StorefrontCustomizer({
               </Card>
             </TabsContent>
           </Tabs>
+        </div>
+
+        {/* Real-time Interactive Device Mockup (5 columns) */}
+        <div className="xl:col-span-5 space-y-4">
+          <div className="flex items-center justify-between">
+            <p className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
+              <Sparkles className="size-3.5 text-primary" />
+              Live Interactive Preview
+            </p>
+
+            <div className="inline-flex rounded-xl border bg-muted/40 p-0.5 text-xs">
+              <button
+                type="button"
+                onClick={() => setDevice('desktop')}
+                className={`flex items-center gap-1 rounded-lg px-2.5 py-1 font-semibold transition-all ${
+                  device === 'desktop'
+                    ? 'bg-card text-foreground shadow-2xs'
+                    : 'text-muted-foreground hover:text-foreground'
+                }`}
+              >
+                <Globe className="size-3" />
+                <span>Desktop</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setDevice('mobile')}
+                className={`flex items-center gap-1 rounded-lg px-2.5 py-1 font-semibold transition-all ${
+                  device === 'mobile'
+                    ? 'bg-card text-foreground shadow-2xs'
+                    : 'text-muted-foreground hover:text-foreground'
+                }`}
+              >
+                <Smartphone className="size-3" />
+                <span>Mobile</span>
+              </button>
+            </div>
+          </div>
+
+          {/* Device Frame */}
+          <div
+            className={`mx-auto rounded-3xl border border-border/80 bg-background shadow-xl overflow-hidden transition-all duration-300 ${
+              device === 'mobile' ? 'max-w-[340px] text-[11px]' : 'w-full text-xs'
+            }`}
+          >
+            {/* Top Device Bar */}
+            <div className="bg-muted/70 px-4 py-2 border-b flex items-center justify-between text-[10px] text-muted-foreground">
+              <div className="flex items-center gap-1.5">
+                <span className="size-2 rounded-full bg-rose-500/70" />
+                <span className="size-2 rounded-full bg-amber-500/70" />
+                <span className="size-2 rounded-full bg-emerald-500/70" />
+              </div>
+              <span className="truncate font-mono">billwise.io/store/{slug}</span>
+              <span className="text-[10px]">🟢 SSL</span>
+            </div>
+
+            {/* Simulated Store Announcement */}
+            {config.showAnnouncement !== false && (
+              <div className="bg-emerald-500/10 border-b border-emerald-500/20 px-3 py-1.5 text-[10px] text-emerald-700 dark:text-emerald-400 flex items-center justify-between">
+                <span className="truncate">
+                  {config.announcementText || '⚡ Live Catalog & Instant WhatsApp Orders'}
+                </span>
+                <span className="shrink-0 text-[9px] opacity-80 pl-2">
+                  {config.storeTimings || 'Open 8 AM – 10 PM'}
+                </span>
+              </div>
+            )}
+
+            {/* Simulated Store Header */}
+            <div className="p-3 border-b flex items-center justify-between gap-2 bg-card">
+              <div className="flex items-center gap-2 min-w-0">
+                <div className="size-8 rounded-lg bg-emerald-600 grid place-items-center text-white shrink-0 shadow-xs">
+                  <Store className="size-4" />
+                </div>
+                <div className="min-w-0">
+                  <p className="font-bold truncate text-xs text-foreground flex items-center gap-1">
+                    <span>{businessName}</span>
+                    <CheckCircle2 className="size-3 text-emerald-600 shrink-0" />
+                  </p>
+                  <p className="text-[10px] text-muted-foreground truncate">{profileAddress || 'Store Location'}</p>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-1.5 shrink-0">
+                {phone && (
+                  <span className="hidden sm:inline-flex items-center rounded-lg border bg-muted/30 px-2 py-1 text-[10px] font-medium text-muted-foreground">
+                    📞 {phone}
+                  </span>
+                )}
+                {contactPhone && (
+                  <span className="rounded-lg bg-emerald-600 px-2.5 py-1 text-[10px] font-bold text-white shadow-2xs">
+                    WhatsApp
+                  </span>
+                )}
+              </div>
+            </div>
+
+            {/* Simulated Hero Card */}
+            <div className="p-3.5 space-y-3">
+              <div className="rounded-2xl border bg-gradient-to-br from-emerald-500/10 via-card to-emerald-500/5 p-3.5 space-y-1.5">
+                <span className="inline-flex items-center gap-1 text-[9px] font-semibold text-emerald-700 bg-emerald-500/10 px-2 py-0.5 rounded-full">
+                  <Sparkles className="size-2.5" />
+                  {config.badgeText || 'Verified Local Merchant'}
+                </span>
+                <p className="font-extrabold text-xs text-foreground">
+                  {config.heroHeadline || `Welcome to ${businessName}`}
+                </p>
+                <p className="text-[10px] text-muted-foreground line-clamp-2 leading-relaxed">
+                  {config.heroDescription || 'Browse products and order directly on WhatsApp with fast counter pickup and local delivery.'}
+                </p>
+              </div>
+
+              {/* Simulated Category Filter Pills */}
+              <div className="flex gap-1.5 overflow-x-auto no-scrollbar py-1">
+                <span className="shrink-0 rounded-full bg-emerald-600 text-white px-3 py-1 text-[10px] font-bold">
+                  All Items
+                </span>
+                <span className="shrink-0 rounded-full bg-card border px-2.5 py-1 text-[10px] text-muted-foreground">
+                  🥤 Beverages
+                </span>
+                <span className="shrink-0 rounded-full bg-card border px-2.5 py-1 text-[10px] text-muted-foreground">
+                  🧈 Oil & Ghee
+                </span>
+                <span className="shrink-0 rounded-full bg-card border px-2.5 py-1 text-[10px] text-muted-foreground">
+                  🌾 Staples
+                </span>
+              </div>
+
+              {/* Simulated Product Card */}
+              <div className="grid grid-cols-2 gap-2.5 pt-1">
+                <div className="rounded-2xl border bg-card p-2.5 space-y-2 shadow-2xs">
+                  <div className="relative aspect-square rounded-xl bg-muted/40 grid place-items-center overflow-hidden">
+                    <span className="text-2xl">🧈</span>
+                    <span className="absolute left-1.5 top-1.5 rounded-full bg-emerald-600 px-2 py-0.5 text-[9px] font-bold text-white">
+                      {config.showStockCount !== false ? '60 in stock' : 'In Stock'}
+                    </span>
+                  </div>
+
+                  <div>
+                    <p className="text-[9px] font-semibold text-muted-foreground uppercase">Oil & Ghee</p>
+                    <p className="font-bold text-[11px] text-foreground truncate">Amul Pure Ghee 1 L</p>
+                    {config.showStockCount !== false && (
+                      <p className="text-[9px] text-emerald-700 font-medium mt-0.5">📦 60 units available</p>
+                    )}
+                    {showPrices && (
+                      <p className="font-black text-xs text-foreground mt-1">₹645.00</p>
+                    )}
+                  </div>
+
+                  <div className="rounded-lg bg-emerald-600 py-1.5 text-center text-[10px] font-bold text-white shadow-2xs">
+                    {config.orderButtonText || 'Order on WhatsApp'}
+                  </div>
+                </div>
+
+                <div className="rounded-2xl border bg-card p-2.5 space-y-2 shadow-2xs">
+                  <div className="relative aspect-square rounded-xl bg-muted/40 grid place-items-center overflow-hidden">
+                    <span className="text-2xl">☕</span>
+                    <span className="absolute left-1.5 top-1.5 rounded-full bg-emerald-600 px-2 py-0.5 text-[9px] font-bold text-white">
+                      {config.showStockCount !== false ? '88 in stock' : 'In Stock'}
+                    </span>
+                  </div>
+
+                  <div>
+                    <p className="text-[9px] font-semibold text-muted-foreground uppercase">Beverages</p>
+                    <p className="font-bold text-[11px] text-foreground truncate">Nescafe Classic 50 g</p>
+                    {config.showStockCount !== false && (
+                      <p className="text-[9px] text-emerald-700 font-medium mt-0.5">📦 88 units available</p>
+                    )}
+                    {showPrices && (
+                      <p className="font-black text-xs text-foreground mt-1">₹175.00</p>
+                    )}
+                  </div>
+
+                  <div className="rounded-lg bg-emerald-600 py-1.5 text-center text-[10px] font-bold text-white shadow-2xs">
+                    {config.orderButtonText || 'Order on WhatsApp'}
+                  </div>
+                </div>
+              </div>
+
+              {/* Simulated Trust Strip */}
+              <div className="grid grid-cols-2 gap-1.5 pt-2 border-t text-[9px]">
+                <div className="p-1.5 rounded-lg border bg-muted/20 flex items-center gap-1">
+                  <ShieldCheck className="size-3 text-emerald-600 shrink-0" />
+                  <span className="truncate">{config.trustBadge2Title || '100% Genuine'}</span>
+                </div>
+                <div className="p-1.5 rounded-lg border bg-muted/20 flex items-center gap-1">
+                  <Truck className="size-3 text-emerald-600 shrink-0" />
+                  <span className="truncate">{config.trustBadge3Title || 'Counter Pickup'}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }

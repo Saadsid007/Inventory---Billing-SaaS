@@ -71,6 +71,39 @@ export function enquiryMessage(shopName: string, productName?: string): string {
     : `Hi ${shopName}, I saw your catalog. I would like to enquire about a product.`;
 }
 
+/**
+ * Resolves the WhatsApp contact number for a store.
+ * Uses the vendor profile phone first; catalogWhatsapp is only a fallback when
+ * profile phone is not set (legacy / optional override in invoice settings).
+ */
+export function resolveStoreWhatsapp(
+  businessPhone?: string | null,
+  catalogWhatsapp?: string | null,
+): string | null {
+  const phone = businessPhone?.trim();
+  if (phone) return phone;
+  const whatsapp = catalogWhatsapp?.trim();
+  if (whatsapp) return whatsapp;
+  return null;
+}
+
+/**
+ * Builds a clean, complete postal address from vendor profile fields,
+ * skipping null/empty values cleanly without any dummy placeholders.
+ */
+export function formatStoreAddress(b: {
+  addressLine1?: string | null;
+  addressLine2?: string | null;
+  city?: string | null;
+  stateCode?: string | null;
+  pincode?: string | null;
+}): string {
+  const parts = [b.addressLine1, b.addressLine2, b.city, b.pincode]
+    .filter((p): p is string => Boolean(p && p.trim()))
+    .map((p) => p.trim());
+  return parts.join(', ');
+}
+
 export const STOCK_STATUS_LABELS: Record<
   'in_stock' | 'low_stock' | 'out_of_stock',
   string

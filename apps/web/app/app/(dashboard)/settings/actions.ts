@@ -5,6 +5,7 @@ import {
   createUnit,
   deleteCustomFieldDef,
   deleteUnit,
+  getBusiness,
   updateBusinessProfile,
   updateSettings,
 } from '@billwise/db';
@@ -58,6 +59,11 @@ export async function saveProfileAction(raw: unknown): Promise<SettingsResult> {
 
   revalidatePath('/app/settings');
   revalidatePath('/app');
+  const business = await getBusiness(ctx);
+  if (business?.slug) {
+    revalidatePath(`/store/${business.slug}`);
+    revalidatePath(`/store/${business.slug}/[productSlug]`, 'page');
+  }
   return { ok: true };
 }
 

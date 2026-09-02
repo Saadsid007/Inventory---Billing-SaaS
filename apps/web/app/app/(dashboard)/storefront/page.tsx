@@ -21,14 +21,17 @@ export default async function StorefrontPage() {
     <div className="mx-auto max-w-6xl">
       <StorefrontCustomizer
         initialConfig={config}
+        businessName={business?.name ?? 'My Store'}
         slug={business?.slug ?? 'store'}
         phone={business?.phone ?? null}
+        email={business?.email ?? null}
         logoUrl={business?.logoUrl ?? null}
-        catalogWhatsapp={settings?.catalogWhatsapp ?? null}
         showCatalogPrices={settings?.showCatalogPrices ?? true}
         catalogEnabled={settings?.catalogEnabled ?? false}
         city={business?.city ?? null}
         addressLine1={business?.addressLine1 ?? null}
+        addressLine2={business?.addressLine2 ?? null}
+        pincode={business?.pincode ?? null}
       />
     </div>
   );

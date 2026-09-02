@@ -4,8 +4,12 @@ import {
   listCatalogProducts,
 } from '@billwise/db';
 import {
+  DEFAULT_STOREFRONT_CONFIG,
   catalogStockDisplay,
+  formatStoreAddress,
+  resolveStoreWhatsapp,
   shortIdFromProductSlug,
+  whatsappEnquiryUrl,
 } from '@billwise/shared';
 import { Badge } from '@billwise/ui';
 import {
@@ -15,6 +19,7 @@ import {
   Flame,
   Info,
   MapPin,
+  MessageCircle,
   Package,
   ShieldCheck,
   Sparkles,
@@ -54,7 +59,7 @@ export async function generateMetadata({
   const { business, product } = data;
   const description =
     product.description?.slice(0, 160) ??
-    `Buy ${product.name} from ${business.name}. Instant WhatsApp ordering and store pickup in ${business.city || 'Kanpur'}.`;
+    `Buy ${product.name} from ${business.name}. Instant WhatsApp ordering and store pickup${business.city ? ` in ${business.city}` : ''}.`;
   const image = product.imageUrls?.[0];
 
   return {
@@ -114,7 +119,15 @@ export default async function CatalogProductPage({
     ([, v]) => v !== null && v !== undefined && v !== '',
   );
 
-  const address = [business.addressLine1, business.city].filter(Boolean).join(', ');
+  const address = formatStoreAddress(business);
+  const whatsappNumber = resolveStoreWhatsapp(business.phone, business.catalogWhatsapp);
+  const cfg = { ...DEFAULT_STOREFRONT_CONFIG, ...(business.storefrontConfig || {}) };
+  const whatsappUrl = whatsappEnquiryUrl(
+    whatsappNumber,
+    `Hi ${business.name}, I would like to order: "${product.name}"${
+      business.showCatalogPrices && product.salePrice ? ` (₹${product.salePrice})` : ''
+    }. Please confirm availability and pickup/delivery!`,
+  );
   const stock = catalogStockDisplay(
     product.currentStock,
     product.trackInventory,
@@ -246,7 +259,7 @@ export default async function CatalogProductPage({
           <InteractiveBuyBox
             businessName={business.name}
             businessPhone={business.phone}
-            catalogWhatsapp={business.catalogWhatsapp}
+            catalogWhatsapp={whatsappNumber}
             productName={product.name}
             salePrice={product.salePrice}
             showPrice={business.showCatalogPrices}
@@ -254,6 +267,8 @@ export default async function CatalogProductPage({
             currentStock={product.currentStock}
             trackInventory={product.trackInventory}
             unitShortName={product.unitShortName}
+            storeCity={business.city}
+            storeAddress={address}
           />
         </div>
       </div>
@@ -275,7 +290,7 @@ export default async function CatalogProductPage({
             ) : (
               <p className="text-sm text-muted-foreground leading-relaxed">
                 Authentic branded product packaged to seal freshness and quality.
-                Directly distributed to {business.name} in Kanpur.
+                Available directly from {business.name}{business.city ? ` in ${business.city}` : ''}.
               </p>
             )}
 
@@ -380,15 +395,36 @@ export default async function CatalogProductPage({
 
             <div className="border-t pt-3 space-y-2 text-xs">
               <p className="font-semibold text-foreground">Store Contacts & Hours:</p>
-              <p className="text-muted-foreground">🕒 Mon - Sun: 8:00 AM – 10:00 PM</p>
+              {cfg.storeTimings && (
+                <p className="text-muted-foreground">🕒 {cfg.storeTimings}</p>
+              )}
               {business.phone && (
                 <p className="text-muted-foreground">
                   📞 Phone: <a href={`tel:${business.phone}`} className="font-medium text-foreground hover:underline">{business.phone}</a>
                 </p>
               )}
+              {business.email && (
+                <p className="text-muted-foreground truncate">
+                  ✉️ Email: <a href={`mailto:${business.email}`} className="font-medium text-foreground hover:underline">{business.email}</a>
+                </p>
+              )}
             </div>
 
-            <div className="pt-2">
+            {whatsappUrl && (
+              <div className="pt-2">
+                <a
+                  href={whatsappUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex w-full items-center justify-center gap-2 rounded-xl bg-emerald-600 py-2.5 text-xs font-semibold text-white shadow-xs hover:bg-emerald-700 transition-colors"
+                >
+                  <MessageCircle className="size-4" />
+                  <span>Order on WhatsApp</span>
+                </a>
+              </div>
+            )}
+
+            <div className="pt-1">
               <Link
                 href={`/store/${slug}`}
                 className="flex w-full items-center justify-center gap-2 rounded-xl border bg-muted/40 py-2.5 text-xs font-semibold text-foreground hover:bg-muted transition-colors"
@@ -429,7 +465,7 @@ export default async function CatalogProductPage({
                 key={rp.id}
                 slug={slug}
                 businessName={business.name}
-                catalogWhatsapp={business.catalogWhatsapp}
+                catalogWhatsapp={whatsappNumber}
                 showPrice={business.showCatalogPrices}
                 showStockCount
                 product={rp}

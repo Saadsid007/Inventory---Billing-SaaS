@@ -43,7 +43,11 @@ export type CatalogBusiness = {
   slug: string;
   city: string | null;
   addressLine1: string | null;
+  addressLine2: string | null;
+  stateCode: string | null;
+  pincode: string | null;
   phone: string | null;
+  email: string | null;
   logoUrl: string | null;
   showCatalogPrices: boolean;
   catalogWhatsapp: string | null;
@@ -58,7 +62,11 @@ export async function findCatalogBusiness(slug: string): Promise<CatalogBusiness
       slug: businesses.slug,
       city: businesses.city,
       addressLine1: businesses.addressLine1,
+      addressLine2: businesses.addressLine2,
+      stateCode: businesses.stateCode,
+      pincode: businesses.pincode,
       phone: businesses.phone,
+      email: businesses.email,
       logoUrl: businesses.logoUrl,
       showCatalogPrices: businessSettings.showCatalogPrices,
       catalogWhatsapp: businessSettings.catalogWhatsapp,
