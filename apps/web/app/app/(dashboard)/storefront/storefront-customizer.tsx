@@ -32,7 +32,6 @@ import {
   Paintbrush,
   Save,
   ShieldCheck,
-  Smartphone,
   Sparkles,
   Store,
 } from 'lucide-react';
@@ -92,18 +91,13 @@ const ACCENT_COLORS: {
 
 export function StorefrontCustomizer({
   initialConfig,
-  businessName,
   slug,
-  phone,
   logoUrl: initialLogoUrl,
   catalogWhatsapp: initialWhatsapp,
   showCatalogPrices: initialShowPrices,
   catalogEnabled: initialCatalogEnabled,
-  city,
-  addressLine1,
 }: {
   initialConfig: StorefrontConfig | null;
-  businessName: string;
   slug: string;
   phone: string | null;
   logoUrl: string | null;
@@ -123,7 +117,6 @@ export function StorefrontCustomizer({
   const [showPrices, setShowPrices] = React.useState(initialShowPrices);
   const [catalogEnabled, setCatalogEnabled] = React.useState(initialCatalogEnabled);
 
-  const [device, setDevice] = React.useState<'desktop' | 'mobile'>('desktop');
   const [isPending, startTransition] = React.useTransition();
   const [saveStatus, setSaveStatus] = React.useState<'idle' | 'success' | 'error'>('idle');
   const [errorMessage, setErrorMessage] = React.useState<string | null>(null);
@@ -155,7 +148,6 @@ export function StorefrontCustomizer({
     });
   };
 
-  const fullAddress = [addressLine1, city].filter(Boolean).join(', ');
   const storeUrl = `/store/${slug}`;
 
   return (
@@ -223,11 +215,8 @@ export function StorefrontCustomizer({
         </div>
       )}
 
-      {/* Main Studio Grid: Editor Tabs (Left) + Live Interactive Preview (Right) */}
-      <div className="grid gap-8 xl:grid-cols-12">
-        {/* Editor Controls (7 columns) */}
-        <div className="xl:col-span-7 space-y-6">
-          <Tabs defaultValue="templates" className="space-y-6">
+      {/* Editor tabs */}
+      <Tabs defaultValue="templates" className="space-y-6">
             <TabsList className="grid grid-cols-5 h-auto p-1 bg-muted/60 rounded-2xl">
               <TabsTrigger value="templates" className="rounded-xl py-2 text-xs font-semibold">
                 Templates
@@ -620,159 +609,6 @@ export function StorefrontCustomizer({
               </Card>
             </TabsContent>
           </Tabs>
-        </div>
-
-        {/* Real-time Interactive Device Mockup (5 columns) */}
-        <div className="xl:col-span-5 space-y-4">
-          <div className="flex items-center justify-between">
-            <p className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
-              <Sparkles className="size-3.5 text-primary" />
-              Live Interactive Preview
-            </p>
-
-            <div className="inline-flex rounded-xl border bg-muted/40 p-0.5 text-xs">
-              <button
-                type="button"
-                onClick={() => setDevice('desktop')}
-                className={`flex items-center gap-1 rounded-lg px-2.5 py-1 font-semibold transition-all ${
-                  device === 'desktop'
-                    ? 'bg-card text-foreground shadow-2xs'
-                    : 'text-muted-foreground hover:text-foreground'
-                }`}
-              >
-                <Globe className="size-3" />
-                <span>Desktop</span>
-              </button>
-              <button
-                type="button"
-                onClick={() => setDevice('mobile')}
-                className={`flex items-center gap-1 rounded-lg px-2.5 py-1 font-semibold transition-all ${
-                  device === 'mobile'
-                    ? 'bg-card text-foreground shadow-2xs'
-                    : 'text-muted-foreground hover:text-foreground'
-                }`}
-              >
-                <Smartphone className="size-3" />
-                <span>Mobile</span>
-              </button>
-            </div>
-          </div>
-
-          {/* Device Frame */}
-          <div
-            className={`mx-auto rounded-3xl border border-border/80 bg-background shadow-xl overflow-hidden transition-all duration-300 ${
-              device === 'mobile' ? 'max-w-[340px] text-[11px]' : 'w-full text-xs'
-            }`}
-          >
-            {/* Top Device Bar */}
-            <div className="bg-muted/70 px-4 py-2 border-b flex items-center justify-between text-[10px] text-muted-foreground">
-              <div className="flex items-center gap-1.5">
-                <span className="size-2 rounded-full bg-rose-500/70" />
-                <span className="size-2 rounded-full bg-amber-500/70" />
-                <span className="size-2 rounded-full bg-emerald-500/70" />
-              </div>
-              <span className="truncate font-mono">billwise.io/store/{slug}</span>
-              <span className="text-[10px]">🟢 SSL</span>
-            </div>
-
-            {/* Simulated Store Announcement */}
-            {config.showAnnouncement !== false && (
-              <div className="bg-emerald-500/10 border-b border-emerald-500/20 px-3 py-1.5 text-[10px] text-emerald-700 dark:text-emerald-400 flex items-center justify-between">
-                <span className="truncate">
-                  {config.announcementText || '⚡ Live Catalog & Instant WhatsApp Orders'}
-                </span>
-                <span className="shrink-0 text-[9px] opacity-80 pl-2">
-                  {config.storeTimings || 'Open 8 AM – 10 PM'}
-                </span>
-              </div>
-            )}
-
-            {/* Simulated Store Header */}
-            <div className="p-3 border-b flex items-center justify-between gap-2 bg-card">
-              <div className="flex items-center gap-2 min-w-0">
-                <div className="size-8 rounded-lg bg-emerald-600 grid place-items-center text-white shrink-0 shadow-xs">
-                  <Store className="size-4" />
-                </div>
-                <div className="min-w-0">
-                  <p className="font-bold truncate text-xs text-foreground flex items-center gap-1">
-                    <span>{businessName}</span>
-                    <CheckCircle2 className="size-3 text-emerald-600 shrink-0" />
-                  </p>
-                  <p className="text-[10px] text-muted-foreground truncate">{fullAddress || 'Kanpur, UP'}</p>
-                </div>
-              </div>
-
-              <div className="flex items-center gap-1.5 shrink-0">
-                {phone && (
-                  <span className="hidden sm:inline-flex items-center rounded-lg border bg-muted/30 px-2 py-1 text-[10px] font-medium text-muted-foreground">
-                    📞 {phone}
-                  </span>
-                )}
-                <span className="rounded-lg bg-emerald-600 px-2.5 py-1 text-[10px] font-bold text-white shadow-2xs">
-                  WhatsApp
-                </span>
-              </div>
-            </div>
-
-            {/* Simulated catalog body */}
-            <div className="p-3 space-y-2.5">
-              {/* Category pills */}
-              <div className="flex gap-1 overflow-x-auto no-scrollbar">
-                <span className="shrink-0 rounded-full bg-primary text-primary-foreground px-2.5 py-1 text-[10px] font-semibold">
-                  All
-                </span>
-                <span className="shrink-0 rounded-full border bg-card px-2.5 py-1 text-[10px] text-muted-foreground">
-                  🥤 Beverages
-                </span>
-                <span className="shrink-0 rounded-full border bg-card px-2.5 py-1 text-[10px] text-muted-foreground">
-                  🧈 Oil & Ghee
-                </span>
-                <span className="shrink-0 rounded-full border bg-card px-2.5 py-1 text-[10px] text-muted-foreground">
-                  🌾 Staples
-                </span>
-              </div>
-
-              {/* Compact product cards */}
-              <div className="grid grid-cols-2 gap-2">
-                {[
-                  { emoji: '🧈', cat: 'Oil & Ghee', name: 'Amul Pure Ghee 1 L', price: '645', stock: '60', unit: 'PKT' },
-                  { emoji: '☕', cat: 'Beverages', name: 'Nescafe Classic 50 g', price: '175', stock: '88', unit: 'PKT' },
-                ].map((item) => (
-                  <div key={item.name} className="overflow-hidden rounded-xl border bg-card">
-                    <div className="relative aspect-square bg-muted/30 grid place-items-center">
-                      <span className="text-xl">{item.emoji}</span>
-                      {config.showLowStockUrgency !== false && Number(item.stock) <= 10 && (
-                        <span className="absolute left-1 top-1 rounded-md bg-amber-500 px-1.5 py-0.5 text-[8px] font-bold text-black">
-                          Low stock
-                        </span>
-                      )}
-                    </div>
-                    <div className="space-y-1 p-2">
-                      <p className="truncate text-[9px] text-muted-foreground">{item.cat}</p>
-                      <p className="line-clamp-2 text-[10px] font-semibold leading-tight text-foreground">
-                        {item.name}
-                      </p>
-                      <div className="flex items-center justify-between gap-1">
-                        {showPrices ? (
-                          <p className="text-[10px] font-bold tabular-nums">₹{item.price}</p>
-                        ) : (
-                          <p className="text-[9px] font-medium text-primary">Ask price</p>
-                        )}
-                        <p className="text-[9px] font-medium text-emerald-600">
-                          {config.showStockCount !== false ? `${item.stock} ${item.unit} left` : 'In stock'}
-                        </p>
-                      </div>
-                      <div className="rounded-lg bg-emerald-600 py-1 text-center text-[9px] font-semibold text-white">
-                        {config.orderButtonText?.slice(0, 12) || 'WhatsApp'}
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
     </div>
   );
 }

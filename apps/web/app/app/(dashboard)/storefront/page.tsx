@@ -21,7 +21,6 @@ export default async function StorefrontPage() {
     <div className="mx-auto max-w-6xl">
       <StorefrontCustomizer
         initialConfig={config}
-        businessName={business?.name ?? 'My Store'}
         slug={business?.slug ?? 'store'}
         phone={business?.phone ?? null}
         logoUrl={business?.logoUrl ?? null}
