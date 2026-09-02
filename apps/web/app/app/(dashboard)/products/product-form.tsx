@@ -129,7 +129,10 @@ export function ProductForm({
         <Field label="Product name" htmlFor="name" error={err('name')} required>
           <Input
             id="name"
-            autoFocus
+            // Only when creating. On a product's own page this form sits below
+            // the image panel, and focusing into it scrolls the page down past
+            // the header. Same reason as the contact form.
+            autoFocus={!productId}
             value={values.name}
             onChange={set('name')}
             aria-invalid={Boolean(err('name'))}

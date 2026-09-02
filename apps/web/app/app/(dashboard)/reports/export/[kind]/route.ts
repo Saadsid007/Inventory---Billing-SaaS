@@ -5,7 +5,7 @@ import {
   listProducts,
   listReturnLinesForExport,
 } from '@billwise/db';
-import { INVOICE_KIND_LABELS, type InvoiceKind } from '@billwise/shared';
+import { getGstStateName, INVOICE_KIND_LABELS, type InvoiceKind } from '@billwise/shared';
 import { requireBusiness } from '@/lib/auth/require-business';
 import { csvResponse, datedFilename, indianDate, toCsv, type CsvColumn } from '@/lib/csv';
 
@@ -20,6 +20,23 @@ import { csvResponse, datedFilename, indianDate, toCsv, type CsvColumn } from '@
 
 const EXPORTS = ['products', 'parties', 'invoices', 'stock', 'returns'] as const;
 type ExportKind = (typeof EXPORTS)[number];
+
+/**
+ * `09` becomes `Uttar Pradesh`.
+ *
+ * The code alone is what the GST portal wants and what the invoice stores, but
+ * nobody reads a spreadsheet of two-digit numbers and knows where the sales
+ * were. Both columns are written: the code for filing, the name for the human
+ * reading the file.
+ *
+ * An unrecognised code falls through as itself rather than as a blank — a
+ * legacy code like 25 or 28 appears on old invoices, and silently emptying the
+ * cell would look like missing data.
+ */
+function stateName(code: string | null | undefined): string {
+  if (!code) return '';
+  return getGstStateName(code) ?? code;
+}
 
 export async function GET(
   _request: Request,
@@ -59,11 +76,17 @@ export async function GET(
       const rows = await listPartyBalances(ctx);
       const columns: CsvColumn<(typeof rows)[number]>[] = [
         { header: 'Name', value: (r) => r.name },
-        { header: 'Phone', value: (r) => r.phone },
+        { header: 'Phone', value: (r) => r.phone, text: true },
+        { header: 'GSTIN', value: (r) => r.gstin, text: true },
+        { header: 'City', value: (r) => r.city },
         { header: 'Opening balance', value: (r) => r.openingBalance },
         { header: 'Invoiced', value: (r) => r.invoicedTotal },
         { header: 'Received', value: (r) => r.paidIn },
         { header: 'Paid out', value: (r) => r.paidOut },
+        // Without this the file does not add up: opening + invoiced − received
+        // + paid out lands short of Outstanding by whatever came back, and the
+        // person checking it has no column to explain the gap.
+        { header: 'Returned', value: (r) => r.returned },
         { header: 'Outstanding', value: (r) => r.outstanding },
       ];
       return csvResponse(datedFilename('outstanding'), toCsv(rows, columns));
@@ -85,8 +108,11 @@ export async function GET(
         { header: 'Type', value: (r) => INVOICE_KIND_LABELS[r.kind as InvoiceKind] ?? r.kind },
         { header: 'Status', value: (r) => r.status },
         { header: 'Customer', value: (r) => r.partyName },
+        { header: 'Customer phone', value: (r) => r.partyPhone, text: true },
         { header: 'Customer GSTIN', value: (r) => r.partyGstin, text: true },
+        { header: 'Customer address', value: (r) => r.partyAddress },
         { header: 'Place of supply', value: (r) => r.placeOfSupply, text: true },
+        { header: 'State', value: (r) => stateName(r.placeOfSupply) },
         { header: 'Supply type', value: (r) => (r.isInterstate ? 'Interstate' : 'Intrastate') },
         { header: 'Item', value: (r) => r.itemName },
         { header: 'HSN', value: (r) => r.hsnCode, text: true },
@@ -124,8 +150,11 @@ export async function GET(
         { header: 'Invoice no', value: (r) => r.invoiceNo, text: true },
         { header: 'Invoice date', value: (r) => indianDate(r.invoiceDate), text: true },
         { header: 'Customer', value: (r) => r.partyName },
+        { header: 'Customer phone', value: (r) => r.partyPhone, text: true },
         { header: 'Customer GSTIN', value: (r) => r.partyGstin, text: true },
+        { header: 'Customer address', value: (r) => r.partyAddress },
         { header: 'Place of supply', value: (r) => r.placeOfSupply, text: true },
+        { header: 'State', value: (r) => stateName(r.placeOfSupply) },
         { header: 'Supply type', value: (r) => (r.isInterstate ? 'Interstate' : 'Intrastate') },
         { header: 'Item', value: (r) => r.itemName },
         { header: 'HSN', value: (r) => r.hsnCode, text: true },

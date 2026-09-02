@@ -34,6 +34,20 @@ import { auth } from '@/auth';
  * A payment or a suspension therefore takes effect on the very next request.
  */
 
+/**
+ * Where to send a session that describes rows which no longer exist.
+ *
+ * NOT `/register`, and not `/login` either. Both are bounced straight back to
+ * `/app` by the proxy for anyone holding a session — and this token *is* a
+ * valid session, just one pointing at a deleted user or business. Redirecting
+ * to either produced an endless bounce and ERR_TOO_MANY_REDIRECTS on every
+ * path in the app.
+ *
+ * The only real exit is to delete the cookie, which a server component cannot
+ * do during render. `/session-ended` is a route handler, so it can.
+ */
+const STALE_SESSION_PATH = '/session-ended';
+
 export type SessionUser = {
   id: string;
   name: string;
@@ -93,7 +107,7 @@ export const requireMembership = cache(async function requireMembership(): Promi
   if (!businessId || !role) {
     const membership = await resolveMembership(session.user.id);
     if (!membership) {
-      redirect('/register');
+      redirect(STALE_SESSION_PATH);
     }
     businessId = membership.businessId;
     role = membership.role;
@@ -103,9 +117,8 @@ export const requireMembership = cache(async function requireMembership(): Promi
 
   const row = await getBusinessStatus(ctx);
   if (!row) {
-    // The membership row survived but the business did not. Nothing sane to
-    // render; send them back through signup.
-    redirect('/register');
+    // The membership row survived but the business did not.
+    redirect(STALE_SESSION_PATH);
   }
 
   return {

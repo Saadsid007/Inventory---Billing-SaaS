@@ -1,4 +1,4 @@
-import { getParty, getPartyBalance, listPartyLedger } from '@billwise/db';
+import { getParty, getPartyBalance, listOpenInvoices, listPartyLedger } from '@billwise/db';
 import {
   Badge,
   Card,
@@ -20,6 +20,7 @@ import { notFound } from 'next/navigation';
 import { requireBusiness } from '@/lib/auth/require-business';
 import { loadPartyFormData } from '../_form-data';
 import { PartyForm } from '../party-form';
+import { PaymentPanel } from './payment-panel';
 
 export const metadata: Metadata = { title: 'Contact' };
 
@@ -29,10 +30,11 @@ export default async function PartyPage({ params }: { params: Promise<{ id: stri
   const ctx = await requireBusiness();
   const { id } = await params;
 
-  const [party, balance, ledger, formData] = await Promise.all([
+  const [party, balance, ledger, openInvoices, formData] = await Promise.all([
     getParty(ctx, id),
     getPartyBalance(ctx, id),
     listPartyLedger(ctx, id),
+    listOpenInvoices(ctx, id),
     loadPartyFormData(ctx),
   ]);
 
@@ -93,6 +95,21 @@ export default async function PartyPage({ params }: { params: Promise<{ id: stri
             </p>
           </Card>
         }
+      />
+
+      {/* Above the ledger on purpose: taking money is the thing a shopkeeper
+          opens this page to do, and reading the history is what they do to
+          check it afterwards. */}
+      <PaymentPanel
+        partyId={party.id}
+        partyName={party.name}
+        openInvoices={openInvoices.map((i) => ({
+          id: i.id,
+          invoiceNo: i.invoiceNo,
+          invoiceDate: i.invoiceDate,
+          due: i.due,
+        }))}
+        outstanding={outstanding.toFixed(2)}
       />
 
       <Section title="Ledger" description="Every bill and payment, with a running balance.">

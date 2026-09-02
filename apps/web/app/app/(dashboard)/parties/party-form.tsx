@@ -101,7 +101,15 @@ export function PartyForm({
           <Field label="Name" htmlFor="name" error={err('name')} required>
             <Input
               id="name"
-              autoFocus
+              /*
+               * Only when creating.
+               *
+               * On the contact's own page this form sits at the very bottom,
+               * under the whole ledger. Focusing a field down there makes the
+               * browser jump to it, so opening a customer landed you at the
+               * foot of the page with the balance and history scrolled off.
+               */
+              autoFocus={!partyId}
               value={values.name}
               onChange={set('name')}
               aria-invalid={Boolean(err('name'))}

@@ -48,14 +48,37 @@ function cell(value: string | number | null | undefined): string {
 /**
  * A literal-text cell, written as `="value"`.
  *
- * That form is the one every spreadsheet honours as text rather than
- * converting. It is itself a formula, but it cannot be an injection vector:
- * the value goes inside a quoted string and its own quotes are doubled, so
- * nothing in it can escape and become an expression.
+ * ## This must be written UNQUOTED, and that is the whole subtlety
+ *
+ * `="0713"` only survives as text because Excel parses it as a formula whose
+ * result is a string. A field wrapped in CSV quotes is never parsed as a
+ * formula — Excel imports it verbatim — so emitting `"=""0713"""` puts the
+ * literal characters `="0713"` in the cell, which is what every date, HSN code
+ * and invoice number in the export used to look like.
+ *
+ * So the escaping here is deliberately the opposite of `cell()`: no
+ * surrounding quotes, and the value's own quotes doubled once, because they
+ * sit inside the formula's string literal.
+ *
+ * ## Why it is still not an injection risk
+ *
+ * The value can only ever land between the two quotes of a string literal, and
+ * a value carrying a quote of its own is not written in this form at all (see
+ * below). There is no path from a cell value to an evaluated expression.
  */
 function textCell(value: string | number | null | undefined): string {
   if (value === null || value === undefined || value === '') return '';
-  return `"=""${String(value).replace(/"/g, '""""')}"""`;
+  const text = String(value);
+
+  // A comma would split the row and a quote would end the field early: neither
+  // can be escaped inside an unquoted field. Nothing that needs the text
+  // treatment — a date, an HSN, a GSTIN, a document number — contains either,
+  // so this is a safety net rather than a case worth designing around. Falling
+  // back to an ordinary quoted cell keeps the value intact and correct; the
+  // most Excel can do to it is reformat it.
+  if (/[",\n\r]/.test(text)) return cell(text);
+
+  return `="${text}"`;
 }
 
 export function toCsv<T>(rows: readonly T[], columns: readonly CsvColumn<T>[]): string {

@@ -38,6 +38,10 @@ const PUBLIC_PREFIXES = [
   // picture and no title.
   '/opengraph-image',
   '/twitter-image',
+  // Clears a session whose user or business no longer exists. Public because
+  // its whole job is to be reachable when the session is broken — gating it on
+  // that same session is how you get a page nobody can ever use.
+  '/session-ended',
 ] as const;
 
 export function isPublicPath(pathname: string): boolean {

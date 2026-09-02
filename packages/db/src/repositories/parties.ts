@@ -117,6 +117,8 @@ export type PartyBalance = {
   partyId: string;
   name: string;
   phone: string | null;
+  gstin: string | null;
+  city: string | null;
   openingBalance: string;
   invoicedTotal: string;
   paidIn: string;
@@ -176,6 +178,8 @@ export async function listPartyBalances(
       p.id    as "partyId",
       p.name  as "name",
       p.phone as "phone",
+      p.gstin as "gstin",
+      p.city  as "city",
       p.opening_balance::text                       as "openingBalance",
       coalesce(i.total, 0)::numeric(12,2)::text     as "invoicedTotal",
       coalesce(r.paid_in, 0)::numeric(12,2)::text   as "paidIn",
@@ -225,6 +229,13 @@ export type LedgerEntry = {
  * Cancelled invoices ARE included, with a zero amount. Leaving them out makes
  * the ledger look like an invoice vanished — which is exactly the accusation
  * a cancellation invites.
+ *
+ * Ordering within one day is `kind asc`, which puts the bill first and then
+ * whatever came off it: 'invoice' < 'payment' < 'return' alphabetically. It was
+ * `desc`, which listed a payment above the invoice it paid — the closing
+ * balance was still right, but the running balance dipped through numbers the
+ * customer was never actually at, and that column is the whole reason anyone
+ * reads a ledger.
  */
 export async function listPartyLedger(
   ctx: TenantCtx,
@@ -270,7 +281,7 @@ export async function listPartyLedger(
     where r.business_id = ${ctx.businessId}::uuid
       and r.party_id = ${partyId}::uuid
 
-    order by date asc, kind desc
+    order by date asc, kind asc
   `);
   return [...rows];
 }
