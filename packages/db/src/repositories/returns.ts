@@ -178,6 +178,7 @@ export type ReturnListRow = {
   reason: string | null;
   partyName: string | null;
   invoiceNo: string | null;
+  productNames: string | null;
   itemCount: number;
   qtyTotal: string;
 };
@@ -192,6 +193,8 @@ export async function listSalesReturns(ctx: TenantCtx, limit = 200) {
            r.reason,
            p.name as "partyName",
            i.invoice_no as "invoiceNo",
+           (select string_agg(distinct l.name, ', ') from sales_return_lines l where l.return_id = r.id)
+             as "productNames",
            (select count(*) from sales_return_lines l where l.return_id = r.id)::int
              as "itemCount",
            coalesce((select sum(l.qty) from sales_return_lines l where l.return_id = r.id), 0)

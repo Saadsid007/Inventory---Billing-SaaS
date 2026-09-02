@@ -1,10 +1,8 @@
 'use server';
 
 import {
-  createCategory,
   createCustomFieldDef,
   createUnit,
-  deleteCategory,
   deleteCustomFieldDef,
   deleteUnit,
   updateBusinessProfile,
@@ -13,7 +11,6 @@ import {
 import {
   businessProfileSchema,
   businessSettingsSchema,
-  categorySchema,
   customFieldSchema,
   slugify,
   unitSchema,
@@ -104,32 +101,6 @@ export async function removeUnitAction(unitId: string): Promise<void> {
   const ctx = await requireBusiness();
   await deleteUnit(ctx, unitId);
   revalidatePath('/app/settings');
-}
-
-export async function addCategoryAction(raw: unknown): Promise<SettingsResult> {
-  const ctx = await requireBusiness();
-  const parsed = categorySchema.safeParse(raw);
-  if (!parsed.success) return { ok: false, fieldErrors: fieldErrorsFrom(parsed.error.issues) };
-
-  try {
-    await createCategory(ctx, parsed.data.name);
-  } catch (error) {
-    if (error instanceof Error && error.message.includes('categories_business_name_unq')) {
-      return { ok: false, fieldErrors: { name: 'You already have this category.' } };
-    }
-    throw error;
-  }
-
-  revalidatePath('/app/settings');
-  revalidatePath('/app/products');
-  return { ok: true };
-}
-
-export async function removeCategoryAction(categoryId: string): Promise<void> {
-  const ctx = await requireBusiness();
-  await deleteCategory(ctx, categoryId);
-  revalidatePath('/app/settings');
-  revalidatePath('/app/products');
 }
 
 export async function addCustomFieldAction(raw: unknown): Promise<SettingsResult> {

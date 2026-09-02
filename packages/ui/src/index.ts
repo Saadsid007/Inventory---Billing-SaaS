@@ -59,3 +59,13 @@ export {
 } from './components/skeletons';
 export { ThemeScript, ThemeToggle, type Theme } from './components/theme';
 export { AppShell, type AppShellProps, type NavItem } from './components/app-shell';
+export {
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+  type TabsProps,
+  type TabsTriggerProps,
+  type TabsContentProps,
+} from './components/tabs';
+

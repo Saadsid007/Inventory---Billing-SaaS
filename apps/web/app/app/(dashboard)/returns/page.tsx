@@ -78,8 +78,8 @@ export default async function ReturnsPage() {
               <TH>Date</TH>
               <TH>Customer</TH>
               <TH>Against bill</TH>
+              <TH>Product name</TH>
               <TH>Reason</TH>
-              <TH numeric>Items</TH>
               <TH numeric>Quantity</TH>
               <TH numeric>Credited</TH>
             </TR>
@@ -90,8 +90,15 @@ export default async function ReturnsPage() {
                 <TD className="tabular whitespace-nowrap">{shortDate(r.returnDate)}</TD>
                 <TD>{r.partyName ?? 'Walk-in'}</TD>
                 <TD className="tabular text-muted-foreground">{r.invoiceNo ?? '-'}</TD>
+                <TD className="font-medium text-foreground">
+                  <span>{r.productNames ?? '-'}</span>
+                  {r.itemCount > 1 && (
+                    <span className="ml-1.5 text-xs text-muted-foreground font-normal">
+                      ({r.itemCount} items)
+                    </span>
+                  )}
+                </TD>
                 <TD className="text-muted-foreground">{r.reason ?? '-'}</TD>
-                <TD numeric>{r.itemCount}</TD>
                 <TD numeric>{r.qtyTotal}</TD>
                 <TD numeric className="font-medium">
                   ₹{r.totalAmount}

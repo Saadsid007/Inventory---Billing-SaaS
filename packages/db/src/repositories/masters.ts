@@ -6,7 +6,7 @@ import {
 import { and, asc, eq, isNull, or, sql } from 'drizzle-orm';
 import type { Executor } from '../client';
 import { getDb } from '../client';
-import { categories, customFieldDefs, taxRates, units } from '../schema/index';
+import { categories, customFieldDefs, products, taxRates, units } from '../schema/index';
 
 /**
  * Per-business master lists. Build spec §4 and Phase 1a.
@@ -52,6 +52,27 @@ export async function listCategories(ctx: TenantCtx) {
     .select()
     .from(categories)
     .where(eq(categories.businessId, ctx.businessId))
+    .orderBy(asc(categories.name));
+}
+
+export async function listCategoriesWithProductCount(ctx: TenantCtx) {
+  return getDb()
+    .select({
+      id: categories.id,
+      name: categories.name,
+      productCount: sql<number>`count(${products.id})::int`,
+    })
+    .from(categories)
+    .leftJoin(
+      products,
+      and(
+        eq(products.categoryId, categories.id),
+        eq(products.businessId, ctx.businessId),
+        eq(products.isActive, true),
+      ),
+    )
+    .where(eq(categories.businessId, ctx.businessId))
+    .groupBy(categories.id)
     .orderBy(asc(categories.name));
 }
 

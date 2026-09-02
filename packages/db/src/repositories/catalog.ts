@@ -1,6 +1,6 @@
 import { and, eq, gt, isNull, or, sql } from 'drizzle-orm';
 import { getDb } from '../client';
-import { businessSettings, businesses, catalogViews, categories, products } from '../schema/index';
+import { businessSettings, businesses, catalogViews, categories, products, units } from '../schema/index';
 
 /**
  * The public catalog. Build spec Phase 1f — the differentiator.
@@ -116,6 +116,9 @@ const catalogProductColumns = {
   imageUrls: products.imageUrls,
   categoryId: products.categoryId,
   categoryName: categories.name,
+  unitShortName: units.shortName,
+  currentStock: products.currentStock,
+  trackInventory: products.trackInventory,
   hsnCode: products.hsnCode,
   customFields: products.customFields,
   stockStatus,
@@ -129,6 +132,9 @@ export type CatalogProduct = {
   imageUrls: string[];
   categoryId: string | null;
   categoryName: string | null;
+  unitShortName: string | null;
+  currentStock: string;
+  trackInventory: boolean;
   hsnCode: string | null;
   customFields: Record<string, unknown>;
   stockStatus: 'in_stock' | 'low_stock' | 'out_of_stock';
@@ -155,6 +161,7 @@ export async function listCatalogProducts(
     .select(catalogProductColumns)
     .from(products)
     .leftJoin(categories, eq(categories.id, products.categoryId))
+    .leftJoin(units, eq(units.id, products.unitId))
     .where(and(...where))
     .orderBy(products.name)
     .limit(opts.limit ?? 60)
@@ -183,6 +190,7 @@ export async function findCatalogProduct(
     .select(catalogProductColumns)
     .from(products)
     .leftJoin(categories, eq(categories.id, products.categoryId))
+    .leftJoin(units, eq(units.id, products.unitId))
     .where(
       and(
         eq(products.businessId, businessId),
