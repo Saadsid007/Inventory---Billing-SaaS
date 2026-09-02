@@ -30,20 +30,20 @@ export function ProductGallery({
 
   return (
     <div className="space-y-4">
-      <div className="group relative aspect-square w-full overflow-hidden rounded-3xl border bg-card shadow-xs transition-shadow hover:shadow-md">
+      <div className="group relative aspect-square w-full overflow-hidden rounded-2xl border bg-gradient-to-br from-card via-card to-muted/30 shadow-sm ring-1 ring-border/50 transition-all duration-300 hover:shadow-lg hover:ring-primary/20 sm:rounded-3xl">
         <Image
           src={current!}
           alt={name}
           fill
           sizes="(max-width: 768px) 100vw, 50vw"
-          className="object-contain p-4 sm:p-6 transition-transform duration-300 group-hover:scale-105"
+          className="object-contain p-4 sm:p-8 transition-transform duration-500 group-hover:scale-[1.03]"
           unoptimized
           priority
         />
 
         {/* Quality Badge Overlay */}
-        <div className="absolute left-4 top-4">
-          <span className="inline-flex items-center gap-1.5 rounded-full bg-background/90 px-3 py-1 text-xs font-semibold text-emerald-700 dark:text-emerald-300 shadow-xs backdrop-blur-xs border">
+        <div className="absolute left-3 top-3 sm:left-4 sm:top-4">
+          <span className="inline-flex items-center gap-1.5 rounded-full border bg-background/95 px-3 py-1 text-xs font-semibold text-emerald-700 shadow-sm backdrop-blur-xs dark:text-emerald-300">
             <ShieldCheck className="size-3.5 text-emerald-600" />
             <span>100% Genuine</span>
           </span>

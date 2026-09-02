@@ -58,6 +58,46 @@ export function Checkbox({ label, hint, className, onCheckedChange, ...props }: 
   );
 }
 
+export type SwitchProps = Omit<React.ComponentProps<'button'>, 'onChange' | 'role' | 'type'> & {
+  checked?: boolean;
+  onCheckedChange?: (checked: boolean) => void;
+};
+
+/** Toggle switch for boolean settings. */
+export function Switch({
+  checked = false,
+  onCheckedChange,
+  disabled,
+  className,
+  ...props
+}: SwitchProps) {
+  return (
+    <button
+      {...props}
+      type="button"
+      role="switch"
+      aria-checked={checked}
+      disabled={disabled}
+      onClick={() => onCheckedChange?.(!checked)}
+      className={cn(
+        'inline-flex h-5 w-9 shrink-0 cursor-pointer items-center rounded-full border-2 border-transparent p-0.5 transition-colors duration-150',
+        'focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-ring/25',
+        'disabled:cursor-not-allowed disabled:opacity-50',
+        checked ? 'bg-primary' : 'bg-input',
+        className,
+      )}
+    >
+      <span
+        aria-hidden
+        className={cn(
+          'pointer-events-none block size-4 rounded-full bg-background shadow-xs transition-transform duration-150',
+          checked ? 'translate-x-4' : 'translate-x-0',
+        )}
+      />
+    </button>
+  );
+}
+
 /**
  * Non-blocking advice. Build spec §5.5: a tax invoice line with no HSN gets a
  * warning, never a hard block — refusing to bill a customer standing at the

@@ -1,3 +1,4 @@
+import type { StorefrontConfig } from '@billwise/shared';
 import { and, eq, gt, isNull, or, sql } from 'drizzle-orm';
 import { getDb } from '../client';
 import { businessSettings, businesses, catalogViews, categories, products, units } from '../schema/index';
@@ -46,6 +47,7 @@ export type CatalogBusiness = {
   logoUrl: string | null;
   showCatalogPrices: boolean;
   catalogWhatsapp: string | null;
+  storefrontConfig: StorefrontConfig | null;
 };
 
 export async function findCatalogBusiness(slug: string): Promise<CatalogBusiness | undefined> {
@@ -60,6 +62,7 @@ export async function findCatalogBusiness(slug: string): Promise<CatalogBusiness
       logoUrl: businesses.logoUrl,
       showCatalogPrices: businessSettings.showCatalogPrices,
       catalogWhatsapp: businessSettings.catalogWhatsapp,
+      storefrontConfig: businessSettings.storefrontConfig,
     })
     .from(businesses)
     .innerJoin(businessSettings, eq(businessSettings.businessId, businesses.id))
@@ -71,7 +74,7 @@ export async function findCatalogBusiness(slug: string): Promise<CatalogBusiness
       ),
     )
     .limit(1);
-  return row;
+  return row as CatalogBusiness | undefined;
 }
 
 /**

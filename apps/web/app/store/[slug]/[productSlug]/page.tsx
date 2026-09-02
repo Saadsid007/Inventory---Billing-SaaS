@@ -4,7 +4,7 @@ import {
   listCatalogProducts,
 } from '@billwise/db';
 import {
-  productSlug,
+  catalogStockDisplay,
   shortIdFromProductSlug,
 } from '@billwise/shared';
 import { Badge } from '@billwise/ui';
@@ -23,10 +23,10 @@ import {
   Truck,
 } from 'lucide-react';
 import type { Metadata } from 'next';
-import Image from 'next/image';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { CatalogViewTracker } from '../view-tracker';
+import { CatalogProductCard } from '../catalog-product-card';
 import { ProductGallery } from './gallery';
 import { InteractiveBuyBox } from './interactive-buy-box';
 
@@ -115,6 +115,12 @@ export default async function CatalogProductPage({
   );
 
   const address = [business.addressLine1, business.city].filter(Boolean).join(', ');
+  const stock = catalogStockDisplay(
+    product.currentStock,
+    product.trackInventory,
+    product.unitShortName,
+    product.stockStatus,
+  );
 
   return (
     <>
@@ -151,24 +157,24 @@ export default async function CatalogProductPage({
       </nav>
 
       {/* Main E-Commerce Product Section */}
-      <div className="grid gap-8 lg:grid-cols-12 lg:gap-12 pb-12">
+      <div className="grid gap-6 sm:gap-8 lg:grid-cols-12 lg:gap-12 pb-8 sm:pb-12">
         {/* Left Column: Product Gallery */}
         <div className="lg:col-span-6 space-y-4">
           <ProductGallery images={product.imageUrls ?? []} name={product.name} />
 
           {/* Quick Features below gallery */}
-          <div className="grid grid-cols-3 gap-2.5 pt-2">
-            <div className="flex flex-col items-center justify-center p-3 rounded-2xl border bg-card text-center gap-1 shadow-2xs">
+          <div className="grid grid-cols-3 gap-2 sm:gap-3 pt-1">
+            <div className="flex flex-col items-center justify-center gap-1 rounded-2xl border bg-card p-3 text-center shadow-xs transition-transform hover:-translate-y-0.5">
               <ShieldCheck className="size-5 text-emerald-600" />
               <span className="text-[11px] font-bold text-foreground">100% Original</span>
               <span className="text-[10px] text-muted-foreground">Genuine Brand</span>
             </div>
-            <div className="flex flex-col items-center justify-center p-3 rounded-2xl border bg-card text-center gap-1 shadow-2xs">
+            <div className="flex flex-col items-center justify-center gap-1 rounded-2xl border bg-card p-3 text-center shadow-xs transition-transform hover:-translate-y-0.5">
               <Truck className="size-5 text-emerald-600" />
               <span className="text-[11px] font-bold text-foreground">Fast Delivery</span>
-              <span className="text-[10px] text-muted-foreground">Kanpur Locals</span>
+              <span className="text-[10px] text-muted-foreground">Local Area</span>
             </div>
-            <div className="flex flex-col items-center justify-center p-3 rounded-2xl border bg-card text-center gap-1 shadow-2xs">
+            <div className="flex flex-col items-center justify-center gap-1 rounded-2xl border bg-card p-3 text-center shadow-xs transition-transform hover:-translate-y-0.5">
               <Sparkles className="size-5 text-emerald-600" />
               <span className="text-[11px] font-bold text-foreground">Fresh Stock</span>
               <span className="text-[10px] text-muted-foreground">Recent Batch</span>
@@ -177,9 +183,9 @@ export default async function CatalogProductPage({
         </div>
 
         {/* Right Column: Buy Box & Product Info */}
-        <div className="lg:col-span-6 space-y-6">
+        <div className="lg:col-span-6 space-y-5 sm:space-y-6">
           {/* Header Info */}
-          <div className="space-y-3">
+          <div className="space-y-3 sm:space-y-4">
             <div className="flex flex-wrap items-center gap-2">
               {product.categoryName && (
                 <Badge variant="outline" className="bg-primary/5 text-primary border-primary/20 text-xs font-semibold">
@@ -195,27 +201,42 @@ export default async function CatalogProductPage({
               </div>
             </div>
 
-            <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-foreground leading-tight">
+            <h1 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold tracking-tight text-foreground leading-[1.15]">
               {product.name}
             </h1>
 
-            {/* In-Stock Status Pill */}
-            <div className="flex items-center gap-2 text-xs">
-              {product.stockStatus === 'in_stock' && (
-                <span className="inline-flex items-center gap-1.5 font-semibold text-emerald-600 dark:text-emerald-400">
+            {/* Stock Status & Count */}
+            <div className="flex flex-wrap items-center gap-2 sm:gap-3">
+              {stock.isOut ? (
+                <span className="inline-flex items-center gap-1.5 rounded-full bg-rose-500/10 px-3 py-1.5 text-xs font-semibold text-rose-600 ring-1 ring-rose-500/20">
+                  Currently Out of Stock
+                </span>
+              ) : stock.isLow ? (
+                <span className="inline-flex items-center gap-1.5 rounded-full bg-amber-500/10 px-3 py-1.5 text-xs font-semibold text-amber-700 ring-1 ring-amber-500/20 dark:text-amber-400">
+                  <Flame className="size-3.5" />
+                  Fast Selling — Limited Stock
+                </span>
+              ) : (
+                <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-500/10 px-3 py-1.5 text-xs font-semibold text-emerald-700 ring-1 ring-emerald-500/20 dark:text-emerald-400">
                   <span className="size-2 rounded-full bg-emerald-500 animate-pulse" />
-                  In Stock & Ready for Dispatch / Store Pickup
+                  In Stock & Ready to Order
                 </span>
               )}
-              {product.stockStatus === 'low_stock' && (
-                <span className="inline-flex items-center gap-1.5 font-semibold text-amber-600">
-                  <Flame className="size-3.5 text-amber-600" />
-                  Fast Selling – Limited Stock Remaining
-                </span>
-              )}
-              {product.stockStatus === 'out_of_stock' && (
-                <span className="inline-flex items-center gap-1.5 font-semibold text-rose-600">
-                  Currently Out of Stock – Enquire for Next Restock
+
+              {product.trackInventory && (
+                <span
+                  className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-bold tabular-nums ${
+                    stock.isOut
+                      ? 'bg-muted text-muted-foreground'
+                      : stock.isLow
+                        ? 'bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-300'
+                        : 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-300'
+                  }`}
+                >
+                  <Package className="size-3.5 shrink-0" />
+                  {stock.isOut
+                    ? '0 available'
+                    : `${stock.formatted}${stock.unit} available`}
                 </span>
               )}
             </div>
@@ -230,6 +251,9 @@ export default async function CatalogProductPage({
             salePrice={product.salePrice}
             showPrice={business.showCatalogPrices}
             stockStatus={product.stockStatus}
+            currentStock={product.currentStock}
+            trackInventory={product.trackInventory}
+            unitShortName={product.unitShortName}
           />
         </div>
       </div>
@@ -304,6 +328,18 @@ export default async function CatalogProductPage({
                 <dt className="text-muted-foreground font-medium">Origin</dt>
                 <dd className="font-medium text-foreground text-right">India</dd>
               </div>
+              {product.trackInventory && (
+                <div className="py-2.5 flex justify-between gap-4 bg-emerald-500/5 px-3 rounded-xl border border-emerald-500/10">
+                  <dt className="text-emerald-800 dark:text-emerald-300 font-semibold flex items-center gap-1.5">
+                    <span className="size-2 rounded-full bg-emerald-500 animate-pulse" />
+                    Available In-Store Stock
+                  </dt>
+                  <dd className="font-bold tabular-nums text-emerald-700 dark:text-emerald-300 text-right">
+                    {stock.formatted}
+                    {stock.unit}
+                  </dd>
+                </div>
+              )}
 
               {shownCustomFields.map(([key, value]) => (
                 <div key={key} className="py-2.5 flex justify-between gap-4">
@@ -387,43 +423,18 @@ export default async function CatalogProductPage({
             </Link>
           </div>
 
-          <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
-            {relatedProducts.map((rp) => {
-              const cover = rp.imageUrls?.[0];
-              return (
-                <Link
-                  key={rp.id}
-                  href={`/store/${slug}/${productSlug(rp.name, rp.id)}`}
-                  className="group flex flex-col justify-between overflow-hidden rounded-2xl border bg-card shadow-2xs transition-all hover:-translate-y-1 hover:border-primary/50 hover:shadow-md"
-                >
-                  <div className="relative aspect-square overflow-hidden bg-muted/20">
-                    {cover ? (
-                      <Image
-                        src={cover}
-                        alt={rp.name}
-                        fill
-                        sizes="(max-width: 640px) 50vw, 25vw"
-                        className="object-cover transition-transform duration-300 group-hover:scale-105"
-                        unoptimized
-                      />
-                    ) : (
-                      <div className="grid h-full place-items-center text-xs text-muted-foreground">
-                        No photo
-                      </div>
-                    )}
-                  </div>
-
-                  <div className="p-3.5 space-y-1.5">
-                    <p className="line-clamp-2 text-xs font-semibold text-foreground group-hover:text-primary transition-colors">
-                      {rp.name}
-                    </p>
-                    <p className="tabular text-sm font-bold text-foreground">
-                      ₹{rp.salePrice}
-                    </p>
-                  </div>
-                </Link>
-              );
-            })}
+          <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-3 sm:gap-3 md:grid-cols-4 lg:grid-cols-5">
+            {relatedProducts.map((rp) => (
+              <CatalogProductCard
+                key={rp.id}
+                slug={slug}
+                businessName={business.name}
+                catalogWhatsapp={business.catalogWhatsapp}
+                showPrice={business.showCatalogPrices}
+                showStockCount
+                product={rp}
+              />
+            ))}
           </div>
         </section>
       )}

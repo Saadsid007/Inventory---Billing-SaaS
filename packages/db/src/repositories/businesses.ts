@@ -1,4 +1,4 @@
-import type { TenantCtx } from '@billwise/shared';
+import type { StorefrontConfig, TenantCtx } from '@billwise/shared';
 import { eq } from 'drizzle-orm';
 import { getDb } from '../client';
 import { businessSettings, businesses } from '../schema/index';
@@ -116,11 +116,25 @@ export type SettingsPatch = Partial<{
   catalogEnabled: boolean;
   catalogWhatsapp: string | null;
   theme: string;
+  storefrontConfig: StorefrontConfig;
 }>;
 
 export async function updateSettings(ctx: TenantCtx, patch: SettingsPatch): Promise<void> {
   await getDb()
     .update(businessSettings)
     .set(patch)
+    .where(eq(businessSettings.businessId, ctx.businessId));
+}
+
+export async function updateStorefrontConfig(
+  ctx: TenantCtx,
+  patch: Partial<StorefrontConfig>,
+): Promise<void> {
+  const current = await getSettings(ctx);
+  const currentConfig = (current?.storefrontConfig as StorefrontConfig) || {};
+  const merged = { ...currentConfig, ...patch };
+  await getDb()
+    .update(businessSettings)
+    .set({ storefrontConfig: merged })
     .where(eq(businessSettings.businessId, ctx.businessId));
 }

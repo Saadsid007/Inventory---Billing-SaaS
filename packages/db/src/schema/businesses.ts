@@ -1,6 +1,6 @@
-import { BUSINESS_STATUSES, MEMBER_ROLES, TAX_MODES } from '@billwise/shared';
-import { relations } from 'drizzle-orm';
-import { boolean, index, pgEnum, pgTable, text, timestamp, unique, uuid } from 'drizzle-orm/pg-core';
+import { BUSINESS_STATUSES, MEMBER_ROLES, type StorefrontConfig, TAX_MODES } from '@billwise/shared';
+import { relations, sql } from 'drizzle-orm';
+import { boolean, index, jsonb, pgEnum, pgTable, text, timestamp, unique, uuid } from 'drizzle-orm/pg-core';
 import { createdAt, enumValues } from './_shared';
 import { users } from './users';
 
@@ -128,6 +128,10 @@ export const businessSettings = pgTable('business_settings', {
   catalogEnabled: boolean().notNull().default(false),
   catalogWhatsapp: text(),
   theme: text().notNull().default('light'),
+  storefrontConfig: jsonb('storefront_config')
+    .$type<StorefrontConfig>()
+    .notNull()
+    .default(sql`'{}'::jsonb`),
 });
 
 export const businessesRelations = relations(businesses, ({ one, many }) => ({

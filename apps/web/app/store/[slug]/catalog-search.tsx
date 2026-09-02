@@ -53,13 +53,12 @@ export function CatalogSearch({
   }, [q, initial.q, apply]);
 
   return (
-    <div className="space-y-4">
-      {/* Search Bar */}
-      <div className="relative max-w-xl">
-        <Search className="pointer-events-none absolute left-3.5 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+    <div className="space-y-3">
+      <div className="relative">
+        <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
         <Input
-          className="h-11 rounded-xl pl-10 pr-10 text-sm shadow-xs focus:ring-2 focus:ring-primary/20 transition-all bg-card"
-          placeholder="Search products by name, brand, or pack size…"
+          className="h-10 rounded-xl pl-9 pr-9 text-sm shadow-xs bg-card sm:h-11 sm:pl-10"
+          placeholder="Search products…"
           aria-label="Search products"
           value={q}
           onChange={(e) => setQ(e.target.value)}
@@ -81,24 +80,22 @@ export function CatalogSearch({
 
       {/* Modern Interactive Category Pills Bar */}
       {categories.length > 0 && (
-        <div className="relative">
-          <div className="flex items-center gap-2 overflow-x-auto pb-2 pt-1 scrollbar-none no-scrollbar">
-            {/* "All Items" Pill */}
+        <div className="-mx-3 px-3 sm:mx-0 sm:px-0">
+          <div className="flex items-center gap-1.5 overflow-x-auto pb-1 scrollbar-none sm:gap-2">
             <button
               type="button"
               onClick={() => apply({ category: '' })}
               className={cn(
-                'inline-flex shrink-0 items-center gap-1.5 rounded-full px-4 py-2 text-xs font-semibold transition-all shadow-xs',
+                'inline-flex shrink-0 items-center gap-1 rounded-full px-3 py-1.5 text-[11px] font-semibold transition-all sm:px-4 sm:py-2 sm:text-xs',
                 !initial.category
-                  ? 'bg-primary text-primary-foreground shadow-sm scale-102 ring-2 ring-primary/30'
-                  : 'bg-card text-muted-foreground border hover:border-primary/40 hover:text-foreground hover:bg-muted/40',
+                  ? 'bg-primary text-primary-foreground shadow-xs'
+                  : 'border bg-card text-muted-foreground hover:border-primary/30 hover:text-foreground',
               )}
             >
-              <LayoutGrid className="size-3.5" />
-              <span>All Items</span>
+              <LayoutGrid className="size-3 sm:size-3.5" />
+              All
             </button>
 
-            {/* Individual Category Pills */}
             {categories.map((c) => {
               const isActive = initial.category === c.id;
               const icon = categoryIcon(c.name);
@@ -109,14 +106,14 @@ export function CatalogSearch({
                   type="button"
                   onClick={() => apply({ category: isActive ? '' : c.id })}
                   className={cn(
-                    'inline-flex shrink-0 items-center gap-1.5 rounded-full px-4 py-2 text-xs font-semibold transition-all shadow-xs',
+                    'inline-flex shrink-0 items-center gap-1 rounded-full px-3 py-1.5 text-[11px] font-semibold transition-all sm:px-4 sm:py-2 sm:text-xs',
                     isActive
-                      ? 'bg-primary text-primary-foreground shadow-sm scale-102 ring-2 ring-primary/30'
-                      : 'bg-card text-muted-foreground border hover:border-primary/40 hover:text-foreground hover:bg-muted/40',
+                      ? 'bg-primary text-primary-foreground shadow-xs'
+                      : 'border bg-card text-muted-foreground hover:border-primary/30 hover:text-foreground',
                   )}
                 >
-                  <span className="text-sm leading-none">{icon}</span>
-                  <span>{c.name}</span>
+                  <span className="text-xs leading-none sm:text-sm">{icon}</span>
+                  <span className="max-w-[7rem] truncate sm:max-w-none">{c.name}</span>
                 </button>
               );
             })}

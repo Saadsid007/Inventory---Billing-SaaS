@@ -35,17 +35,14 @@ function apply(theme: Theme) {
   document.documentElement.style.colorScheme = dark ? 'dark' : 'light';
 }
 
-const OPTIONS: ReadonlyArray<{ value: Theme; label: string; Icon: typeof Sun }> = [
-  { value: 'light', label: 'Light', Icon: Sun },
-  { value: 'dark', label: 'Dark', Icon: Moon },
-  { value: 'system', label: 'System', Icon: Monitor },
-];
+function isDarkMode(theme: Theme): boolean {
+  return (
+    theme === 'dark' ||
+    (theme === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches)
+  );
+}
 
-/**
- * Three-state theme switch. Cheap to add now, expensive to retrofit once every
- * screen has hardcoded colours (spec Phase 0b).
- */
-export function ThemeToggle({ className }: { className?: string }) {
+function useThemeState() {
   const [theme, setTheme] = React.useState<Theme>('system');
   const [mounted, setMounted] = React.useState(false);
 
@@ -55,7 +52,6 @@ export function ThemeToggle({ className }: { className?: string }) {
     if (stored) setTheme(stored);
   }, []);
 
-  // Follow the OS while on 'system'.
   React.useEffect(() => {
     if (theme !== 'system') return;
     const mq = window.matchMedia('(prefers-color-scheme: dark)');
@@ -69,6 +65,22 @@ export function ThemeToggle({ className }: { className?: string }) {
     localStorage.setItem(STORAGE_KEY, next);
     apply(next);
   }
+
+  return { theme, mounted, choose };
+}
+
+const OPTIONS: ReadonlyArray<{ value: Theme; label: string; Icon: typeof Sun }> = [
+  { value: 'light', label: 'Light', Icon: Sun },
+  { value: 'dark', label: 'Dark', Icon: Moon },
+  { value: 'system', label: 'System', Icon: Monitor },
+];
+
+/**
+ * Three-state theme switch. Cheap to add now, expensive to retrofit once every
+ * screen has hardcoded colours (spec Phase 0b).
+ */
+export function ThemeToggle({ className }: { className?: string }) {
+  const { theme, mounted, choose } = useThemeState();
 
   return (
     <div
@@ -86,8 +98,6 @@ export function ThemeToggle({ className }: { className?: string }) {
           onClick={() => choose(value)}
           aria-label={label}
           title={label}
-          // Before mount we don't know the stored value; showing a pressed state
-          // would be wrong half the time, so show none.
           aria-pressed={mounted ? theme === value : false}
           className={cn(
             'rounded-md p-1.5 text-muted-foreground transition-colors hover:text-foreground',
@@ -98,5 +108,30 @@ export function ThemeToggle({ className }: { className?: string }) {
         </button>
       ))}
     </div>
+  );
+}
+
+/** Single icon that toggles light ↔ dark. For compact mobile toolbars. */
+export function ThemeIconButton({ className }: { className?: string }) {
+  const { theme, mounted, choose } = useThemeState();
+  const dark = mounted && isDarkMode(theme);
+
+  return (
+    <button
+      type="button"
+      onClick={() => choose(dark ? 'light' : 'dark')}
+      aria-label={dark ? 'Switch to light mode' : 'Switch to dark mode'}
+      title={dark ? 'Light mode' : 'Dark mode'}
+      className={cn(
+        'grid size-9 place-items-center rounded-lg border bg-card text-muted-foreground shadow-xs transition-colors hover:bg-muted hover:text-foreground',
+        className,
+      )}
+    >
+      {mounted ? (
+        dark ? <Sun className="size-4" /> : <Moon className="size-4" />
+      ) : (
+        <Moon className="size-4 opacity-50" />
+      )}
+    </button>
   );
 }
