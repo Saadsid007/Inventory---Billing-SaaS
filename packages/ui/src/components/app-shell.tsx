@@ -12,14 +12,6 @@ import { ThemeToggle } from './theme';
  * Takes everything as props and renders no data of its own. Routing and session
  * are the app's concern, so this stays a pure presentation component that
  * `packages/ui` is allowed to own.
- *
- * ## Why the nav is grouped
- *
- * Eight flat links all look equally important, so the shopkeeper reads all
- * eight every time. Grouped into what they came to do (Billing), what they
- * sell (Catalogue) and what they only touch occasionally (Business), the eye
- * skips two thirds of the list. The groups are declared by the app via
- * `section` on each item and rendered in the order they first appear.
  */
 
 const COLLAPSE_KEY = 'billwise-sidebar-collapsed';
@@ -63,8 +55,6 @@ export type AppShellProps = {
 };
 
 function isActive(currentPath: string, href: string): boolean {
-  // /app must not light up for /app/invoices, but /app/invoices should stay lit
-  // on /app/invoices/new.
   return href === '/app' ? currentPath === '/app' : currentPath.startsWith(href);
 }
 
@@ -99,9 +89,6 @@ export function AppShell({
   const groups = React.useMemo(() => groupNav(nav), [nav]);
   const current = nav.find((item) => isActive(currentPath, item.href));
 
-  // Read the stored preference after mount rather than during render: the
-  // server has no localStorage, and guessing here would hydrate a wide sidebar
-  // over a narrow one.
   React.useEffect(() => {
     setCollapsed(localStorage.getItem(COLLAPSE_KEY) === '1');
   }, []);
@@ -114,13 +101,10 @@ export function AppShell({
     });
   }
 
-  // A shopkeeper taps a nav item on a phone; leaving the drawer open would
-  // cover the page they just asked for.
   React.useEffect(() => {
     setMobileOpen(false);
   }, [currentPath]);
 
-  // Escape closes the drawer. Cheap, and expected by anyone using a keyboard.
   React.useEffect(() => {
     if (!mobileOpen) return;
     const onKey = (e: KeyboardEvent) => {
@@ -136,46 +120,54 @@ export function AppShell({
     destructive: 'text-destructive',
   }[statusTone];
 
-  /**
-   * `rail` collapses the sidebar to icons only. The drawer on a phone always
-   * renders full width, because there is no room shortage to solve there and a
-   * row of unlabelled icons is a guessing game.
-   */
   function sidebarContent(rail: boolean) {
     return (
-      <div className="flex h-full flex-col bg-sidebar text-sidebar-foreground">
-        {/* Brand. The product name is here and nowhere else in the app, so a
-            shopkeeper always knows what they are inside of. */}
+      <div className="relative flex h-full flex-col overflow-hidden bg-sidebar text-sidebar-foreground">
+        {/* Soft brand wash behind the rail */}
+        <div
+          aria-hidden
+          className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_top,oklch(0.55_0.21_258_/_0.08),transparent_55%)]"
+        />
+
         <div
           className={cn(
-            'flex h-14 items-center border-b border-sidebar-border',
-            rail ? 'justify-center px-2' : 'gap-2.5 px-4',
+            'relative flex h-16 items-center border-b border-sidebar-border/80',
+            rail ? 'justify-center px-2' : 'gap-3 px-4',
           )}
         >
-          <LogoMark className="size-7 shrink-0" />
-          {!rail && <span className="text-[0.95rem] font-semibold tracking-tight">Billwise</span>}
+          <LogoMark className="size-9 shrink-0 shadow-sm shadow-primary/20" />
+          {!rail && (
+            <div className="min-w-0">
+              <span className="block text-[0.95rem] font-bold tracking-tight">Billwise</span>
+              <span className="block text-[0.65rem] font-medium tracking-wider text-muted-foreground uppercase">
+                Business panel
+              </span>
+            </div>
+          )}
         </div>
 
-        <div className={cn('p-3', rail && 'px-2')}>
+        <div className={cn('relative p-3', rail && 'px-2')}>
           <button
             type="button"
             onClick={onSwitchBusiness}
             disabled={!onSwitchBusiness}
             title={rail ? businessName : undefined}
             className={cn(
-              'flex w-full items-center rounded-lg border border-sidebar-border bg-card/60 text-left transition-colors',
+              'flex w-full items-center rounded-xl border border-sidebar-border/80 bg-card/70 text-left shadow-xs backdrop-blur-xs transition-all',
               rail ? 'justify-center p-1.5' : 'gap-2.5 p-2.5',
-              onSwitchBusiness ? 'hover:bg-sidebar-accent' : 'cursor-default',
+              onSwitchBusiness ? 'hover:border-primary/30 hover:bg-card hover:shadow-sm' : 'cursor-default',
             )}
           >
-            <span className="grid size-8 shrink-0 place-items-center rounded-md bg-primary-subtle text-sm font-semibold text-primary-subtle-foreground">
+            <span className="grid size-9 shrink-0 place-items-center rounded-lg bg-gradient-to-br from-primary to-primary-hover text-sm font-bold text-primary-foreground shadow-xs">
               {businessName.charAt(0).toUpperCase()}
             </span>
             {!rail && (
               <span className="min-w-0 flex-1">
-                <span className="block truncate text-sm font-medium">{businessName}</span>
+                <span className="block truncate text-sm font-semibold">{businessName}</span>
                 {statusLabel && (
-                  <span className={cn('block truncate text-xs', statusClass)}>{statusLabel}</span>
+                  <span className={cn('block truncate text-[0.7rem] font-medium', statusClass)}>
+                    {statusLabel}
+                  </span>
                 )}
               </span>
             )}
@@ -184,7 +176,7 @@ export function AppShell({
 
         <nav
           className={cn(
-            'flex-1 space-y-4 overflow-y-auto pb-4',
+            'relative flex-1 space-y-4 overflow-y-auto pb-4',
             rail ? 'px-2' : 'space-y-5 px-3',
           )}
         >
@@ -194,7 +186,7 @@ export function AppShell({
                 (rail ? (
                   <div className="mx-auto my-2 h-px w-6 bg-sidebar-border" aria-hidden />
                 ) : (
-                  <p className="px-2 pb-1 text-[0.68rem] font-semibold tracking-widest text-muted-foreground/80 uppercase">
+                  <p className="px-2.5 pb-1.5 text-[0.65rem] font-bold tracking-[0.14em] text-muted-foreground/70 uppercase">
                     {group.section}
                   </p>
                 ))}
@@ -207,29 +199,29 @@ export function AppShell({
                     title={rail ? label : undefined}
                     aria-current={active ? 'page' : undefined}
                     className={cn(
-                      'relative flex items-center rounded-lg text-sm transition-colors',
-                      rail ? 'justify-center p-2.5' : 'gap-2.5 px-2.5 py-2',
+                      'group relative flex items-center rounded-xl text-sm font-medium transition-all duration-150',
+                      rail ? 'justify-center p-2.5' : 'gap-2.5 px-2.5 py-2.5',
                       active
-                        ? 'bg-sidebar-accent font-medium text-sidebar-accent-foreground'
-                        : 'text-muted-foreground hover:bg-sidebar-accent/60 hover:text-sidebar-accent-foreground',
+                        ? 'bg-primary text-primary-foreground shadow-sm shadow-primary/20'
+                        : 'text-muted-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground',
                     )}
                   >
-                    {/* The active marker is a bar, not just a fill: at a glance
-                        down a list of eight, a coloured edge is found faster
-                        than a slightly different background. */}
-                    {active && (
-                      <span
-                        className={cn(
-                          'absolute inset-y-1.5 w-1 rounded-r-full bg-primary',
-                          rail ? '-left-2' : '-left-3',
-                        )}
-                        aria-hidden
-                      />
-                    )}
-                    <Icon className={cn('size-4 shrink-0', active && 'text-primary')} />
+                    <Icon
+                      className={cn(
+                        'size-4 shrink-0 transition-colors',
+                        active ? 'text-primary-foreground' : 'text-muted-foreground group-hover:text-primary',
+                      )}
+                    />
                     {!rail && <span className="truncate">{label}</span>}
                     {!rail && badge !== undefined && (
-                      <span className="tabular ml-auto rounded-full bg-primary-subtle px-1.5 py-0.5 text-[0.7rem] font-medium text-primary-subtle-foreground">
+                      <span
+                        className={cn(
+                          'tabular ml-auto rounded-full px-1.5 py-0.5 text-[0.65rem] font-bold',
+                          active
+                            ? 'bg-primary-foreground/20 text-primary-foreground'
+                            : 'bg-primary-subtle text-primary-subtle-foreground',
+                        )}
+                      >
                         {badge}
                       </span>
                     )}
@@ -240,20 +232,25 @@ export function AppShell({
           ))}
         </nav>
 
-        <div className={cn('border-t border-sidebar-border p-3', rail && 'px-2')}>
-          <div className={cn('flex items-center', rail ? 'justify-center' : 'gap-2.5')}>
+        <div className={cn('relative border-t border-sidebar-border/80 p-3', rail && 'px-2')}>
+          <div
+            className={cn(
+              'flex items-center rounded-xl border border-transparent bg-card/40 p-1.5',
+              rail ? 'flex-col justify-center gap-2' : 'gap-2.5',
+            )}
+          >
             <span
               title={rail ? userName : undefined}
-              className="grid size-8 shrink-0 place-items-center rounded-full bg-accent text-xs font-semibold text-accent-foreground"
+              className="grid size-9 shrink-0 place-items-center rounded-full bg-gradient-to-br from-accent to-primary-subtle text-xs font-bold text-accent-foreground ring-2 ring-background"
             >
               {userName.charAt(0).toUpperCase()}
             </span>
             {!rail && (
               <>
                 <span className="min-w-0 flex-1">
-                  <span className="block truncate text-sm font-medium">{userName}</span>
+                  <span className="block truncate text-sm font-semibold">{userName}</span>
                   {userEmail && (
-                    <span className="block truncate text-xs text-muted-foreground">
+                    <span className="block truncate text-[0.7rem] text-muted-foreground">
                       {userEmail}
                     </span>
                   )}
@@ -261,8 +258,8 @@ export function AppShell({
                 {userMenu}
               </>
             )}
+            {rail && userMenu}
           </div>
-          {rail && userMenu && <div className="mt-2 flex justify-center">{userMenu}</div>}
         </div>
       </div>
     );
@@ -270,40 +267,34 @@ export function AppShell({
 
   return (
     <div className="flex min-h-dvh bg-background">
-      {/* `print:hidden` on the chrome: the invoice print view escapes this
-          shell entirely, but somebody will eventually hit Ctrl+P on an ordinary
-          screen, and a sidebar down the edge of the paper looks broken. */}
       <aside
         className={cn(
           'hidden shrink-0 border-r border-sidebar-border transition-[width] duration-200 md:block print:hidden',
-          collapsed ? 'w-[4.5rem]' : 'w-60',
+          collapsed ? 'w-[4.75rem]' : 'w-64',
         )}
       >
         <div className="sticky top-0 h-dvh">{sidebarContent(collapsed)}</div>
       </aside>
 
       {mobileOpen && (
-        // `h-dvh` as well as `inset-0`: on a mobile browser the fixed
-        // containing block can end up as tall as the document, which would let
-        // the drawer scroll away from the menu button that opened it.
         <div className="fixed inset-0 z-50 h-dvh md:hidden">
           <button
             type="button"
             aria-label="Close menu"
-            className="absolute inset-0 bg-foreground/40 backdrop-blur-[2px]"
+            className="absolute inset-0 bg-foreground/45 backdrop-blur-[3px]"
             onClick={() => setMobileOpen(false)}
           />
-          <div className="animate-slide-in absolute inset-y-0 left-0 w-[16.5rem] border-r border-sidebar-border shadow-lg">
+          <div className="animate-slide-in absolute inset-y-0 left-0 w-[17rem] border-r border-sidebar-border shadow-xl">
             {sidebarContent(false)}
           </div>
         </div>
       )}
 
       <div className="flex min-w-0 flex-1 flex-col">
-        <header className="sticky top-0 z-40 flex h-14 items-center gap-2 border-b bg-background/85 px-3 backdrop-blur-md sm:px-5 print:hidden">
+        <header className="sticky top-0 z-40 flex h-16 items-center gap-3 border-b border-border/70 bg-background/80 px-3 shadow-xs backdrop-blur-xl sm:px-5 print:hidden">
           <button
             type="button"
-            className="-ml-1 rounded-md p-2 text-muted-foreground transition-colors hover:bg-accent hover:text-foreground md:hidden"
+            className="-ml-1 rounded-xl border bg-card p-2 text-muted-foreground shadow-xs transition-colors hover:bg-accent hover:text-foreground md:hidden"
             onClick={() => setMobileOpen((v) => !v)}
             aria-label={mobileOpen ? 'Close menu' : 'Open menu'}
             aria-expanded={mobileOpen}
@@ -313,7 +304,7 @@ export function AppShell({
 
           <button
             type="button"
-            className="-ml-1 hidden rounded-md p-2 text-muted-foreground transition-colors hover:bg-accent hover:text-foreground md:block"
+            className="-ml-1 hidden rounded-xl border bg-card p-2 text-muted-foreground shadow-xs transition-colors hover:bg-accent hover:text-foreground md:block"
             onClick={toggleCollapsed}
             aria-label={collapsed ? 'Show sidebar' : 'Hide sidebar'}
             title={collapsed ? 'Show sidebar' : 'Hide sidebar'}
@@ -326,14 +317,17 @@ export function AppShell({
             )}
           </button>
 
-          {/* On a phone the sidebar is hidden, so the topbar has to answer
-              "where am I?" with the current page's name, not the product's. */}
-          <span className="truncate text-sm font-medium md:hidden">
-            {current?.label ?? businessName}
-          </span>
-          <span className="hidden truncate text-sm text-muted-foreground md:inline">
-            {current?.label}
-          </span>
+          <div className="min-w-0">
+            <p className="truncate text-sm font-bold tracking-tight md:hidden">
+              {current?.label ?? businessName}
+            </p>
+            <div className="hidden items-center gap-2 md:flex">
+              <span className="rounded-lg bg-primary-subtle px-2.5 py-1 text-xs font-bold text-primary-subtle-foreground">
+                {current?.label ?? 'Dashboard'}
+              </span>
+              <span className="truncate text-xs text-muted-foreground">{businessName}</span>
+            </div>
+          </div>
 
           <div className="ml-auto flex items-center gap-2">
             <ThemeToggle />
@@ -342,8 +336,8 @@ export function AppShell({
 
         {banner}
 
-        <main className="min-w-0 flex-1 p-4 sm:p-5 lg:p-6 print:p-0">
-          <div className="mx-auto w-full max-w-5xl">{children}</div>
+        <main className="min-w-0 flex-1 bg-[radial-gradient(ellipse_at_top,oklch(0.55_0.21_258_/_0.035),transparent_50%)] p-4 sm:p-5 lg:p-7 print:bg-none print:p-0">
+          <div className="mx-auto w-full max-w-6xl">{children}</div>
         </main>
       </div>
     </div>

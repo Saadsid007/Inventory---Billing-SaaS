@@ -5,8 +5,10 @@ import {
   Button,
   Card,
   EmptyState,
+  FilterBar,
   FormError,
   Input,
+  RowActions,
   TBody,
   TD,
   TH,
@@ -14,7 +16,17 @@ import {
   TR,
   Table,
 } from '@billwise/ui';
-import { Check, Edit2, ExternalLink, FolderPlus, FolderTree, Search, Trash2, X } from 'lucide-react';
+import {
+  Check,
+  Edit2,
+  ExternalLink,
+  FolderPlus,
+  FolderTree,
+  Package,
+  Search,
+  Trash2,
+  X,
+} from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import * as React from 'react';
@@ -142,53 +154,52 @@ export function CategoryManager({ categories }: { categories: readonly CategoryR
         </form>
       </Card>
 
-      {/* Categories table card */}
-      <Card className="overflow-hidden p-0">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b bg-muted/20 px-5 py-4">
+      <div className="space-y-3">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
           <div>
-            <h3 className="text-base font-semibold">Your categories</h3>
+            <h3 className="text-base font-bold tracking-tight">Your categories</h3>
             <p className="text-xs text-muted-foreground">
               {categories.length} {categories.length === 1 ? 'category' : 'categories'} configured
             </p>
           </div>
+        </div>
 
-          {categories.length > 5 && (
-            <div className="relative w-full sm:w-64">
+        {categories.length > 5 && (
+          <FilterBar>
+            <div className="relative w-full sm:w-72">
               <Search className="pointer-events-none absolute left-2.5 top-1/2 size-3.5 -translate-y-1/2 text-muted-foreground" />
               <Input
                 placeholder="Search categories…"
                 value={filter}
                 onChange={(e) => setFilter(e.target.value)}
-                className="pl-8 text-sm h-9"
+                className="h-8.5 rounded-lg border-border/80 bg-background pl-8 text-xs shadow-2xs"
               />
             </div>
-          )}
-        </div>
+          </FilterBar>
+        )}
 
         {editError && (
-          <div className="p-4 border-b bg-destructive/10">
+          <div className="rounded-2xl border border-destructive/30 bg-destructive/8 p-4">
             <p className="text-xs text-destructive">{editError}</p>
           </div>
         )}
 
         {categories.length === 0 ? (
-          <div className="p-8">
-            <EmptyState
-              icon={FolderTree}
-              title="No categories yet"
-              description="Create your first category above to begin organizing your inventory."
-            />
-          </div>
+          <EmptyState
+            icon={FolderTree}
+            title="No categories yet"
+            description="Create your first category above to begin organizing your inventory."
+          />
         ) : filteredCategories.length === 0 ? (
-          <div className="p-8 text-center text-sm text-muted-foreground">
-            No categories match "{filter}".
+          <div className="rounded-2xl border border-dashed p-8 text-center text-sm text-muted-foreground">
+            No categories match &ldquo;{filter}&rdquo;.
           </div>
         ) : (
           <Table>
             <THead>
               <TR>
-                <TH>Category name</TH>
-                <TH>Products</TH>
+                <TH icon={FolderTree}>Category name</TH>
+                <TH icon={Package}>Products</TH>
                 <TH className="text-right">Actions</TH>
               </TR>
             </THead>
@@ -210,7 +221,7 @@ export function CategoryManager({ categories }: { categories: readonly CategoryR
                               if (e.key === 'Escape') cancelEditing();
                             }}
                             autoFocus
-                            className="h-8 text-sm"
+                            className="h-7 text-xs"
                           />
                           <button
                             type="button"
@@ -219,7 +230,7 @@ export function CategoryManager({ categories }: { categories: readonly CategoryR
                             title="Save name"
                             className="rounded p-1 text-success hover:bg-success/10 disabled:opacity-50"
                           >
-                            <Check className="size-4" />
+                            <Check className="size-3.5" />
                           </button>
                           <button
                             type="button"
@@ -227,7 +238,7 @@ export function CategoryManager({ categories }: { categories: readonly CategoryR
                             title="Cancel"
                             className="rounded p-1 text-muted-foreground hover:bg-muted"
                           >
-                            <X className="size-4" />
+                            <X className="size-3.5" />
                           </button>
                         </div>
                       ) : (
@@ -253,40 +264,42 @@ export function CategoryManager({ categories }: { categories: readonly CategoryR
 
                     <TD className="text-right">
                       {isConfirmingDelete ? (
-                        <div className="inline-flex items-center gap-2">
+                        <RowActions>
                           <span className="text-xs text-destructive">
                             {c.productCount > 0 ? 'Has products! Delete anyway?' : 'Delete?'}
                           </span>
-                          <button
-                            type="button"
+                          <Button
+                            variant="destructive"
+                            size="table"
                             onClick={() => handleDelete(c.id)}
                             disabled={pending}
-                            className="rounded bg-destructive px-2 py-0.5 text-xs font-medium text-destructive-foreground hover:bg-destructive/90"
                           >
                             Confirm
-                          </button>
-                          <button
-                            type="button"
+                          </Button>
+                          <Button
+                            variant="outline"
+                            size="table"
                             onClick={() => setConfirmDeleteId(null)}
-                            className="rounded border px-2 py-0.5 text-xs font-medium hover:bg-muted"
                           >
                             Cancel
-                          </button>
-                        </div>
+                          </Button>
+                        </RowActions>
                       ) : (
-                        <div className="inline-flex items-center justify-end gap-1">
-                          <button
-                            type="button"
+                        <RowActions>
+                          <Button
+                            variant="outline"
+                            size="table"
                             onClick={() => startEditing(c)}
                             disabled={pending || isEditing}
                             aria-label={`Edit ${c.name}`}
                             title="Rename"
-                            className="rounded p-1.5 text-muted-foreground hover:bg-accent hover:text-foreground disabled:opacity-40"
                           >
-                            <Edit2 className="size-3.5" />
-                          </button>
-                          <button
-                            type="button"
+                            <Edit2 className="size-3" />
+                            Edit
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="table"
                             onClick={() => {
                               setEditingId(null);
                               setConfirmDeleteId(c.id);
@@ -294,11 +307,11 @@ export function CategoryManager({ categories }: { categories: readonly CategoryR
                             disabled={pending}
                             aria-label={`Delete ${c.name}`}
                             title="Delete category"
-                            className="rounded p-1.5 text-muted-foreground hover:bg-destructive/10 hover:text-destructive disabled:opacity-40"
+                            className="text-muted-foreground hover:bg-destructive/10 hover:text-destructive"
                           >
-                            <Trash2 className="size-3.5" />
-                          </button>
-                        </div>
+                            <Trash2 className="size-3" />
+                          </Button>
+                        </RowActions>
                       )}
                     </TD>
                   </TR>
@@ -307,7 +320,7 @@ export function CategoryManager({ categories }: { categories: readonly CategoryR
             </TBody>
           </Table>
         )}
-      </Card>
+      </div>
     </div>
   );
 }

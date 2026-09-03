@@ -6,14 +6,27 @@ import {
   EmptyState,
   PageBody,
   PageHeader,
+  RowActions,
   TBody,
   TD,
   TH,
   THead,
   TR,
   Table,
+  tableLinkClass,
 } from '@billwise/ui';
-import { FileText, Plus, SearchX } from 'lucide-react';
+import {
+  Calendar,
+  CreditCard,
+  Eye,
+  FileText,
+  Hash,
+  Pencil,
+  Plus,
+  Printer,
+  SearchX,
+  User,
+} from 'lucide-react';
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { requireBusiness } from '@/lib/auth/require-business';
@@ -106,22 +119,22 @@ export default async function InvoicesPage({
         <Table>
           <THead>
             <TR>
-              <TH>Number</TH>
-              <TH>Date</TH>
-              <TH>Customer</TH>
-              <TH>Type</TH>
-              <TH numeric>Total</TH>
-              <TH>Payment</TH>
+              <TH icon={Hash}>Number</TH>
+              <TH icon={Calendar}>Date</TH>
+              <TH icon={User}>Customer</TH>
+              <TH icon={FileText}>Type</TH>
+              <TH icon={CreditCard} numeric>
+                Total
+              </TH>
+              <TH icon={CreditCard}>Payment</TH>
+              <TH className="text-right">Actions</TH>
             </TR>
           </THead>
           <TBody>
             {invoices.map((inv) => (
               <TR key={inv.id}>
                 <TD>
-                  <Link
-                    href={`/app/invoices/${inv.id}`}
-                    className="font-medium underline-offset-4 hover:text-primary hover:underline"
-                  >
+                  <Link href={`/app/invoices/${inv.id}`} className={tableLinkClass}>
                     {inv.invoiceNo ?? 'Draft'}
                   </Link>
                   {/* A cancelled invoice KEEPS its number (spec §5.1) — the badge
@@ -161,6 +174,32 @@ export default async function InvoicesPage({
                       Unpaid
                     </Badge>
                   )}
+                </TD>
+                <TD>
+                  <RowActions>
+                    <Link href={`/app/invoices/${inv.id}`}>
+                      <Button variant="success" size="table">
+                        <Eye className="size-3" />
+                        View
+                      </Button>
+                    </Link>
+                    {inv.status === 'draft' && (
+                      <Link href={`/app/invoices/${inv.id}`}>
+                        <Button variant="outline" size="table" title="Edit draft">
+                          <Pencil className="size-3" />
+                          Edit
+                        </Button>
+                      </Link>
+                    )}
+                    {inv.status === 'issued' && (
+                      <Link href={`/app/invoices/${inv.id}/print`} target="_blank">
+                        <Button variant="outline" size="table" title="Print invoice">
+                          <Printer className="size-3" />
+                          Print
+                        </Button>
+                      </Link>
+                    )}
+                  </RowActions>
                 </TD>
               </TR>
             ))}

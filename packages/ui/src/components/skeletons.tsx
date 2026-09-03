@@ -43,19 +43,21 @@ export function StatCardsSkeleton({ count = 4 }: { count?: number }) {
 
 export function TableSkeleton({ rows = 6, cols = 5 }: { rows?: number; cols?: number }) {
   return (
-    <div className="overflow-hidden rounded-xl border bg-card shadow-xs">
-      <div className="flex gap-4 border-b bg-muted/60 px-3.5 py-3">
+    <div className="overflow-hidden rounded-xl border border-border bg-card shadow-xs">
+      <div className="flex gap-4 border-b border-border/80 bg-[oklch(0.28_0.055_255)]/25 px-3.5 py-2.5">
         {Array.from({ length: cols }, (_, i) => (
           <Skeleton key={i} className="h-3 flex-1" />
         ))}
       </div>
-      {Array.from({ length: rows }, (_, r) => (
-        <div key={r} className="flex items-center gap-4 border-b px-3.5 py-3.5 last:border-0">
-          {Array.from({ length: cols }, (_, c) => (
-            <Skeleton key={c} className="h-4 flex-1" />
-          ))}
-        </div>
-      ))}
+      <div className="divide-y divide-border">
+        {Array.from({ length: rows }, (_, r) => (
+          <div key={r} className="flex items-center gap-4 px-3.5 py-2">
+            {Array.from({ length: cols }, (_, c) => (
+              <Skeleton key={c} className="h-3.5 flex-1" />
+            ))}
+          </div>
+        ))}
+      </div>
     </div>
   );
 }

@@ -20,6 +20,7 @@
     "db:studio": "pnpm --filter @billwise/db run db:studio",
     "clean": "turbo run clean",
     "db:seed": "pnpm --filter @billwise/db run db:seed",
+    "seed:admin": "pnpm --filter @billwise/web seed:admin",
     "test:integration": "pnpm --filter @billwise/db run test:integration"
   },
   "devDependencies": {

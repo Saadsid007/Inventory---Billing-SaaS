@@ -5,9 +5,7 @@ import { cn } from '../lib/cn';
  * Page furniture.
  *
  * Every screen in the app opens the same way: a title, one line saying what
- * this page is for, and the primary action on the right. Doing that by hand on
- * twenty pages produces twenty slightly different headers, which is the single
- * clearest way to make a product look homemade.
+ * this page is for, and the primary action on the right.
  */
 
 export function PageHeader({
@@ -26,11 +24,16 @@ export function PageHeader({
   className?: string;
 }) {
   return (
-    <header className={cn('space-y-1.5', className)}>
-      {breadcrumb && <div className="text-sm text-muted-foreground">{breadcrumb}</div>}
+    <header
+      className={cn(
+        'rounded-2xl border border-border/70 bg-gradient-to-br from-card via-card to-primary-subtle/30 p-4 shadow-xs sm:p-5',
+        className,
+      )}
+    >
+      {breadcrumb && <div className="mb-2 text-sm text-muted-foreground">{breadcrumb}</div>}
       <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div className="min-w-0 space-y-1.5">
-          <h1 className="truncate text-lg font-semibold sm:text-xl">{title}</h1>
+          <h1 className="truncate text-xl font-bold tracking-tight sm:text-2xl">{title}</h1>
           {description && (
             <p className="max-w-2xl text-sm leading-relaxed text-muted-foreground">{description}</p>
           )}
@@ -63,10 +66,14 @@ export function Section({
   return (
     <section className={cn('space-y-3', className)}>
       {(title || actions) && (
-        <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2">
+        <div className="flex flex-wrap items-end justify-between gap-x-4 gap-y-2">
           <div className="min-w-0">
-            {title && <h2 className="text-[0.95rem] font-semibold">{title}</h2>}
-            {description && <p className="mt-0.5 text-sm text-muted-foreground">{description}</p>}
+            {title && (
+              <h2 className="text-base font-bold tracking-tight text-foreground">{title}</h2>
+            )}
+            {description && (
+              <p className="mt-0.5 text-sm text-muted-foreground">{description}</p>
+            )}
           </div>
           {actions && <div className="flex flex-wrap items-center gap-2">{actions}</div>}
         </div>
@@ -82,7 +89,6 @@ export function Separator({ className, ...props }: React.ComponentProps<'div'>) 
 
 /**
  * Standing information — not a validation failure, which is `FormError`.
- * Used for "your trial ends in 3 days" and similar.
  */
 export function Alert({
   variant = 'info',
@@ -107,7 +113,13 @@ export function Alert({
   }[variant];
 
   return (
-    <div className={cn('flex flex-wrap items-start gap-3 rounded-xl border p-4', styles, className)}>
+    <div
+      className={cn(
+        'flex flex-wrap items-start gap-3 rounded-2xl border p-4 shadow-xs',
+        styles,
+        className,
+      )}
+    >
       {Icon && <Icon className="mt-0.5 size-4.5 shrink-0" />}
       <div className="min-w-0 flex-1 space-y-0.5">
         {title && <p className="text-sm font-semibold">{title}</p>}
@@ -120,7 +132,6 @@ export function Alert({
 
 /**
  * Label/value pairs — an invoice's party block, a product's tax details.
- * Two columns on desktop, stacked on a phone.
  */
 export function DetailList({ className, ...props }: React.ComponentProps<'dl'>) {
   return <dl className={cn('grid gap-x-6 gap-y-3 sm:grid-cols-2', className)} {...props} />;
@@ -151,5 +162,33 @@ export function Skeleton({ className, ...props }: React.ComponentProps<'div'>) {
       aria-hidden
       {...props}
     />
+  );
+}
+
+/**
+ * Shared chrome for list-page filter/search toolbars.
+ * Pages put Inputs / Selects / Buttons inside; this owns the look.
+ */
+export function FilterBar({
+  className,
+  children,
+  pending,
+  ...props
+}: React.ComponentProps<'div'> & { pending?: boolean }) {
+  return (
+    <div
+      className={cn(
+        'flex flex-wrap items-center gap-2 rounded-xl border border-border/80 bg-gradient-to-r from-card via-card to-muted/20 p-2 sm:p-2.5 shadow-xs ring-1 ring-border/50 backdrop-blur-xs',
+        className,
+      )}
+      {...props}
+    >
+      {children}
+      {pending && (
+        <span className="ml-auto text-[11px] font-medium text-muted-foreground animate-pulse pr-1">
+          Updating…
+        </span>
+      )}
+    </div>
   );
 }

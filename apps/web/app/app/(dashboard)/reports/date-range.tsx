@@ -1,6 +1,6 @@
 'use client';
 
-import { Button, Input } from '@billwise/ui';
+import { Button, FilterBar, Input } from '@billwise/ui';
 import { useRouter } from 'next/navigation';
 import * as React from 'react';
 
@@ -38,35 +38,32 @@ export function DateRangePicker({ initial }: { initial: { from: string; to: stri
   }
 
   return (
-    <div className="flex flex-wrap items-center gap-2">
+    <FilterBar pending={pending}>
       <Input
-        className="w-36"
+        className="h-8.5 w-34 rounded-lg border-border/80 bg-background text-xs shadow-2xs"
         type="date"
         aria-label="From date"
         value={from}
         onChange={(e) => apply(e.target.value, to)}
       />
       <Input
-        className="w-36"
+        className="h-8.5 w-34 rounded-lg border-border/80 bg-background text-xs shadow-2xs"
         type="date"
         aria-label="To date"
         value={to}
         onChange={(e) => apply(from, e.target.value)}
       />
-      {/* The three ranges a shopkeeper actually asks for. Typing two dates to
-          see this month's sales is work nobody should have to do. */}
-      <div className="flex items-center gap-1 rounded-lg border bg-muted/50 p-0.5">
-        <Button variant="ghost" size="sm" onClick={() => preset('month')}>
+      <div className="flex items-center gap-0.5 rounded-lg border border-border/80 bg-muted/50 p-0.5 shadow-2xs">
+        <Button variant="ghost" size="sm" className="h-7 rounded-md text-xs px-2.5" onClick={() => preset('month')}>
           This month
         </Button>
-        <Button variant="ghost" size="sm" onClick={() => preset('lastMonth')}>
+        <Button variant="ghost" size="sm" className="h-7 rounded-md text-xs px-2.5" onClick={() => preset('lastMonth')}>
           Last month
         </Button>
-        <Button variant="ghost" size="sm" onClick={() => preset('fy')}>
+        <Button variant="ghost" size="sm" className="h-7 rounded-md text-xs px-2.5" onClick={() => preset('fy')}>
           This FY
         </Button>
       </div>
-      {pending && <span className="text-xs text-muted-foreground">Updating…</span>}
-    </div>
+    </FilterBar>
   );
 }

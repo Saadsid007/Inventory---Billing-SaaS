@@ -244,3 +244,40 @@ export async function revokeAdmin(
   );
   return { ok: true };
 }
+
+/**
+ * Bootstrap a super-admin user for local/dev seeding.
+ *
+ * Unlike `grantAdminByEmail`, this may create the account: the first admin
+ * cannot be promoted from the panel because the panel is empty until someone
+ * exists. Idempotent — re-running updates the password and keeps the flag on.
+ */
+export async function ensureSuperAdmin(input: {
+  email: string;
+  name: string;
+  passwordHash: string;
+}): Promise<{ created: boolean; email: string }> {
+  const email = input.email.trim().toLowerCase();
+  const name = input.name.trim();
+
+  const [existing] = await getDb().execute<{ id: string }>(
+    sql`select id::text from users where email = ${email}`,
+  );
+
+  if (existing) {
+    await getDb().execute(sql`
+      update users
+      set password_hash = ${input.passwordHash},
+          is_super_admin = true,
+          name = ${name}
+      where id = ${existing.id}::uuid
+    `);
+    return { created: false, email };
+  }
+
+  await getDb().execute(sql`
+    insert into users (email, name, password_hash, is_super_admin)
+    values (${email}, ${name}, ${input.passwordHash}, true)
+  `);
+  return { created: true, email };
+}

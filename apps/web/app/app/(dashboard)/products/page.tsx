@@ -5,14 +5,26 @@ import {
   EmptyState,
   PageBody,
   PageHeader,
+  RowActions,
   TBody,
   TD,
   TH,
   THead,
   TR,
   Table,
+  tableLinkClass,
 } from '@billwise/ui';
-import { Package, Plus, SearchX } from 'lucide-react';
+import {
+  Eye,
+  Hash,
+  Layers,
+  Package,
+  Pencil,
+  Plus,
+  SearchX,
+  Tag,
+  Wallet,
+} from 'lucide-react';
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { requireBusiness } from '@/lib/auth/require-business';
@@ -97,12 +109,17 @@ export default async function ProductsPage({
         <Table>
           <THead>
             <TR>
-              <TH>Name</TH>
-              <TH>Category</TH>
-              <TH>HSN</TH>
-              <TH numeric>Sale price</TH>
-              <TH numeric>Stock</TH>
-              <TH>Status</TH>
+              <TH icon={Package}>Name</TH>
+              <TH icon={Layers}>Category</TH>
+              <TH icon={Hash}>HSN</TH>
+              <TH icon={Wallet} numeric>
+                Sale price
+              </TH>
+              <TH icon={Package} numeric>
+                Stock
+              </TH>
+              <TH icon={Tag}>Status</TH>
+              <TH className="text-right">Actions</TH>
             </TR>
           </THead>
           <TBody>
@@ -111,10 +128,7 @@ export default async function ProductsPage({
               return (
                 <TR key={p.id}>
                   <TD>
-                    <Link
-                      href={`/app/products/${p.id}`}
-                      className="font-medium underline-offset-4 hover:text-primary hover:underline"
-                    >
+                    <Link href={`/app/products/${p.id}`} className={tableLinkClass}>
                       {p.name}
                     </Link>
                     {p.sku && (
@@ -154,6 +168,22 @@ export default async function ProductsPage({
                         In stock
                       </Badge>
                     )}
+                  </TD>
+                  <TD>
+                    <RowActions>
+                      <Link href={`/app/products/${p.id}`}>
+                        <Button variant="success" size="table">
+                          <Eye className="size-3" />
+                          View
+                        </Button>
+                      </Link>
+                      <Link href={`/app/products/${p.id}`}>
+                        <Button variant="outline" size="table">
+                          <Pencil className="size-3" />
+                          Edit
+                        </Button>
+                      </Link>
+                    </RowActions>
                   </TD>
                 </TR>
               );

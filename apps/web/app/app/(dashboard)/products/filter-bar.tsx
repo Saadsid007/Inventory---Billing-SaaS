@@ -1,16 +1,12 @@
 'use client';
 
-import { Button, Card, Input, Select } from '@billwise/ui';
+import { Button, FilterBar, Input, Select } from '@billwise/ui';
 import { Search, TriangleAlert, X } from 'lucide-react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import * as React from 'react';
 
 /**
  * Filters live in the URL, not in component state.
- *
- * That makes a filtered list shareable and back-button-friendly, and it lets
- * the page stay a server component that reads `searchParams` — no client-side
- * fetching, no loading spinner.
  */
 export function ProductFilterBar({
   categories,
@@ -39,7 +35,6 @@ export function ProductFilterBar({
     [params, router],
   );
 
-  // Debounced so typing a product name does not fire a query per keystroke.
   React.useEffect(() => {
     if (q === initial.q) return;
     const t = setTimeout(() => apply({ q }), 300);
@@ -49,12 +44,12 @@ export function ProductFilterBar({
   const isFiltered = Boolean(initial.q || initial.category || initial.low);
 
   return (
-    <Card className="flex flex-wrap items-center gap-2 p-3">
+    <FilterBar pending={pending}>
       <div className="relative w-full sm:w-64">
-        <Search className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground" />
+        <Search className="pointer-events-none absolute top-1/2 left-2.5 size-3.5 -translate-y-1/2 text-muted-foreground" />
         <Input
-          className="pl-9"
-          placeholder="Search name, SKU or barcode…"
+          className="h-8.5 rounded-lg border-border/80 bg-background pl-8 text-xs shadow-2xs"
+          placeholder="Search name, SKU, barcode…"
           value={q}
           onChange={(e) => setQ(e.target.value)}
           aria-label="Search products"
@@ -62,7 +57,7 @@ export function ProductFilterBar({
       </div>
 
       <Select
-        className="w-full sm:w-48"
+        className="h-8.5 w-full rounded-lg border-border/80 bg-background text-xs shadow-2xs sm:w-44"
         value={initial.category}
         onChange={(e) => apply({ category: e.target.value })}
         aria-label="Filter by category"
@@ -77,26 +72,26 @@ export function ProductFilterBar({
 
       <Button
         variant={initial.low ? 'default' : 'outline'}
+        className="h-8.5 rounded-lg text-xs px-3"
         onClick={() => apply({ low: !initial.low })}
         aria-pressed={initial.low}
       >
-        <TriangleAlert /> Low stock only
+        <TriangleAlert className="size-3.5" /> Low stock only
       </Button>
 
       {isFiltered && (
         <Button
           variant="ghost"
           size="sm"
+          className="h-8.5 rounded-lg text-xs px-2.5"
           onClick={() => {
             setQ('');
             startTransition(() => router.replace('/app/products'));
           }}
         >
-          <X /> Clear
+          <X className="size-3" /> Clear
         </Button>
       )}
-
-      {pending && <span className="text-xs text-muted-foreground">Updating…</span>}
-    </Card>
+    </FilterBar>
   );
 }

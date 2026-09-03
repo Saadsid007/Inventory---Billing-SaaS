@@ -1,22 +1,16 @@
 import { listPartyBalances } from '@billwise/db';
 import {
-  Badge,
   Button,
   EmptyState,
   PageBody,
   PageHeader,
   StatCard,
-  TBody,
-  TD,
-  TH,
-  THead,
-  TR,
-  Table,
 } from '@billwise/ui';
 import { UserPlus, Users, Wallet } from 'lucide-react';
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { requireBusiness } from '@/lib/auth/require-business';
+import { PartiesView } from './parties-view';
 
 export const metadata: Metadata = { title: 'Parties' };
 
@@ -76,47 +70,7 @@ export default async function PartiesPage() {
           }
         />
       ) : (
-        <Table>
-          <THead>
-            <TR>
-              <TH>Name</TH>
-              <TH>Phone</TH>
-              <TH numeric>Invoiced</TH>
-              <TH numeric>Received</TH>
-              <TH numeric>Outstanding</TH>
-            </TR>
-          </THead>
-          <TBody>
-            {balances.map((b) => {
-              const outstanding = Number(b.outstanding);
-              return (
-                <TR key={b.partyId}>
-                  <TD>
-                    <Link
-                      href={`/app/parties/${b.partyId}`}
-                      className="font-medium underline-offset-4 hover:text-primary hover:underline"
-                    >
-                      {b.name}
-                    </Link>
-                  </TD>
-                  <TD className="tabular text-muted-foreground">{b.phone ?? '-'}</TD>
-                  <TD numeric className="text-muted-foreground">₹{b.invoicedTotal}</TD>
-                  <TD numeric className="text-muted-foreground">₹{b.paidIn}</TD>
-                  <TD numeric>
-                    {outstanding > 0 ? (
-                      <span className="font-semibold text-warning">₹{b.outstanding}</span>
-                    ) : outstanding < 0 ? (
-                      /* Negative means the business owes them — an advance. */
-                      <Badge variant="secondary">₹{b.outstanding} advance</Badge>
-                    ) : (
-                      <span className="text-muted-foreground">Settled</span>
-                    )}
-                  </TD>
-                </TR>
-              );
-            })}
-          </TBody>
-        </Table>
+        <PartiesView balances={balances} />
       )}
     </PageBody>
   );

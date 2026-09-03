@@ -37,14 +37,18 @@ const buttonVariants = cva(
         ghost: 'text-muted-foreground hover:bg-accent hover:text-foreground active:bg-accent',
         subtle:
           'bg-primary-subtle text-primary-subtle-foreground hover:brightness-[0.97] active:brightness-95',
+        success:
+          'bg-success text-success-foreground shadow-xs hover:brightness-95 active:brightness-90',
         link: 'text-primary underline-offset-4 hover:underline active:translate-y-0',
       },
       size: {
         default: 'h-9 px-4 text-sm',
-        sm: 'h-8 gap-1.5 rounded-md px-3 text-xs',
+        sm: 'h-7.5 gap-1.5 rounded-md px-2.5 text-xs',
         lg: 'h-10.5 rounded-lg px-6 text-sm',
+        /** Dense, small table action button — enterprise-style. */
+        table: 'h-6.5 gap-1 rounded-md px-2 text-[11px] font-semibold shadow-2xs tracking-tight',
         icon: 'size-9',
-        'icon-sm': 'size-8 rounded-md',
+        'icon-sm': 'size-6.5 rounded-md',
       },
     },
     defaultVariants: { variant: 'default', size: 'default' },

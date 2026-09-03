@@ -39,11 +39,22 @@ export {
   type SwitchProps,
 } from './components/form-controls';
 export { Logo, LogoMark, type LogoProps } from './components/logo';
-export { EmptyState, TBody, TD, TH, THead, TR, Table } from './components/table';
+export {
+  EmptyState,
+  RowActions,
+  TBody,
+  TD,
+  TH,
+  THead,
+  TR,
+  Table,
+  tableLinkClass,
+} from './components/table';
 export {
   Alert,
   Detail,
   DetailList,
+  FilterBar,
   PageBody,
   PageHeader,
   Section,

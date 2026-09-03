@@ -177,6 +177,7 @@ export type ReturnListRow = {
   totalAmount: string;
   reason: string | null;
   partyName: string | null;
+  invoiceId: string | null;
   invoiceNo: string | null;
   productNames: string | null;
   itemCount: number;
@@ -192,6 +193,7 @@ export async function listSalesReturns(ctx: TenantCtx, limit = 200) {
            r.total_amount::text as "totalAmount",
            r.reason,
            p.name as "partyName",
+           r.invoice_id::text as "invoiceId",
            i.invoice_no as "invoiceNo",
            (select string_agg(distinct l.name, ', ') from sales_return_lines l where l.return_id = r.id)
              as "productNames",

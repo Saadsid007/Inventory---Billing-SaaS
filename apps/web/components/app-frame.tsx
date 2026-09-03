@@ -74,7 +74,7 @@ function SignOutButton() {
       aria-label="Log out"
       disabled={pending}
       onClick={() => startTransition(() => signOutAction())}
-      className="shrink-0 rounded-md p-2 text-muted-foreground transition-colors hover:bg-accent hover:text-foreground disabled:opacity-50"
+      className="shrink-0 rounded-xl border bg-card p-2 text-muted-foreground shadow-xs transition-colors hover:bg-accent hover:text-foreground disabled:opacity-50"
     >
       <LogOut className="size-4" />
     </button>
