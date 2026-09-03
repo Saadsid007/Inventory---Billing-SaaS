@@ -13,6 +13,7 @@ import {
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { requireBusiness } from '@/lib/auth/require-business';
+import { ProductExportButtons } from './export-buttons';
 import { ProductFilterBar } from './filter-bar';
 import { ProductsTable } from './products-table';
 
@@ -48,11 +49,16 @@ export default async function ProductsPage({
             : 'What you sell, with the price, tax rate and how much is left on the shelf.'
         }
         actions={
-          <Link href="/app/products/new">
-            <Button>
-              <Plus /> Add product
-            </Button>
-          </Link>
+          <div className="flex flex-wrap items-center gap-2">
+            <ProductExportButtons
+              currentFilters={{ q: q ?? '', category: category ?? '', low: low === '1' }}
+            />
+            <Link href="/app/products/new">
+              <Button className="h-8.5 gap-1.5 px-3.5 text-xs font-bold shadow-xs">
+                <Plus className="size-3.5" /> Add product
+              </Button>
+            </Link>
+          </div>
         }
       />
 

@@ -39,11 +39,15 @@ function stateName(code: string | null | undefined): string {
 }
 
 export async function GET(
-  _request: Request,
+  request: Request,
   { params }: { params: Promise<{ kind: string }> },
 ) {
   const ctx = await requireBusiness();
   const { kind } = await params;
+  const url = new URL(request.url);
+  const q = url.searchParams.get('q') || undefined;
+  const category = url.searchParams.get('category') || undefined;
+  const low = url.searchParams.get('low') === '1';
 
   if (!EXPORTS.includes(kind as ExportKind)) {
     return new Response('Unknown export', { status: 404 });
@@ -51,7 +55,13 @@ export async function GET(
 
   switch (kind as ExportKind) {
     case 'products': {
-      const rows = await listProducts(ctx, { limit: 5000, includeInactive: true });
+      const rows = await listProducts(ctx, {
+        search: q,
+        categoryId: category,
+        lowStockOnly: low,
+        limit: 5000,
+        includeInactive: true,
+      });
       const columns: CsvColumn<(typeof rows)[number]>[] = [
         { header: 'Name', value: (r) => r.name },
         { header: 'SKU', value: (r) => r.sku },

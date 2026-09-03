@@ -691,15 +691,15 @@ export function CategoryManager({
           ADD / EDIT CATEGORY & SUBCATEGORY MODAL (Clean, Focused, Responsive)
           ========================================================================= */}
       {modalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-xs animate-in fade-in-0 duration-150">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-3 sm:p-4 backdrop-blur-xs animate-in fade-in-0 duration-150">
           <div
             role="dialog"
             aria-modal="true"
             aria-labelledby="category-modal-title"
-            className="relative w-full max-w-lg max-h-[90vh] overflow-y-auto rounded-2xl border border-border/80 bg-card shadow-2xl animate-in zoom-in-95 duration-150"
+            className="relative w-full max-w-xl sm:max-w-2xl max-h-[92vh] overflow-y-auto rounded-2xl border border-border/80 bg-card shadow-2xl animate-in zoom-in-95 duration-150"
           >
-            {/* Modal Header */}
-            <div className="sticky top-0 z-10 flex items-start justify-between border-b border-border/70 bg-card/95 p-5 backdrop-blur-md">
+            {/* Modal Header - Wide & Fully Responsive */}
+            <div className="sticky top-0 z-10 flex items-start justify-between border-b border-border/70 bg-card/95 p-4 sm:p-5 sm:px-6 backdrop-blur-md">
               <div className="flex items-start gap-3">
                 <div className="grid size-10 shrink-0 place-items-center rounded-xl bg-primary/10 text-primary ring-1 ring-primary/20">
                   {categoryType === 'sub' ? (
@@ -709,7 +709,7 @@ export function CategoryManager({
                   )}
                 </div>
                 <div>
-                  <h3 id="category-modal-title" className="text-base font-bold text-foreground">
+                  <h3 id="category-modal-title" className="text-base sm:text-lg font-bold text-foreground">
                     {modalMode === 'edit'
                       ? categoryType === 'sub'
                         ? 'Edit Subcategory'
@@ -720,8 +720,8 @@ export function CategoryManager({
                   </h3>
                   <p className="text-xs text-muted-foreground mt-0.5">
                     {categoryType === 'sub'
-                      ? 'Create a specialized subcategory nested under a parent category.'
-                      : 'Create a main department category with its own image.'}
+                      ? 'Create a specialized subcategory nested under a parent department.'
+                      : 'Create a main department category with its own image and presets.'}
                   </p>
                 </div>
               </div>
@@ -729,7 +729,7 @@ export function CategoryManager({
               <button
                 type="button"
                 onClick={() => setModalOpen(false)}
-                className="rounded-lg p-1.5 text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
+                className="rounded-lg p-1.5 text-muted-foreground hover:bg-muted hover:text-foreground transition-colors shrink-0"
                 aria-label="Close dialog"
               >
                 <X className="size-4" />
@@ -737,7 +737,7 @@ export function CategoryManager({
             </div>
 
             {/* Modal Form */}
-            <form onSubmit={handleSubmit} className="p-5 space-y-4">
+            <form onSubmit={handleSubmit} className="p-4 sm:p-6 space-y-4">
               <FormError>{error}</FormError>
 
               {/* Type Switcher (Main Category vs Subcategory) - only when creating or when parents exist */}
@@ -783,35 +783,61 @@ export function CategoryManager({
                 </div>
               )}
 
-              {/* Parent Category Picker (when Subcategory) */}
-              {categoryType === 'sub' && (
-                <Field
-                  label="Parent Category"
-                  htmlFor="parent-cat-select"
-                  hint="Select the main department this subcategory belongs to."
-                  required
-                >
-                  <Select
-                    id="parent-cat-select"
-                    value={parentId}
-                    onChange={(e) => setParentId(e.target.value)}
+              {/* Name & Parent Category Grid (Side-by-Side on Desktop when Subcategory) */}
+              {categoryType === 'sub' ? (
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+                  <Field
+                    label="Parent Category"
+                    htmlFor="parent-cat-select"
+                    hint="Main department this belongs to."
+                    required
+                  >
+                    <Select
+                      id="parent-cat-select"
+                      value={parentId}
+                      onChange={(e) => setParentId(e.target.value)}
+                      className="h-9.5 text-xs font-semibold"
+                      disabled={pending}
+                    >
+                      <option value="" disabled>
+                        Select parent category…
+                      </option>
+                      {mainCategories.map((c) => (
+                        <option key={c.id} value={c.id}>
+                          {c.name}
+                        </option>
+                      ))}
+                    </Select>
+                  </Field>
+
+                  <Field label="Subcategory Name" htmlFor="cat-name-input" required>
+                    <Input
+                      ref={inputRef}
+                      id="cat-name-input"
+                      placeholder="e.g. Cold Drinks, Juices, Biscuits"
+                      value={name}
+                      onChange={(e) => setName(e.target.value)}
+                      className="h-9.5 text-xs font-semibold"
+                      disabled={pending}
+                    />
+                  </Field>
+                </div>
+              ) : (
+                <Field label="Category Name" htmlFor="cat-name-input" required>
+                  <Input
+                    ref={inputRef}
+                    id="cat-name-input"
+                    placeholder="e.g. Dairy Products, Beverages, Snacks"
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
                     className="h-9.5 text-xs font-semibold"
                     disabled={pending}
-                  >
-                    <option value="" disabled>
-                      Select parent category…
-                    </option>
-                    {mainCategories.map((c) => (
-                      <option key={c.id} value={c.id}>
-                        {c.name}
-                      </option>
-                    ))}
-                  </Select>
+                  />
                 </Field>
               )}
 
               {/* Category / Subcategory Image */}
-              <div className="space-y-2 rounded-xl border border-border/80 bg-card/60 p-3.5">
+              <div className="space-y-2 rounded-xl border border-border/80 bg-muted/20 p-3.5 sm:p-4">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-1.5">
                     <ImageIcon className="size-3.5 text-primary" />
@@ -819,25 +845,25 @@ export function CategoryManager({
                       {categoryType === 'sub' ? 'Subcategory Image' : 'Category Image'}
                     </span>
                   </div>
-                  <span className="text-[10px] text-muted-foreground">Optional</span>
+                  <span className="text-[10px] text-muted-foreground font-medium">Optional</span>
                 </div>
 
-                <div className="flex items-center gap-3">
+                <div className="flex flex-col sm:flex-row sm:items-center gap-3.5">
                   {/* Thumbnail Preview */}
-                  <div className="relative size-16 shrink-0 overflow-hidden rounded-xl border border-border/80 bg-muted/40 shadow-xs">
+                  <div className="relative size-16 sm:size-20 shrink-0 overflow-hidden rounded-xl border border-border/80 bg-muted/40 shadow-xs">
                     {imageUrl ? (
                       /* eslint-disable-next-line @next/next/no-img-element */
                       <img src={imageUrl} alt="Preview" className="size-full object-cover" />
                     ) : (
                       <div className="flex size-full flex-col items-center justify-center text-muted-foreground/60">
-                        <ImagePlus className="size-5" />
+                        <ImagePlus className="size-5 sm:size-6" />
                         <span className="text-[9px] mt-0.5 font-medium">No Image</span>
                       </div>
                     )}
                   </div>
 
-                  {/* Actions */}
-                  <div className="flex-1 space-y-1.5">
+                  {/* Upload & Actions */}
+                  <div className="flex-1 space-y-2">
                     <input
                       type="file"
                       ref={fileInputRef}
@@ -853,9 +879,9 @@ export function CategoryManager({
                         size="sm"
                         disabled={uploading || pending}
                         onClick={() => fileInputRef.current?.click()}
-                        className="h-8 text-xs font-semibold gap-1.5"
+                        className="h-8.5 text-xs font-semibold gap-1.5 px-3"
                       >
-                        <Upload className="size-3 text-primary" />
+                        <Upload className="size-3.5 text-primary" />
                         <span>{uploading ? 'Uploading…' : 'Upload Image'}</span>
                       </Button>
 
@@ -865,7 +891,7 @@ export function CategoryManager({
                           variant="ghost"
                           size="sm"
                           onClick={() => setImageUrl('')}
-                          className="h-8 text-xs text-destructive hover:bg-destructive/10"
+                          className="h-8.5 text-xs text-destructive hover:bg-destructive/10"
                         >
                           Remove
                         </Button>
@@ -874,14 +900,14 @@ export function CategoryManager({
                       <button
                         type="button"
                         onClick={() => setShowUrlInput((v) => !v)}
-                        className="text-[11px] text-primary hover:underline font-medium"
+                        className="text-[11px] text-primary hover:underline font-semibold"
                       >
-                        {showUrlInput ? 'Hide URL' : 'Or paste URL'}
+                        {showUrlInput ? 'Hide URL' : 'Or paste direct URL'}
                       </button>
                     </div>
 
                     <p className="text-[10px] text-muted-foreground">
-                      PNG, JPG, or WebP up to 5MB. Rendered in catalogue and billing.
+                      PNG, JPG, or WebP up to 5MB. Displayed in online catalog and billing masters.
                     </p>
                   </div>
                 </div>
@@ -893,42 +919,21 @@ export function CategoryManager({
                       placeholder="https://example.com/image.webp"
                       value={imageUrl}
                       onChange={(e) => setImageUrl(e.target.value)}
-                      className="h-8 text-xs font-mono"
+                      className="h-8.5 text-xs font-mono"
                       disabled={pending}
                     />
                   </div>
                 )}
               </div>
 
-              {/* Name Input */}
-              <Field
-                label={categoryType === 'sub' ? 'Subcategory Name' : 'Category Name'}
-                htmlFor="cat-name-input"
-                required
-              >
-                <Input
-                  ref={inputRef}
-                  id="cat-name-input"
-                  placeholder={
-                    categoryType === 'sub'
-                      ? 'e.g. Cold Drinks, Fruit Juices, Biscuits'
-                      : 'e.g. Dairy Products, Beverages, Snacks'
-                  }
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  className="h-9.5 text-xs font-semibold"
-                  disabled={pending}
-                />
-              </Field>
-
-              {/* Quick Preset Suggestions */}
-              <div className="space-y-1.5 pt-1">
-                <div className="flex items-center gap-1 text-[11px] font-bold text-muted-foreground">
-                  <Sparkles className="size-3 text-primary" />
-                  <span>Popular Presets (Click to use):</span>
+              {/* Quick Preset Suggestions (Clean Spread on Wider Modal) */}
+              <div className="space-y-2 pt-1">
+                <div className="flex items-center gap-1.5 text-[11px] font-bold text-muted-foreground">
+                  <Sparkles className="size-3.5 text-primary" />
+                  <span>Popular Presets (1-Tap Suggestion):</span>
                 </div>
 
-                <div className="flex flex-wrap gap-1.5">
+                <div className="flex flex-wrap gap-1.5 sm:gap-2">
                   {(categoryType === 'sub'
                     ? SUBCATEGORY_SUGGESTIONS
                     : MAIN_CATEGORY_SUGGESTIONS
@@ -948,15 +953,15 @@ export function CategoryManager({
                 </div>
               </div>
 
-              {/* Modal Actions */}
-              <div className="flex items-center justify-end gap-2.5 border-t border-border/60 pt-4">
+              {/* Modal Actions - Fully Responsive */}
+              <div className="flex flex-col-reverse sm:flex-row sm:items-center sm:justify-end gap-2 sm:gap-2.5 border-t border-border/60 pt-4">
                 <Button
                   type="button"
                   variant="outline"
                   size="sm"
                   onClick={() => setModalOpen(false)}
                   disabled={pending}
-                  className="h-8.5 px-3.5 text-xs font-semibold"
+                  className="h-8.5 w-full sm:w-auto px-4 text-xs font-semibold"
                 >
                   Cancel
                 </Button>
@@ -965,7 +970,7 @@ export function CategoryManager({
                   type="submit"
                   size="sm"
                   disabled={pending || !name.trim()}
-                  className="h-8.5 gap-1.5 px-4 text-xs font-bold bg-primary text-primary-foreground shadow-xs"
+                  className="h-8.5 w-full sm:w-auto gap-1.5 px-5 text-xs font-bold bg-primary text-primary-foreground shadow-xs"
                 >
                   {modalMode === 'edit' ? (
                     <>
