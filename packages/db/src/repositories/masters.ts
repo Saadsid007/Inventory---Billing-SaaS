@@ -49,7 +49,12 @@ export async function deleteUnit(ctx: TenantCtx, unitId: string) {
 
 export async function listCategories(ctx: TenantCtx) {
   return getDb()
-    .select()
+    .select({
+      id: categories.id,
+      name: categories.name,
+      imageUrl: categories.imageUrl,
+      parentId: categories.parentId,
+    })
     .from(categories)
     .where(eq(categories.businessId, ctx.businessId))
     .orderBy(asc(categories.name));
@@ -60,13 +65,18 @@ export async function listCategoriesWithProductCount(ctx: TenantCtx) {
     .select({
       id: categories.id,
       name: categories.name,
+      imageUrl: categories.imageUrl,
+      parentId: categories.parentId,
       productCount: sql<number>`count(${products.id})::int`,
     })
     .from(categories)
     .leftJoin(
       products,
       and(
-        eq(products.categoryId, categories.id),
+        or(
+          eq(products.categoryId, categories.id),
+          eq(products.subcategoryId, categories.id),
+        ),
         eq(products.businessId, ctx.businessId),
         eq(products.isActive, true),
       ),
@@ -76,19 +86,43 @@ export async function listCategoriesWithProductCount(ctx: TenantCtx) {
     .orderBy(asc(categories.name));
 }
 
-export async function createCategory(ctx: TenantCtx, name: string) {
+export async function createCategory(
+  ctx: TenantCtx,
+  input: string | { name: string; imageUrl?: string | null; parentId?: string | null },
+) {
+  const data = typeof input === 'string' ? { name: input } : input;
   const [row] = await getDb()
     .insert(categories)
-    .values({ businessId: ctx.businessId, name: name.trim() })
+    .values({
+      businessId: ctx.businessId,
+      name: data.name.trim(),
+      imageUrl: data.imageUrl ? data.imageUrl.trim() : null,
+      parentId: data.parentId || null,
+    })
     .returning();
   return row;
 }
 
+export async function updateCategory(
+  ctx: TenantCtx,
+  categoryId: string,
+  patch: { name?: string; imageUrl?: string | null; parentId?: string | null },
+) {
+  const values: Record<string, unknown> = {};
+  if (patch.name !== undefined) values['name'] = patch.name.trim();
+  if (patch.imageUrl !== undefined) values['imageUrl'] = patch.imageUrl ? patch.imageUrl.trim() : null;
+  if (patch.parentId !== undefined) values['parentId'] = patch.parentId || null;
+
+  if (Object.keys(values).length > 0) {
+    await getDb()
+      .update(categories)
+      .set(values)
+      .where(and(eq(categories.id, categoryId), eq(categories.businessId, ctx.businessId)));
+  }
+}
+
 export async function renameCategory(ctx: TenantCtx, categoryId: string, name: string) {
-  await getDb()
-    .update(categories)
-    .set({ name: name.trim() })
-    .where(and(eq(categories.id, categoryId), eq(categories.businessId, ctx.businessId)));
+  return updateCategory(ctx, categoryId, { name });
 }
 
 export async function deleteCategory(ctx: TenantCtx, categoryId: string) {

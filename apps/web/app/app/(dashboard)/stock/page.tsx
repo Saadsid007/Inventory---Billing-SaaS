@@ -1,52 +1,39 @@
 import { listProducts } from '@billwise/db';
-import { Alert, Button, EmptyState, PageBody, PageHeader } from '@billwise/ui';
-import { Info, Package, Plus } from 'lucide-react';
+import { Alert, PageBody } from '@billwise/ui';
+import { Info } from 'lucide-react';
 import type { Metadata } from 'next';
-import Link from 'next/link';
 import { requireBusiness } from '@/lib/auth/require-business';
-import { StockForm } from './stock-form';
+import { StockManager } from './stock-manager';
 
-export const metadata: Metadata = { title: 'Stock in / out' };
+export const metadata: Metadata = { title: 'Stock & Inventory' };
 
 export default async function StockPage() {
   const ctx = await requireBusiness();
-  const products = (await listProducts(ctx, { limit: 500 })).filter((p) => p.trackInventory);
+  const products = (await listProducts(ctx, { limit: 1000 })).filter((p) => p.trackInventory);
 
   return (
-    <PageBody className="mx-auto max-w-2xl">
-      <PageHeader
-        title="Stock in / out"
-        description="Record goods arriving or leaving outside a sale: a delivery from a supplier, breakage, or a stock-count correction."
+    <PageBody className="space-y-6">
+      <StockManager
+        products={products.map((p) => ({
+          id: p.id,
+          name: p.name,
+          sku: p.sku,
+          barcode: p.barcode,
+          categoryName: p.categoryName,
+          hsnCode: p.hsnCode,
+          unit: p.unitShortName,
+          currentStock: p.currentStock,
+          lowStockAlert: p.lowStockAlert,
+          salePrice: p.salePrice,
+          purchasePrice: p.purchasePrice,
+          imageUrl: p.imageUrls?.[0] ?? null,
+        }))}
       />
 
-      {products.length === 0 ? (
-        <EmptyState
-          icon={Package}
-          title="Nothing to move yet"
-          description="Stock movements need a product with inventory tracking switched on. Add one and it will show up here."
-          action={
-            <Link href="/app/products/new">
-              <Button>
-                <Plus /> Add a product
-              </Button>
-            </Link>
-          }
-        />
-      ) : (
-        <StockForm
-          products={products.map((p) => ({
-            id: p.id,
-            name: p.name,
-            sku: p.sku,
-            unit: p.unitShortName,
-            currentStock: p.currentStock,
-          }))}
-        />
-      )}
-
-      <Alert variant="info" icon={Info} title="This is not a purchase bill">
-        It records a quantity and a reason, nothing more. Supplier invoices with input-credit
-        fields come in a later release.
+      <Alert variant="info" icon={Info} title="Inventory Ledger & Stock Adjustments">
+        All manual adjustments write signed movement records to your immutable stock ledger.
+        Positive quantities represent arrivals/returns; negative quantities record dispatches,
+        shrinkage, or breakages.
       </Alert>
     </PageBody>
   );

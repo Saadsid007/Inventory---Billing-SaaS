@@ -27,6 +27,7 @@ const listColumns = {
   barcode: products.barcode,
   hsnCode: products.hsnCode,
   categoryId: products.categoryId,
+  subcategoryId: products.subcategoryId,
   categoryName: categories.name,
   unitId: products.unitId,
   unitShortName: units.shortName,
@@ -137,6 +138,7 @@ export type ProductInput = {
   sku?: string | null;
   barcode?: string | null;
   categoryId?: string | null;
+  subcategoryId?: string | null;
   unitId?: string | null;
   hsnCode?: string | null;
   taxRateId?: string | null;
@@ -170,6 +172,7 @@ export async function createProduct(ctx: TenantCtx, input: ProductInput) {
         sku: input.sku?.trim() || null,
         barcode: input.barcode?.trim() || null,
         categoryId: input.categoryId ?? null,
+        subcategoryId: input.subcategoryId ?? null,
         unitId: input.unitId ?? null,
         hsnCode: input.hsnCode?.trim() || null,
         taxRateId: input.taxRateId ?? null,

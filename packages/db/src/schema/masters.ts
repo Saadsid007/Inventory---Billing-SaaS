@@ -1,6 +1,7 @@
 import { CUSTOM_FIELD_ENTITIES, CUSTOM_FIELD_TYPES } from '@billwise/shared';
 import { relations } from 'drizzle-orm';
 import {
+  type AnyPgColumn,
   boolean,
   date,
   index,
@@ -44,9 +45,14 @@ export const categories = pgTable(
     businessId: uuid()
       .notNull()
       .references(() => businesses.id, { onDelete: 'cascade' }),
+    parentId: uuid().references((): AnyPgColumn => categories.id, { onDelete: 'cascade' }),
     name: text().notNull(),
+    imageUrl: text(),
   },
-  (t) => [unique('categories_business_name_unq').on(t.businessId, t.name)],
+  (t) => [
+    index('categories_business_idx').on(t.businessId),
+    index('categories_parent_idx').on(t.parentId),
+  ],
 );
 
 /**
@@ -109,8 +115,16 @@ export const unitsRelations = relations(units, ({ one }) => ({
   business: one(businesses, { fields: [units.businessId], references: [businesses.id] }),
 }));
 
-export const categoriesRelations = relations(categories, ({ one }) => ({
+export const categoriesRelations = relations(categories, ({ one, many }) => ({
   business: one(businesses, { fields: [categories.businessId], references: [businesses.id] }),
+  parent: one(categories, {
+    fields: [categories.parentId],
+    references: [categories.id],
+    relationName: 'category_subcategories',
+  }),
+  subcategories: many(categories, {
+    relationName: 'category_subcategories',
+  }),
 }));
 
 export type Unit = typeof units.$inferSelect;

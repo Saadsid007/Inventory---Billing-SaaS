@@ -1,6 +1,6 @@
 import { listCategories, listCustomFieldDefs, listTaxRates, listUnits } from '@billwise/db';
 import type { TenantCtx } from '@billwise/shared';
-import type { CustomFieldDefView, FormOption } from './product-form';
+import type { CategoryFormOption, CustomFieldDefView, FormOption } from './product-form';
 
 /**
  * Everything the product form needs to render its pickers.
@@ -9,7 +9,7 @@ import type { CustomFieldDefView, FormOption } from './product-form';
  * different options for the same business.
  */
 export async function loadProductFormData(ctx: TenantCtx): Promise<{
-  categories: FormOption[];
+  categories: CategoryFormOption[];
   units: FormOption[];
   taxRates: FormOption[];
   customFieldDefs: CustomFieldDefView[];
@@ -22,7 +22,12 @@ export async function loadProductFormData(ctx: TenantCtx): Promise<{
   ]);
 
   return {
-    categories: categories.map((c) => ({ id: c.id, label: c.name })),
+    categories: categories.map((c) => ({
+      id: c.id,
+      label: c.name,
+      parentId: c.parentId,
+      imageUrl: c.imageUrl,
+    })),
     units: units.map((u) => ({ id: u.id, label: `${u.name} (${u.shortName})` })),
     taxRates: taxRates.map((t) => ({
       id: t.id,

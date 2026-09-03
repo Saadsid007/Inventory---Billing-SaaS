@@ -43,6 +43,7 @@ export const productSchema = z
       .optional()
       .transform((v) => (v === '' ? undefined : v)),
     categoryId: optionalId,
+    subcategoryId: optionalId,
     unitId: optionalId,
     hsnCode: z
       .string()

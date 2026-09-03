@@ -92,7 +92,21 @@ export function isStandardUqc(shortName: string): boolean {
 
 export const categorySchema = z.object({
   name: z.string().trim().min(1, 'Enter a name').max(60),
+  imageUrl: z
+    .string()
+    .trim()
+    .optional()
+    .nullable()
+    .transform((v) => (v === '' ? null : v)),
+  parentId: z
+    .string()
+    .uuid()
+    .optional()
+    .nullable()
+    .transform((v) => (v === '' ? null : v)),
 });
+
+export type CategoryInput = z.infer<typeof categorySchema>;
 
 export const customFieldSchema = z.object({
   entity: z.enum(['product', 'party']),

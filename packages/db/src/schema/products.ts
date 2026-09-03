@@ -38,6 +38,7 @@ export const products = pgTable(
     sku: text(),
     barcode: text(),
     categoryId: uuid().references(() => categories.id),
+    subcategoryId: uuid().references(() => categories.id),
     unitId: uuid().references(() => units.id),
     hsnCode: text(),
     taxRateId: uuid().references(() => taxRates.id),
@@ -116,6 +117,7 @@ export const stockMovements = pgTable(
 export const productsRelations = relations(products, ({ one, many }) => ({
   business: one(businesses, { fields: [products.businessId], references: [businesses.id] }),
   category: one(categories, { fields: [products.categoryId], references: [categories.id] }),
+  subcategory: one(categories, { fields: [products.subcategoryId], references: [categories.id] }),
   unit: one(units, { fields: [products.unitId], references: [units.id] }),
   taxRate: one(taxRates, { fields: [products.taxRateId], references: [taxRates.id] }),
   movements: many(stockMovements),

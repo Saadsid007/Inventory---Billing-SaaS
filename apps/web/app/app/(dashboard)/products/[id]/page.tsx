@@ -66,6 +66,7 @@ export default async function EditProductPage({
           sku: product.sku ?? '',
           barcode: product.barcode ?? '',
           categoryId: product.categoryId ?? '',
+          subcategoryId: product.subcategoryId ?? '',
           unitId: product.unitId ?? '',
           hsnCode: product.hsnCode ?? '',
           taxRateId: product.taxRateId ?? '',
