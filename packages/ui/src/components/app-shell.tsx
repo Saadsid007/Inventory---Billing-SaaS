@@ -170,11 +170,6 @@ export function AppShell({
     return (
       <div className="relative flex h-full flex-col overflow-hidden bg-sidebar text-sidebar-foreground">
         <div
-          aria-hidden
-          className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_top,oklch(0.55_0.21_258_/_0.08),transparent_55%)]"
-        />
-
-        <div
           className={cn(
             'relative flex h-16 items-center border-b border-sidebar-border/80',
             rail ? 'justify-center px-2' : 'gap-3 px-4',
@@ -205,7 +200,7 @@ export function AppShell({
                 : 'cursor-default',
             )}
           >
-            <span className="grid size-9 shrink-0 place-items-center rounded-lg bg-gradient-to-br from-primary to-primary-hover text-sm font-bold text-primary-foreground shadow-xs">
+            <span className="grid size-9 shrink-0 place-items-center rounded-lg bg-primary text-sm font-black text-primary-foreground shadow-xs">
               {businessName.charAt(0).toUpperCase()}
             </span>
             {!rail && (
@@ -290,7 +285,7 @@ export function AppShell({
           >
             <span
               title={rail ? userName : undefined}
-              className="grid size-9 shrink-0 place-items-center rounded-full bg-gradient-to-br from-accent to-primary-subtle text-xs font-bold text-accent-foreground ring-2 ring-background"
+              className="grid size-9 shrink-0 place-items-center rounded-full bg-primary/10 text-xs font-bold text-primary ring-1 ring-primary/25"
             >
               {userName.charAt(0).toUpperCase()}
             </span>
@@ -430,7 +425,7 @@ export function AppShell({
                 <ThemeToggle />
 
                 <div className="hidden items-center gap-2 rounded-2xl border border-border/70 bg-card/85 py-1 pr-2.5 pl-1 shadow-xs md:flex">
-                  <span className="grid size-8 place-items-center rounded-xl bg-gradient-to-br from-primary to-sky-600 text-xs font-bold text-primary-foreground shadow-xs">
+                  <span className="grid size-8 place-items-center rounded-xl bg-primary text-xs font-bold text-primary-foreground shadow-xs">
                     {userName.charAt(0).toUpperCase()}
                   </span>
                   <span className="hidden max-w-[7rem] truncate text-xs font-semibold lg:block">
@@ -465,7 +460,7 @@ export function AppShell({
 
         {banner}
 
-        <main className="min-w-0 flex-1 bg-[radial-gradient(ellipse_at_top,oklch(0.55_0.21_258_/_0.035),transparent_50%)] p-4 sm:p-5 lg:p-7 print:bg-none print:p-0">
+        <main className="min-w-0 flex-1 bg-background p-4 sm:p-5 lg:p-7 print:bg-none print:p-0">
           <div className="mx-auto w-full max-w-6xl">{children}</div>
         </main>
       </div>

@@ -39,15 +39,28 @@ export default async function PrintInvoicePage({
 
   const header = (
     <>
-      <div style={{ fontWeight: 700, fontSize: thermal ? '11pt' : '16pt' }}>{business?.name}</div>
-      {business?.addressLine1 && <div>{business.addressLine1}</div>}
-      {(business?.city || business?.pincode) && (
-        <div>
-          {business?.city} {business?.pincode}
+      <div style={{ fontWeight: 800, fontSize: thermal ? '11pt' : '17pt', letterSpacing: '-0.02em', color: '#0f172a' }}>
+        {business?.name}
+      </div>
+      {business?.legalName && business.legalName !== business.name && (
+        <div style={{ fontSize: '9pt', color: '#475569' }}>({business.legalName})</div>
+      )}
+      {business?.gstin && (
+        <div style={{ fontWeight: 700, fontFamily: 'monospace', fontSize: '9.5pt', color: '#0f172a', marginTop: '1mm' }}>
+          GSTIN: {business.gstin}
         </div>
       )}
-      {business?.phone && <div>Ph: {business.phone}</div>}
-      {business?.gstin && <div>GSTIN: {business.gstin}</div>}
+      {business?.addressLine1 && <div style={{ color: '#475569', fontSize: '9pt' }}>{business.addressLine1}</div>}
+      {(business?.city || business?.pincode) && (
+        <div style={{ color: '#475569', fontSize: '9pt' }}>
+          {business?.city} {business?.stateCode ? `State (${business.stateCode})` : ''} {business?.pincode}
+        </div>
+      )}
+      {(business?.phone || business?.email) && (
+        <div style={{ color: '#475569', fontSize: '9pt' }}>
+          {[business?.phone ? `Ph: ${business.phone}` : null, business?.email ? `Email: ${business.email}` : null].filter(Boolean).join(' • ')}
+        </div>
+      )}
     </>
   );
 
