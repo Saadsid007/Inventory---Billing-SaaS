@@ -31,6 +31,11 @@ export {
   type FieldProps,
 } from './components/field';
 export {
+  Dropdown,
+  type DropdownOption,
+  type DropdownProps,
+} from './components/dropdown';
+export {
   Checkbox,
   Switch,
   Textarea,
@@ -81,4 +86,5 @@ export {
   type TabsTriggerProps,
   type TabsContentProps,
 } from './components/tabs';
+export { Pagination, type PaginationProps } from './components/pagination';
 

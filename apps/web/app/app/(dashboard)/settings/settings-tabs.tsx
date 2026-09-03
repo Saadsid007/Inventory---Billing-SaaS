@@ -1,6 +1,6 @@
 'use client';
 
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@billwise/ui';
+import { Tabs, TabsContent } from '@billwise/ui';
 import { Building2, FileText, Scale, SlidersHorizontal } from 'lucide-react';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import * as React from 'react';
@@ -37,40 +37,76 @@ export function SettingsTabs({
 
   return (
     <Tabs value={activeTab} onValueChange={onTabChange} className="space-y-6">
-      <div className="overflow-x-auto pb-1">
-        <TabsList className="h-auto p-1.5 flex-wrap gap-1">
-          <TabsTrigger value="profile" className="py-2 px-3.5">
-            <Building2 className="size-4 text-muted-foreground" />
+      {/* Full-width Settings Tab Bar with visible background & active tab highlight */}
+      <div className="w-full rounded-xl border border-slate-300/80 bg-slate-200/80 p-1.5 shadow-2xs dark:border-slate-700/80 dark:bg-slate-800">
+        <div className="flex flex-wrap items-center gap-1.5">
+          <button
+            type="button"
+            onClick={() => onTabChange('profile')}
+            className={`inline-flex items-center gap-2 rounded-lg px-4 py-2 text-xs font-bold transition-all ${
+              activeTab === 'profile'
+                ? 'bg-primary text-white shadow-md shadow-primary/30 ring-1 ring-primary/40'
+                : 'text-slate-700 dark:text-slate-300 hover:bg-white/80 dark:hover:bg-slate-700 hover:text-slate-950 dark:hover:text-white'
+            }`}
+          >
+            <Building2 className="size-3.5" />
             <span>Profile & Branding</span>
-          </TabsTrigger>
-          <TabsTrigger value="invoicing" className="py-2 px-3.5">
-            <FileText className="size-4 text-muted-foreground" />
+          </button>
+
+          <button
+            type="button"
+            onClick={() => onTabChange('invoicing')}
+            className={`inline-flex items-center gap-2 rounded-lg px-4 py-2 text-xs font-bold transition-all ${
+              activeTab === 'invoicing'
+                ? 'bg-primary text-white shadow-md shadow-primary/30 ring-1 ring-primary/40'
+                : 'text-slate-700 dark:text-slate-300 hover:bg-white/80 dark:hover:bg-slate-700 hover:text-slate-950 dark:hover:text-white'
+            }`}
+          >
+            <FileText className="size-3.5" />
             <span>Invoices & Catalog</span>
-          </TabsTrigger>
-          <TabsTrigger value="units" className="py-2 px-3.5">
-            <Scale className="size-4 text-muted-foreground" />
-            <span>Units</span>
-          </TabsTrigger>
-          <TabsTrigger value="custom-fields" className="py-2 px-3.5">
-            <SlidersHorizontal className="size-4 text-muted-foreground" />
+          </button>
+
+          <button
+            type="button"
+            onClick={() => onTabChange('units')}
+            className={`inline-flex items-center gap-2 rounded-lg px-4 py-2 text-xs font-bold transition-all ${
+              activeTab === 'units'
+                ? 'bg-primary text-white shadow-md shadow-primary/30 ring-1 ring-primary/40'
+                : 'text-slate-700 dark:text-slate-300 hover:bg-white/80 dark:hover:bg-slate-700 hover:text-slate-950 dark:hover:text-white'
+            }`}
+          >
+            <Scale className="size-3.5" />
+            <span>Units of Measure</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => onTabChange('custom-fields')}
+            className={`inline-flex items-center gap-2 rounded-lg px-4 py-2 text-xs font-bold transition-all ${
+              activeTab === 'custom-fields'
+                ? 'bg-primary text-white shadow-md shadow-primary/30 ring-1 ring-primary/40'
+                : 'text-slate-700 dark:text-slate-300 hover:bg-white/80 dark:hover:bg-slate-700 hover:text-slate-950 dark:hover:text-white'
+            }`}
+          >
+            <SlidersHorizontal className="size-3.5" />
             <span>Custom Fields</span>
-          </TabsTrigger>
-        </TabsList>
+          </button>
+        </div>
       </div>
 
-      <TabsContent value="profile" className="space-y-6 mt-0">
+      <TabsContent value="profile" className="space-y-6 mt-0 animate-in fade-in-50 duration-150">
         {profileContent}
       </TabsContent>
 
-      <TabsContent value="invoicing" className="space-y-6 mt-0">
+      <TabsContent value="invoicing" className="space-y-6 mt-0 animate-in fade-in-50 duration-150">
         {invoicingContent}
       </TabsContent>
 
-      <TabsContent value="units" className="space-y-6 mt-0">
+      <TabsContent value="units" className="space-y-6 mt-0 animate-in fade-in-50 duration-150">
         {unitsContent}
       </TabsContent>
 
-      <TabsContent value="custom-fields" className="space-y-6 mt-0">
+      <TabsContent value="custom-fields" className="space-y-6 mt-0 animate-in fade-in-50 duration-150">
         {customFieldsContent}
       </TabsContent>
     </Tabs>

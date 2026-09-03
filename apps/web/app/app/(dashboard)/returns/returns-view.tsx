@@ -5,6 +5,7 @@ import {
   Button,
   FilterBar,
   Input,
+  Pagination,
   RowActions,
   TBody,
   TD,
@@ -25,6 +26,8 @@ const shortDate = (iso: string) =>
 
 export function ReturnsView({ returns }: { returns: ReturnRow[] }) {
   const [q, setQ] = React.useState('');
+  const [page, setPage] = React.useState(1);
+  const [pageSize, setPageSize] = React.useState(10);
 
   const filtered = React.useMemo(() => {
     const s = q.trim().toLowerCase();
@@ -38,10 +41,20 @@ export function ReturnsView({ returns }: { returns: ReturnRow[] }) {
     );
   }, [returns, q]);
 
+  React.useEffect(() => {
+    setPage(1);
+  }, [q]);
+
+  const totalPages = Math.max(1, Math.ceil(filtered.length / pageSize));
+  const paginated = React.useMemo(() => {
+    const start = (page - 1) * pageSize;
+    return filtered.slice(start, start + pageSize);
+  }, [filtered, page, pageSize]);
+
   return (
     <div className="space-y-4">
       <FilterBar>
-        <div className="relative w-full sm:w-72">
+        <div className="relative w-full sm:w-72 md:w-80">
           <Search className="pointer-events-none absolute left-2.5 top-1/2 size-3.5 -translate-y-1/2 text-muted-foreground" />
           <Input
             placeholder="Search customer, bill # or product…"
@@ -68,66 +81,77 @@ export function ReturnsView({ returns }: { returns: ReturnRow[] }) {
           No returns match &ldquo;{q}&rdquo;.
         </div>
       ) : (
-        <Table>
-          <THead>
-            <TR>
-              <TH icon={Calendar}>Date</TH>
-              <TH icon={User}>Customer</TH>
-              <TH icon={FileText}>Against bill</TH>
-              <TH icon={Package}>Product name</TH>
-              <TH>Reason</TH>
-              <TH numeric>Quantity</TH>
-              <TH icon={IndianRupee} numeric>
-                Credited
-              </TH>
-              <TH className="text-right">Actions</TH>
-            </TR>
-          </THead>
-          <TBody>
-            {filtered.map((r) => (
-              <TR key={r.id}>
-                <TD className="tabular whitespace-nowrap">{shortDate(r.returnDate)}</TD>
-                <TD>{r.partyName ?? 'Walk-in'}</TD>
-                <TD>
-                  {r.invoiceId && r.invoiceNo ? (
-                    <Link href={`/app/invoices/${r.invoiceId}`} className={tableLinkClass}>
-                      {r.invoiceNo}
-                    </Link>
-                  ) : (
-                    <span className="tabular text-muted-foreground">{r.invoiceNo ?? '-'}</span>
-                  )}
-                </TD>
-                <TD className="font-medium text-foreground">
-                  <span>{r.productNames ?? '-'}</span>
-                  {r.itemCount > 1 && (
-                    <span className="ml-1.5 text-xs font-normal text-muted-foreground">
-                      ({r.itemCount} items)
-                    </span>
-                  )}
-                </TD>
-                <TD className="text-muted-foreground">{r.reason ?? '-'}</TD>
-                <TD numeric>{r.qtyTotal}</TD>
-                <TD numeric className="font-medium">
-                  ₹{r.totalAmount}
-                </TD>
-                <TD>
-                  <RowActions>
-                    {r.invoiceId ? (
-                      <Link href={`/app/invoices/${r.invoiceId}`}>
-                        <Button variant="success" size="table">
-                          <Eye className="size-3" />
-                          View
-                        </Button>
+        <div className="overflow-hidden rounded-xl border border-border bg-card shadow-xs">
+          <Table className="rounded-none border-none shadow-none">
+            <THead>
+              <TR>
+                <TH icon={Calendar}>Date</TH>
+                <TH icon={User}>Customer</TH>
+                <TH icon={FileText}>Against bill</TH>
+                <TH icon={Package}>Product name</TH>
+                <TH>Reason</TH>
+                <TH numeric>Quantity</TH>
+                <TH icon={IndianRupee} numeric>
+                  Credited
+                </TH>
+                <TH className="text-right">Actions</TH>
+              </TR>
+            </THead>
+            <TBody>
+              {paginated.map((r) => (
+                <TR key={r.id}>
+                  <TD className="tabular whitespace-nowrap">{shortDate(r.returnDate)}</TD>
+                  <TD>{r.partyName ?? 'Walk-in'}</TD>
+                  <TD>
+                    {r.invoiceId && r.invoiceNo ? (
+                      <Link href={`/app/invoices/${r.invoiceId}`} className={tableLinkClass}>
+                        {r.invoiceNo}
                       </Link>
                     ) : (
-                      <span className="text-xs text-muted-foreground">-</span>
+                      <span className="tabular text-muted-foreground">{r.invoiceNo ?? '-'}</span>
                     )}
-                  </RowActions>
-                </TD>
-              </TR>
-            ))}
-          </TBody>
-        </Table>
+                  </TD>
+                  <TD className="font-medium text-foreground">
+                    <span>{r.productNames ?? '-'}</span>
+                    {r.itemCount > 1 && (
+                      <span className="ml-1.5 text-xs font-normal text-muted-foreground">
+                        ({r.itemCount} items)
+                      </span>
+                    )}
+                  </TD>
+                  <TD className="text-muted-foreground">{r.reason ?? '-'}</TD>
+                  <TD numeric>{r.qtyTotal}</TD>
+                  <TD numeric className="font-medium">
+                    ₹{r.totalAmount}
+                  </TD>
+                  <TD>
+                    <RowActions>
+                      {r.invoiceId ? (
+                        <Link href={`/app/invoices/${r.invoiceId}`}>
+                          <Button variant="success" size="table">
+                            <Eye className="size-3" />
+                            View
+                          </Button>
+                        </Link>
+                      ) : (
+                        <span className="text-xs text-muted-foreground">-</span>
+                      )}
+                    </RowActions>
+                  </TD>
+                </TR>
+              ))}
+            </TBody>
+          </Table>
+
+          <Pagination
+            currentPage={page}
+            totalPages={totalPages}
+            totalItems={filtered.length}
+            pageSize={pageSize}
+            onPageChange={setPage}
+            onPageSizeChange={setPageSize}
+          />
+        </div>
       )}
     </div>
   );

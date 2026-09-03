@@ -12,7 +12,6 @@ import {
   PageBody,
   PageHeader,
   Section,
-  StatCard,
   TBody,
   TD,
   TH,
@@ -22,17 +21,13 @@ import {
 } from '@billwise/ui';
 import {
   CheckCircle2,
-  FileText,
-  IndianRupee,
   Package,
-  Receipt,
-  SearchX,
-  Undo2,
 } from 'lucide-react';
 import type { Metadata } from 'next';
 import { requireBusiness } from '@/lib/auth/require-business';
 import { DateRangePicker } from './date-range';
 import { ExportButtons } from './export-buttons';
+import { SalesReportsTabs } from './sales-reports-tabs';
 
 export const metadata: Metadata = { title: 'Reports' };
 
@@ -107,124 +102,14 @@ export default async function ReportsPage({
         actions={<ExportButtons />}
       />
 
-      <Section title="Sales" actions={<DateRangePicker initial={range} />}>
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          <StatCard label="Invoices" value={String(totals.invoices)} icon={FileText} />
-          <StatCard label="Taxable value" value={inr(totals.taxable.toFixed(2))} icon={Receipt} />
-          <StatCard
-            label="Tax collected"
-            value={inr(totals.tax.toFixed(2))}
-            icon={Receipt}
-            tone="info"
-          />
-          <StatCard
-            label="Total sales"
-            value={inr(totals.grand.toFixed(2))}
-            icon={IndianRupee}
-            tone="success"
-          />
-        </div>
-
-        {sales.length === 0 ? (
-          <EmptyState
-            icon={SearchX}
-            title="No sales in this range"
-            description="Try a wider date range. The picker above starts at this month so far."
-          />
-        ) : (
-          <Table>
-            <THead>
-              <TR>
-                <TH>Date</TH>
-                <TH numeric>Invoices</TH>
-                <TH numeric>Taxable</TH>
-                <TH numeric>Tax</TH>
-                <TH numeric>Total</TH>
-              </TR>
-            </THead>
-            <TBody>
-              {sales.map((r) => (
-                <TR key={r.date}>
-                  <TD className="tabular">{r.date}</TD>
-                  <TD numeric>{r.invoiceCount}</TD>
-                  <TD numeric>₹{r.taxableValue}</TD>
-                  <TD numeric>₹{r.taxTotal}</TD>
-                  <TD numeric className="font-medium">
-                    ₹{r.grandTotal}
-                  </TD>
-                </TR>
-              ))}
-            </TBody>
-          </Table>
-        )}
-      </Section>
-
-      <Section
-        title="Returns and net sales"
-        description="What came back in this range, and what the sales figure is after it."
-      >
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          <StatCard
-            label="Returns"
-            value={String(returnTotals.count)}
-            hint={returnTotals.count === 1 ? 'return recorded' : 'returns recorded'}
-            icon={Undo2}
-          />
-          <StatCard
-            label="Returned value"
-            value={inr(returnTotals.grand.toFixed(2))}
-            hint={`Taxable ${inr(returnTotals.taxable.toFixed(2))}`}
-            icon={Undo2}
-            tone={returnTotals.grand > 0 ? 'warning' : 'default'}
-          />
-          <StatCard
-            label="Net taxable"
-            value={inr(net.taxable.toFixed(2))}
-            hint="Sales minus returns"
-            icon={Receipt}
-          />
-          <StatCard
-            label="Net sales"
-            value={inr(net.grand.toFixed(2))}
-            hint={`Net tax ${inr(net.tax.toFixed(2))}`}
-            icon={IndianRupee}
-            tone="success"
-          />
-        </div>
-
-        {returns.length === 0 ? (
-          <EmptyState
-            icon={Undo2}
-            title="Nothing came back in this range"
-            description="Net sales is the same as gross sales. Returns are recorded on the bill they were sold on."
-          />
-        ) : (
-          <Table>
-            <THead>
-              <TR>
-                <TH>Date</TH>
-                <TH numeric>Returns</TH>
-                <TH numeric>Taxable</TH>
-                <TH numeric>Tax</TH>
-                <TH numeric>Total</TH>
-              </TR>
-            </THead>
-            <TBody>
-              {returns.map((r) => (
-                <TR key={r.date}>
-                  <TD className="tabular">{r.date}</TD>
-                  <TD numeric>{r.returnCount}</TD>
-                  <TD numeric>₹{r.taxableValue}</TD>
-                  <TD numeric>₹{r.taxTotal}</TD>
-                  <TD numeric className="font-medium text-warning">
-                    ₹{r.grandTotal}
-                  </TD>
-                </TR>
-              ))}
-            </TBody>
-          </Table>
-        )}
-      </Section>
+      <SalesReportsTabs
+        sales={sales}
+        totals={totals}
+        returns={returns}
+        returnTotals={returnTotals}
+        net={net}
+        dateRangePicker={<DateRangePicker initial={range} />}
+      />
 
       {tax.length > 0 && (
         <Section

@@ -45,7 +45,7 @@ export function ProductFilterBar({
 
   return (
     <FilterBar pending={pending}>
-      <div className="relative w-full sm:w-64">
+      <div className="relative w-full sm:w-72 md:w-80">
         <Search className="pointer-events-none absolute top-1/2 left-2.5 size-3.5 -translate-y-1/2 text-muted-foreground" />
         <Input
           className="h-8.5 rounded-lg border-border/80 bg-background pl-8 text-xs shadow-2xs"

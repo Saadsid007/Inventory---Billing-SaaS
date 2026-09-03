@@ -1,6 +1,6 @@
 'use client';
 
-import { AppShell, type NavItem } from '@billwise/ui';
+import { AppShell, Button, type NavItem } from '@billwise/ui';
 import {
   ArrowLeftRight,
   BarChart3,
@@ -11,6 +11,7 @@ import {
   LogOut,
   Package,
   Palette,
+  Plus,
   QrCode,
   Settings,
   Shield,
@@ -18,7 +19,7 @@ import {
   Users,
 } from 'lucide-react';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import * as React from 'react';
 import { signOutAction } from '@/app/(auth)/actions';
 
@@ -101,7 +102,29 @@ export function AppFrame({
   children: React.ReactNode;
 }) {
   const pathname = usePathname();
+  const router = useRouter();
   const nav = isSuperAdmin ? [...NAV, ADMIN_NAV] : NAV;
+
+  /**
+   * Header search routes by intent:
+   * - invoice-looking tokens (INV-, "bill …") → invoices
+   * - phone-looking tokens → customers
+   * - everything else → products (names, SKUs, barcodes)
+   */
+  function handleSearch(query: string) {
+    const q = query.trim();
+    if (!q) return;
+    const encoded = encodeURIComponent(q);
+    if (/^inv[-/\s]?\d*/i.test(q) || /\bbill\b/i.test(q)) {
+      router.push(`/app/invoices?q=${encoded}`);
+      return;
+    }
+    if (/^\+?\d[\d\s-]{6,}$/.test(q)) {
+      router.push(`/app/parties`);
+      return;
+    }
+    router.push(`/app/products?q=${encoded}`);
+  }
 
   return (
     <AppShell
@@ -117,6 +140,15 @@ export function AppFrame({
       onSwitchBusiness={undefined}
       userMenu={<SignOutButton />}
       banner={banner}
+      onSearch={handleSearch}
+      headerAction={
+        <Link href="/app/invoices/new" className="hidden sm:inline-flex">
+          <Button size="sm" className="h-9 rounded-xl px-3 shadow-sm shadow-primary/20">
+            <Plus className="size-3.5" />
+            New bill
+          </Button>
+        </Link>
+      }
       LinkComponent={Link}
     >
       {children}

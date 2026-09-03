@@ -1,6 +1,13 @@
 'use client';
 
-import { Menu, PanelLeftClose, PanelLeftOpen, X } from 'lucide-react';
+import {
+  Command,
+  Menu,
+  PanelLeftClose,
+  PanelLeftOpen,
+  Search,
+  X,
+} from 'lucide-react';
 import * as React from 'react';
 import { cn } from '../lib/cn';
 import { LogoMark } from './logo';
@@ -42,6 +49,10 @@ export type AppShellProps = {
   userMenu?: React.ReactNode;
   /** Optional banner above the page content, e.g. trial ending. */
   banner?: React.ReactNode;
+  /** Global header search — app owns routing (products / invoices). */
+  onSearch?: ((query: string) => void) | undefined;
+  /** Primary CTA in the header, e.g. New bill. */
+  headerAction?: React.ReactNode;
   children: React.ReactNode;
   /** Link component. Passed in so this package never imports next/link. */
   LinkComponent: React.ComponentType<{
@@ -81,13 +92,18 @@ export function AppShell({
   onSwitchBusiness,
   userMenu,
   banner,
+  onSearch,
+  headerAction,
   children,
   LinkComponent: Link,
 }: AppShellProps) {
   const [mobileOpen, setMobileOpen] = React.useState(false);
   const [collapsed, setCollapsed] = React.useState(false);
+  const [query, setQuery] = React.useState('');
+  const [mobileSearchOpen, setMobileSearchOpen] = React.useState(false);
+  const searchRef = React.useRef<HTMLInputElement>(null);
+  const mobileSearchRef = React.useRef<HTMLInputElement>(null);
   const groups = React.useMemo(() => groupNav(nav), [nav]);
-  const current = nav.find((item) => isActive(currentPath, item.href));
 
   React.useEffect(() => {
     setCollapsed(localStorage.getItem(COLLAPSE_KEY) === '1');
@@ -103,6 +119,7 @@ export function AppShell({
 
   React.useEffect(() => {
     setMobileOpen(false);
+    setMobileSearchOpen(false);
   }, [currentPath]);
 
   React.useEffect(() => {
@@ -114,6 +131,35 @@ export function AppShell({
     return () => window.removeEventListener('keydown', onKey);
   }, [mobileOpen]);
 
+  // ⌘K / Ctrl+K focuses the header search — same muscle memory as most apps.
+  React.useEffect(() => {
+    if (!onSearch) return;
+    const onKey = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
+        e.preventDefault();
+        if (window.matchMedia('(max-width: 639px)').matches) {
+          setMobileSearchOpen(true);
+          queueMicrotask(() => mobileSearchRef.current?.focus());
+        } else {
+          searchRef.current?.focus();
+        }
+      }
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [onSearch]);
+
+  React.useEffect(() => {
+    if (mobileSearchOpen) mobileSearchRef.current?.focus();
+  }, [mobileSearchOpen]);
+
+  function submitSearch(e?: React.FormEvent) {
+    e?.preventDefault();
+    const q = query.trim();
+    if (!q || !onSearch) return;
+    onSearch(q);
+  }
+
   const statusClass = {
     default: 'text-muted-foreground',
     warning: 'text-warning',
@@ -123,7 +169,6 @@ export function AppShell({
   function sidebarContent(rail: boolean) {
     return (
       <div className="relative flex h-full flex-col overflow-hidden bg-sidebar text-sidebar-foreground">
-        {/* Soft brand wash behind the rail */}
         <div
           aria-hidden
           className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_top,oklch(0.55_0.21_258_/_0.08),transparent_55%)]"
@@ -155,7 +200,9 @@ export function AppShell({
             className={cn(
               'flex w-full items-center rounded-xl border border-sidebar-border/80 bg-card/70 text-left shadow-xs backdrop-blur-xs transition-all',
               rail ? 'justify-center p-1.5' : 'gap-2.5 p-2.5',
-              onSwitchBusiness ? 'hover:border-primary/30 hover:bg-card hover:shadow-sm' : 'cursor-default',
+              onSwitchBusiness
+                ? 'hover:border-primary/30 hover:bg-card hover:shadow-sm'
+                : 'cursor-default',
             )}
           >
             <span className="grid size-9 shrink-0 place-items-center rounded-lg bg-gradient-to-br from-primary to-primary-hover text-sm font-bold text-primary-foreground shadow-xs">
@@ -209,7 +256,9 @@ export function AppShell({
                     <Icon
                       className={cn(
                         'size-4 shrink-0 transition-colors',
-                        active ? 'text-primary-foreground' : 'text-muted-foreground group-hover:text-primary',
+                        active
+                          ? 'text-primary-foreground'
+                          : 'text-muted-foreground group-hover:text-primary',
                       )}
                     />
                     {!rail && <span className="truncate">{label}</span>}
@@ -291,46 +340,126 @@ export function AppShell({
       )}
 
       <div className="flex min-w-0 flex-1 flex-col">
-        <header className="sticky top-0 z-40 flex h-16 items-center gap-3 border-b border-border/70 bg-background/80 px-3 shadow-xs backdrop-blur-xl sm:px-5 print:hidden">
-          <button
-            type="button"
-            className="-ml-1 rounded-xl border bg-card p-2 text-muted-foreground shadow-xs transition-colors hover:bg-accent hover:text-foreground md:hidden"
-            onClick={() => setMobileOpen((v) => !v)}
-            aria-label={mobileOpen ? 'Close menu' : 'Open menu'}
-            aria-expanded={mobileOpen}
-          >
-            {mobileOpen ? <X className="size-5" /> : <Menu className="size-5" />}
-          </button>
+        <header className="sticky top-0 z-40 print:hidden">
+          <div className="relative border-b border-border/70 bg-card/90 shadow-xs backdrop-blur-xl dark:bg-card/85">
+            <div className="relative flex h-16 items-center gap-2.5 px-3 sm:gap-3 sm:px-5">
+              <button
+                type="button"
+                className="shrink-0 rounded-xl border border-border/80 bg-background p-2 text-muted-foreground shadow-xs transition-colors hover:border-primary/30 hover:bg-primary-subtle hover:text-primary md:hidden"
+                onClick={() => setMobileOpen((v) => !v)}
+                aria-label={mobileOpen ? 'Close menu' : 'Open menu'}
+                aria-expanded={mobileOpen}
+              >
+                {mobileOpen ? <X className="size-5" /> : <Menu className="size-5" />}
+              </button>
 
-          <button
-            type="button"
-            className="-ml-1 hidden rounded-xl border bg-card p-2 text-muted-foreground shadow-xs transition-colors hover:bg-accent hover:text-foreground md:block"
-            onClick={toggleCollapsed}
-            aria-label={collapsed ? 'Show sidebar' : 'Hide sidebar'}
-            title={collapsed ? 'Show sidebar' : 'Hide sidebar'}
-            aria-expanded={!collapsed}
-          >
-            {collapsed ? (
-              <PanelLeftOpen className="size-4.5" />
-            ) : (
-              <PanelLeftClose className="size-4.5" />
-            )}
-          </button>
+              <button
+                type="button"
+                className="hidden shrink-0 rounded-xl border border-border/80 bg-background p-2 text-muted-foreground shadow-xs transition-colors hover:border-primary/30 hover:bg-primary-subtle hover:text-primary md:inline-flex"
+                onClick={toggleCollapsed}
+                aria-label={collapsed ? 'Show sidebar' : 'Hide sidebar'}
+                title={collapsed ? 'Show sidebar' : 'Hide sidebar'}
+                aria-expanded={!collapsed}
+              >
+                {collapsed ? (
+                  <PanelLeftOpen className="size-4.5" />
+                ) : (
+                  <PanelLeftClose className="size-4.5" />
+                )}
+              </button>
 
-          <div className="min-w-0">
-            <p className="truncate text-sm font-bold tracking-tight md:hidden">
-              {current?.label ?? businessName}
-            </p>
-            <div className="hidden items-center gap-2 md:flex">
-              <span className="rounded-lg bg-primary-subtle px-2.5 py-1 text-xs font-bold text-primary-subtle-foreground">
-                {current?.label ?? 'Dashboard'}
-              </span>
-              <span className="truncate text-xs text-muted-foreground">{businessName}</span>
+              {onSearch && (
+                <form
+                  onSubmit={submitSearch}
+                  className="relative mx-auto hidden min-w-0 flex-1 sm:block max-w-lg lg:max-w-xl"
+                >
+                  <Search className="pointer-events-none absolute top-1/2 left-3.5 size-4 -translate-y-1/2 text-muted-foreground" />
+                  <input
+                    ref={searchRef}
+                    type="search"
+                    value={query}
+                    onChange={(e) => setQuery(e.target.value)}
+                    placeholder="Search products, bills, customers…"
+                    aria-label="Search"
+                    className={cn(
+                      'h-11 w-full rounded-2xl border bg-card/95 pr-16 pl-10 text-sm shadow-xs outline-none transition-all',
+                      'placeholder:text-muted-foreground/70',
+                      'border-border/80 hover:border-primary/35',
+                      'focus:border-primary focus:bg-card focus:shadow-md focus:ring-[3px] focus:ring-primary/20',
+                    )}
+                  />
+                  <div className="absolute top-1/2 right-2.5 flex -translate-y-1/2 items-center gap-1">
+                    {query ? (
+                      <button
+                        type="button"
+                        aria-label="Clear search"
+                        className="rounded-lg p-1 text-muted-foreground hover:bg-muted hover:text-foreground"
+                        onClick={() => {
+                          setQuery('');
+                          searchRef.current?.focus();
+                        }}
+                      >
+                        <X className="size-3.5" />
+                      </button>
+                    ) : (
+                      <kbd className="pointer-events-none hidden items-center gap-0.5 rounded-lg border border-border/80 bg-muted/70 px-1.5 py-0.5 text-[0.65rem] font-semibold text-muted-foreground md:inline-flex">
+                        <Command className="size-2.5" />K
+                      </kbd>
+                    )}
+                  </div>
+                </form>
+              )}
+
+              <div className="ml-auto flex shrink-0 items-center gap-2 sm:ml-0">
+                {onSearch && (
+                  <button
+                    type="button"
+                    className="inline-flex rounded-xl border border-border/80 bg-card/90 p-2 text-muted-foreground shadow-xs transition-colors hover:border-primary/30 hover:bg-primary-subtle hover:text-primary sm:hidden"
+                    aria-label="Open search"
+                    aria-expanded={mobileSearchOpen}
+                    onClick={() => setMobileSearchOpen((v) => !v)}
+                  >
+                    <Search className="size-4.5" />
+                  </button>
+                )}
+
+                {headerAction}
+
+                <div className="hidden h-8 w-px bg-border/70 sm:block" aria-hidden />
+
+                <ThemeToggle />
+
+                <div className="hidden items-center gap-2 rounded-2xl border border-border/70 bg-card/85 py-1 pr-2.5 pl-1 shadow-xs md:flex">
+                  <span className="grid size-8 place-items-center rounded-xl bg-gradient-to-br from-primary to-sky-600 text-xs font-bold text-primary-foreground shadow-xs">
+                    {userName.charAt(0).toUpperCase()}
+                  </span>
+                  <span className="hidden max-w-[7rem] truncate text-xs font-semibold lg:block">
+                    {userName.split(' ')[0]}
+                  </span>
+                </div>
+              </div>
             </div>
-          </div>
 
-          <div className="ml-auto flex items-center gap-2">
-            <ThemeToggle />
+            {onSearch && mobileSearchOpen && (
+              <form
+                onSubmit={(e) => {
+                  submitSearch(e);
+                  setMobileSearchOpen(false);
+                }}
+                className="relative border-t border-border/50 px-3 pt-2.5 pb-3 sm:hidden"
+              >
+                <Search className="pointer-events-none absolute top-[1.35rem] left-6 size-4 text-muted-foreground" />
+                <input
+                  ref={mobileSearchRef}
+                  type="search"
+                  value={query}
+                  onChange={(e) => setQuery(e.target.value)}
+                  placeholder="Search products, bills…"
+                  aria-label="Search"
+                  className="h-11 w-full rounded-2xl border border-border/80 bg-card pr-3 pl-10 text-sm shadow-xs outline-none focus:border-primary focus:ring-[3px] focus:ring-primary/20"
+                />
+              </form>
+            )}
           </div>
         </header>
 
