@@ -13,5 +13,13 @@ export default defineConfig({
     environment: 'node',
     include: ['src/**/*.test.ts'],
     exclude: ['**/node_modules/**', 'src/**/*.integration.test.ts'],
+    /**
+     * The boundary test imports the whole package to prove it opens no socket.
+     * That is a real cost — every schema and repository is compiled — and it
+     * grew past the 5s default as the package did, so `turbo run test` failed
+     * intermittently while the same test passed on its own. A slow import is
+     * not the failure this suite is looking for.
+     */
+    testTimeout: 30_000,
   },
 });
