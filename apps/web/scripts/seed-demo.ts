@@ -689,6 +689,7 @@ async function seedShop(shop: Shop): Promise<void> {
     audit: [],
     views: [],
     subscriptions: [],
+    applications: [],
     stock: [],
   };
 

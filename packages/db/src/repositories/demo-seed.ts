@@ -16,6 +16,7 @@ import {
   payments,
   products,
   salesReturnLines,
+  serviceApplications,
   salesReturns,
   stockMovements,
   subscriptionPayments,
@@ -112,6 +113,7 @@ export async function wipeDemoBusinesses(emails: readonly string[]): Promise<num
 
   await db.transaction(async (tx) => {
     if (bizIds.length > 0) {
+      await tx.delete(serviceApplications).where(inArray(serviceApplications.businessId, bizIds));
       await tx.delete(salesReturnLines).where(inArray(salesReturnLines.businessId, bizIds));
       await tx.delete(salesReturns).where(inArray(salesReturns.businessId, bizIds));
       await tx.delete(invoiceAudit).where(inArray(invoiceAudit.businessId, bizIds));
@@ -161,6 +163,8 @@ export type DemoLedger = {
   audit: Omit<Insert<typeof invoiceAudit>, 'businessId'>[];
   views: Omit<Insert<typeof catalogViews>, 'businessId'>[];
   subscriptions: Omit<Insert<typeof subscriptionPayments>, 'businessId'>[];
+  /** Jan Seva work register. Empty for a shop. */
+  applications: Omit<Insert<typeof serviceApplications>, 'businessId'>[];
   /** Final rollup per product id, summed from `movements` by the caller. */
   stock: { productId: string; currentStock: string }[];
 };
@@ -205,6 +209,10 @@ export async function writeDemoLedger(ctx: TenantCtx, ledger: DemoLedger): Promi
     await insertChunked(ledger.views, (batch) =>
       tx.insert(catalogViews).values(batch.map((r) => ({ ...r, businessId }))),
     );
+    await insertChunked(ledger.applications, (batch) =>
+      tx.insert(serviceApplications).values(batch.map((r) => ({ ...r, businessId }))),
+    );
+
     if (ledger.subscriptions.length > 0) {
       await tx
         .insert(subscriptionPayments)
@@ -250,4 +258,43 @@ export async function activateDemoBusiness(
       approvedBy: ctx.userId,
     })
     .where(eq(businesses.id, ctx.businessId));
+}
+
+/**
+ * Clear one business's transactional data, keeping the business itself.
+ *
+ * ## Why this exists alongside `wipeDemoBusinesses`
+ *
+ * That function refuses anything outside `@demo.billwise.in`, which is right:
+ * it deletes user accounts, and a seed script that could remove a real shop is
+ * not a tool worth having. But a real account being used to try the product
+ * out still needs re-seeding, and the answer cannot be "make a new account
+ * every time".
+ *
+ * So this is the narrower power: scoped to one `ctx.businessId`, it cannot
+ * reach another tenant by construction. It leaves the business, its owner,
+ * settings and units alone — only the trading data goes.
+ *
+ * It is still destructive, so the caller must ask for it explicitly. Nothing
+ * calls it as part of a normal seed.
+ */
+export async function resetBusinessData(ctx: TenantCtx): Promise<void> {
+  const id = ctx.businessId;
+
+  await getDb().transaction(async (tx) => {
+    await tx.delete(serviceApplications).where(eq(serviceApplications.businessId, id));
+    await tx.delete(salesReturnLines).where(eq(salesReturnLines.businessId, id));
+    await tx.delete(salesReturns).where(eq(salesReturns.businessId, id));
+    await tx.delete(invoiceAudit).where(eq(invoiceAudit.businessId, id));
+    await tx.delete(payments).where(eq(payments.businessId, id));
+    await tx.delete(catalogViews).where(eq(catalogViews.businessId, id));
+    await tx.delete(invoiceLines).where(eq(invoiceLines.businessId, id));
+    await tx.delete(invoices).where(eq(invoices.businessId, id));
+    await tx.delete(invoiceSeries).where(eq(invoiceSeries.businessId, id));
+    await tx.delete(stockMovements).where(eq(stockMovements.businessId, id));
+    await tx.delete(products).where(eq(products.businessId, id));
+    await tx.delete(parties).where(eq(parties.businessId, id));
+    // Subscription payments are money that changed hands with us. They survive
+    // a data reset for the same reason they survive everything else.
+  });
 }
