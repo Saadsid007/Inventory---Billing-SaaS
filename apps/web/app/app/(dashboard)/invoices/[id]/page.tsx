@@ -37,6 +37,7 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { requireBusiness } from '@/lib/auth/require-business';
 import { InvoiceActions } from './invoice-actions';
+import { ShareButton } from './share-button';
 import { ReturnForm } from './return-form';
 
 export const metadata: Metadata = { title: 'Invoice Details' };
@@ -150,13 +151,16 @@ export default async function InvoicePage({
             </div>
           </div>
 
-          <div className="shrink-0">
+          <div className="shrink-0 space-y-3">
             <InvoiceActions
               invoiceId={invoice.id}
               status={invoice.status}
               grandTotal={invoice.grandTotal}
               amountPaid={invoice.amountPaid}
             />
+            {/* A draft has no number and can still change; sharing one would
+                send the customer a bill that moves under them. */}
+            {invoice.status !== 'draft' && <ShareButton invoiceId={invoice.id} />}
           </div>
         </div>
       </div>

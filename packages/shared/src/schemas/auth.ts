@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { BUSINESS_TYPES } from '../constants/business-types';
 import { phoneSchema, stateCodeSchema } from './primitives';
 
 /**
@@ -45,6 +46,12 @@ export const registerSchema = z
     businessName: z.string().trim().min(2, 'Enter your business name').max(80),
     /** Supplier state. Drives place-of-supply on every invoice (spec §5.2). */
     stateCode: stateCodeSchema,
+    /**
+     * Which trade this is. Decides the navigation, dashboard and wording — see
+     * BUSINESS_PROFILES. Defaults to a shop so an older client that does not
+     * send it still registers successfully.
+     */
+    businessType: z.enum(BUSINESS_TYPES).default('retail'),
   })
   .refine((v) => v.password === v.confirmPassword, {
     message: 'Passwords do not match',

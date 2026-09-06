@@ -89,6 +89,7 @@ export function AppFrame({
   userName,
   userEmail,
   isSuperAdmin = false,
+  nav: navItems = NAV,
   banner,
   children,
 }: {
@@ -98,12 +99,20 @@ export function AppFrame({
   userName: string;
   userEmail?: string | undefined;
   isSuperAdmin?: boolean;
+  /**
+   * Which set of links to show. Defaults to the shop nav.
+   *
+   * Passed in rather than derived here because this is a client component and
+   * the business type is a server read — and because a nav that branches on a
+   * type inside itself is the first step towards every component doing so.
+   */
+  nav?: readonly NavItem[];
   banner?: React.ReactNode;
   children: React.ReactNode;
 }) {
   const pathname = usePathname();
   const router = useRouter();
-  const nav = isSuperAdmin ? [...NAV, ADMIN_NAV] : NAV;
+  const nav = isSuperAdmin ? [...navItems, ADMIN_NAV] : navItems;
 
   /**
    * Header search routes by intent:

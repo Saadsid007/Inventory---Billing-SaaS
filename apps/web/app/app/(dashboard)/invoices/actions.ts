@@ -5,6 +5,7 @@ import {
   cancelInvoice,
   createDraft,
   createParty,
+  ensureReceiptToken,
   getBusiness,
   getInvoice,
   getParty,
@@ -15,14 +16,18 @@ import {
   updateDraft,
 } from '@billwise/db';
 import {
+  appOrigin,
   cancelInvoiceSchema,
   invoiceInputSchema,
   partySchema,
   paymentInputSchema,
+  receiptShareMessage,
   salesReturnSchema,
+  whatsappShareUrl,
 } from '@billwise/shared';
 import { revalidatePath } from 'next/cache';
-import { requireBusiness } from '@/lib/auth/require-business';
+import { indianDate } from '@/lib/csv';
+import { requireBusiness, requireMembership } from '@/lib/auth/require-business';
 
 /**
  * Invoice actions. Build spec §2.5 hard rule 4: validate with a shared schema,
@@ -354,4 +359,66 @@ export async function recordReturnAction(
     console.error('recordReturn failed', error);
     return { ok: false, error: 'Could not save that return. Please try again.' };
   }
+}
+
+export type ShareResult =
+  | { ok: true; whatsappUrl: string | null; message: string; link: string }
+  | { ok: false; error: string };
+
+/**
+ * Prepare a bill for sending over WhatsApp.
+ *
+ * Returns the link and the message rather than sending anything: `wa.me` opens
+ * WhatsApp with the text ready and the shopkeeper taps send. Nothing leaves the
+ * shop without the person who took the money seeing it first — and it needs no
+ * Meta account, no template approval and no per-message fee.
+ *
+ * `whatsappUrl` is null when the customer has no usable number. That is not an
+ * error: the caller offers "copy message" instead, which is what a walk-in
+ * customer standing at the counter needs anyway.
+ */
+export async function shareInvoiceAction(invoiceId: string): Promise<ShareResult> {
+  const ctx = await requireBusiness();
+
+  const [invoice, business, membership] = await Promise.all([
+    getInvoice(ctx, invoiceId),
+    getBusiness(ctx),
+    requireMembership(),
+  ]);
+
+  if (!invoice) return { ok: false, error: 'That bill no longer exists.' };
+  if (invoice.status === 'draft') {
+    return { ok: false, error: 'Issue the bill before sharing it.' };
+  }
+
+  let token: string;
+  try {
+    token = await ensureReceiptToken(ctx, invoiceId);
+  } catch (error) {
+    console.error('ensureReceiptToken failed', error);
+    return { ok: false, error: 'Could not create a share link. Please try again.' };
+  }
+
+  const link = `${appOrigin(process.env['NEXT_PUBLIC_APP_URL'])}/r/${token}`;
+  const balance = (Number(invoice.grandTotal) - Number(invoice.amountPaid)).toFixed(2);
+
+  const message = receiptShareMessage({
+    businessName: business?.name ?? membership.businessName,
+    documentLabel: membership.profile.terms.document,
+    invoiceNo: invoice.invoiceNo,
+    invoiceDate: indianDate(invoice.invoiceDate),
+    items: invoice.lines.map((l) => l.name),
+    grandTotal: invoice.grandTotal,
+    amountPaid: invoice.amountPaid,
+    balance,
+    link,
+    businessPhone: business?.phone ?? null,
+  });
+
+  return {
+    ok: true,
+    whatsappUrl: whatsappShareUrl(invoice.partyPhone, message),
+    message,
+    link,
+  };
 }

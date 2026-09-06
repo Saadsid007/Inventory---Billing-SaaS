@@ -19,3 +19,4 @@ export * from './parties';
 export * from './invoices';
 export * from './billing';
 export * from './returns';
+export * from './applications';

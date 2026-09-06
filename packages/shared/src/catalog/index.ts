@@ -222,3 +222,4 @@ export const DEFAULT_STOREFRONT_CONFIG: StorefrontConfig = {
   deliveryNotice: 'Local doorstep delivery & counter pickup available across city limits.',
 };
 
+export * from './receipt-share';

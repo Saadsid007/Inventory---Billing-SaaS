@@ -78,6 +78,7 @@ export async function registerAction(raw: unknown): Promise<ActionState> {
       passwordHash: await hashPassword(input.password),
       businessName: input.businessName,
       stateCode: input.stateCode,
+      businessType: input.businessType,
     });
   } catch (error) {
     if (error instanceof EmailAlreadyRegisteredError) {

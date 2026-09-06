@@ -1,6 +1,6 @@
 'use client';
 
-import { GST_STATES } from '@billwise/shared';
+import { BUSINESS_PROFILES, BUSINESS_TYPES, type BusinessType, GST_STATES } from '@billwise/shared';
 import { Button, Field, FormError, Input, Select } from '@billwise/ui';
 import { ArrowRight } from 'lucide-react';
 import * as React from 'react';
@@ -14,6 +14,7 @@ const EMPTY = {
   confirmPassword: '',
   businessName: '',
   stateCode: '',
+  businessType: 'retail' as BusinessType,
 };
 
 /**
@@ -144,6 +145,44 @@ export function RegisterForm() {
         <p className="text-xs font-semibold tracking-widest text-muted-foreground uppercase">
           Your shop
         </p>
+
+        {/*
+          Asked before the name, because it changes what the rest of the app
+          looks like. A Jan Seva Kendra owner who lands on a stock screen has
+          already decided the software is not for them.
+        */}
+        <fieldset className="space-y-2">
+          <legend className="text-sm font-medium text-foreground">
+            What do you do?<span className="ml-0.5 text-destructive">*</span>
+          </legend>
+          <div className="grid gap-2 sm:grid-cols-2">
+            {BUSINESS_TYPES.map((type) => {
+              const profile = BUSINESS_PROFILES[type];
+              const selected = values.businessType === type;
+              return (
+                <button
+                  key={type}
+                  type="button"
+                  onClick={() => setValues((v) => ({ ...v, businessType: type }))}
+                  aria-pressed={selected}
+                  className={`rounded-lg border p-3 text-left transition-colors ${
+                    selected
+                      ? 'border-primary bg-primary/5 ring-1 ring-primary/30'
+                      : 'hover:border-primary/40'
+                  }`}
+                >
+                  <span className="block text-sm font-medium">{profile.label}</span>
+                  <span className="mt-0.5 block text-xs leading-relaxed text-muted-foreground">
+                    {profile.description}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+          <p className="text-xs text-muted-foreground">
+            You can change this later in Settings.
+          </p>
+        </fieldset>
 
         <Field
           label="Business name"

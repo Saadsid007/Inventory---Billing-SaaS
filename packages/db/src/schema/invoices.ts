@@ -113,6 +113,19 @@ export const invoices = pgTable(
 
     notes: text(),
     terms: text(),
+
+    /**
+     * Lets a customer open this one bill without logging in — the link sent
+     * over WhatsApp.
+     *
+     * A separate random token rather than the row's id: an id leaks into logs,
+     * referrers and screenshots long before anyone decides a bill should be
+     * shareable, and a token can be rotated if a link goes somewhere it should
+     * not have. Written only when a bill is first shared, so invoices nobody
+     * sends never get one.
+     */
+    publicToken: text().unique(),
+
     cancelledAt: timestamp({ withTimezone: true }),
     cancelReason: text(),
     createdBy: uuid().references(() => users.id),

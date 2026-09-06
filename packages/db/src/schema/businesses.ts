@@ -1,4 +1,10 @@
-import { BUSINESS_STATUSES, MEMBER_ROLES, type StorefrontConfig, TAX_MODES } from '@billwise/shared';
+import {
+  BUSINESS_STATUSES,
+  BUSINESS_TYPES,
+  MEMBER_ROLES,
+  type StorefrontConfig,
+  TAX_MODES,
+} from '@billwise/shared';
 import { relations, sql } from 'drizzle-orm';
 import { boolean, index, jsonb, pgEnum, pgTable, text, timestamp, unique, uuid } from 'drizzle-orm/pg-core';
 import { createdAt, enumValues } from './_shared';
@@ -40,6 +46,19 @@ export const businesses = pgTable(
     phone: text(),
     email: text(),
     logoUrl: text(),
+
+    /**
+     * Which kind of business this is — see BUSINESS_PROFILES in
+     * @billwise/shared. Decides the navigation, the dashboard, the wording and
+     * which fields the billing form shows.
+     *
+     * Plain text rather than a pg enum on purpose: adding a third kind of
+     * business should be one entry in a constant, not an ALTER TYPE against a
+     * live database.
+     */
+    type: text({ enum: enumValues(BUSINESS_TYPES) })
+      .notNull()
+      .default('retail'),
     /**
      * Signature or stamp, printed above the "For <business>" line on an A4
      * invoice. A separate image from the logo: one is branding at the top of

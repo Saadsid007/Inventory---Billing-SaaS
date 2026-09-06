@@ -38,6 +38,7 @@ import {
 } from 'lucide-react';
 import type { Metadata } from 'next';
 import Link from 'next/link';
+import { redirect } from 'next/navigation';
 import { requireBusiness, requireMembership } from '@/lib/auth/require-business';
 import { SetupChecklist, type SetupStep } from './setup-checklist';
 import { TrialReminder } from './trial-reminder';
@@ -63,6 +64,12 @@ export default async function DashboardPage() {
   // Called again rather than trusted from the layout: a page is reachable on
   // its own during client-side navigation, and the guard is cached.
   const ctx = await requireBusiness();
+
+  // A Jan Seva Kendra gets its own home. Redirecting here rather than at /app's
+  // layout keeps every other screen under /app — settings, subscription,
+  // customers — reachable and shared by both kinds of business.
+  const { type: businessType } = await requireMembership();
+  if (businessType === 'jan_seva') redirect('/app/seva');
 
   const [{ businessName, slug, status, trialEndsAt }, stats, recent, business, settings] =
     await Promise.all([

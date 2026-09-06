@@ -1,4 +1,10 @@
-import { type BusinessStatus, type TenantCtx, slugify, trialEndsAt } from '@billwise/shared';
+import {
+  type BusinessStatus,
+  type BusinessType,
+  type TenantCtx,
+  slugify,
+  trialEndsAt,
+} from '@billwise/shared';
 import { and, eq } from 'drizzle-orm';
 import { getDb } from '../client';
 import { seedBusinessMasters } from './masters';
@@ -89,6 +95,7 @@ export type RegisterOwnerInput = {
   passwordHash: string;
   businessName: string;
   stateCode: string;
+  businessType?: BusinessType;
 };
 
 export type RegisterOwnerResult = {
@@ -154,6 +161,7 @@ export async function registerOwner(input: RegisterOwnerInput): Promise<Register
             name: input.businessName.trim(),
             slug,
             stateCode: input.stateCode,
+            type: input.businessType ?? 'retail',
             status: 'trial',
             trialEndsAt: trialEnd,
           })
@@ -189,6 +197,8 @@ export type Membership = {
   slug: string;
   status: BusinessStatus;
   role: TenantCtx['role'];
+  /** Drives which set of screens this session sees. */
+  type: BusinessType;
 };
 
 /** Every business this user may act for. Backs the business switcher. */
@@ -200,6 +210,7 @@ export async function listMemberships(userId: string): Promise<Membership[]> {
       slug: businesses.slug,
       status: businesses.status,
       role: businessMembers.role,
+      type: businesses.type,
     })
     .from(businessMembers)
     .innerJoin(businesses, eq(businesses.id, businessMembers.businessId))
@@ -227,6 +238,7 @@ export async function resolveMembership(
         slug: businesses.slug,
         status: businesses.status,
         role: businessMembers.role,
+        type: businesses.type,
       })
       .from(businessMembers)
       .innerJoin(businesses, eq(businesses.id, businessMembers.businessId))

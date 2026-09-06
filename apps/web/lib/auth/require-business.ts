@@ -2,7 +2,10 @@ import 'server-only';
 import { findUserById, getBusinessStatus, resolveMembership } from '@billwise/db';
 import {
   type AccessState,
+  type BusinessProfile,
   type BusinessStatus,
+  type BusinessType,
+  businessProfile,
   type TenantCtx,
   evaluateAccess,
 } from '@billwise/shared';
@@ -73,6 +76,9 @@ export type Membership = {
   ctx: TenantCtx;
   businessName: string;
   slug: string;
+  /** Which set of screens this business gets. See BUSINESS_PROFILES. */
+  type: BusinessType;
+  profile: BusinessProfile;
   status: BusinessStatus;
   trialEndsAt: Date | null;
   /** End of the paid month. Null means no end recorded — see evaluateAccess. */
@@ -125,6 +131,8 @@ export const requireMembership = cache(async function requireMembership(): Promi
     ctx,
     businessName: row.name,
     slug: row.slug,
+    type: row.type,
+    profile: businessProfile(row.type),
     status: row.status,
     trialEndsAt: row.trialEndsAt,
     paidUntil: row.paidUntil,

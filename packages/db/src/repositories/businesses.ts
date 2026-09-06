@@ -73,6 +73,7 @@ export async function getBusinessStatus(ctx: TenantCtx) {
     .select({
       name: businesses.name,
       slug: businesses.slug,
+      type: businesses.type,
       status: businesses.status,
       trialEndsAt: businesses.trialEndsAt,
       paidUntil: businesses.paidUntil,

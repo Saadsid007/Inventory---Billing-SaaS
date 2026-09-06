@@ -42,6 +42,11 @@ const PUBLIC_PREFIXES = [
   // its whole job is to be reachable when the session is broken — gating it on
   // that same session is how you get a page nobody can ever use.
   '/session-ended',
+  // A bill opened from a WhatsApp link. The customer has no account and never
+  // will; the random token in the URL is the authorisation. Forgetting this
+  // entry is the same bug we shipped three times already — the catalog view
+  // counter, the Razorpay webhook and the share card all 307'd to /login.
+  '/r',
 ] as const;
 
 export function isPublicPath(pathname: string): boolean {

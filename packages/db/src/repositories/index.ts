@@ -23,6 +23,10 @@ export * from './reports';
 export * from './admin';
 export * from './billing';
 export * from './returns';
+export * from './applications';
+// Reads one bill by its share token, with no TenantCtx. See the file header for
+// why that is safe and what must never be added to it.
+export * from './public-receipt';
 // Bulk writer for `apps/web/scripts/seed-demo.ts`. Guarded so it can only ever
 // touch accounts on the demo email domain.
 export * from './demo-seed';
