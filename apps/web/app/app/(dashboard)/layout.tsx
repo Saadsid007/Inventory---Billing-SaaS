@@ -2,6 +2,7 @@ import { MONTHLY_PRICE_INR, trialDaysRemaining } from '@billwise/shared';
 import { Clock } from 'lucide-react';
 import type { Metadata } from 'next';
 import Link from 'next/link';
+import { redirect } from 'next/navigation';
 import { AppFrame } from '@/components/app-frame';
 import {
   isSuperAdminLive,
@@ -27,10 +28,21 @@ export default async function DashboardLayout({ children }: { children: React.Re
   await requireBusiness();
 
   // Cached per request, so this shares the read requireBusiness() just did.
-  const [{ businessName, status, trialEndsAt }, user] = await Promise.all([
+  const [{ businessName, status, trialEndsAt, type }, user] = await Promise.all([
     requireMembership(),
     requireUser(),
   ]);
+
+  /*
+   * A Jan Seva Kendra has no business in the shop section.
+   *
+   * The sidebar no longer links here, but a bookmark, a stale tab or a typed
+   * URL still would — and landing on Stock or Categories with a shop's sidebar
+   * is exactly the "why did my app change" the seva nav was built to stop.
+   * Guarding the layout closes it for every page under the group at once,
+   * rather than one redirect per file that somebody will forget to add.
+   */
+  if (type === 'jan_seva') redirect('/app/seva');
 
   const daysLeft = status === 'trial' && trialEndsAt ? trialDaysRemaining(trialEndsAt) : null;
 
@@ -48,6 +60,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
   return (
     <AppFrame
       businessName={businessName}
+      businessType={type}
       statusLabel={statusLabel}
       statusTone={urgent ? 'warning' : 'default'}
       userName={user.name || user.email}

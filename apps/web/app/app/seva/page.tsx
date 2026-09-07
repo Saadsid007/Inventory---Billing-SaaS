@@ -85,7 +85,7 @@ export default async function SevaDashboard() {
             </p>
           </div>
           <div className="flex shrink-0 flex-wrap gap-2">
-            <Link href="/app/invoices/new">
+            <Link href="/app/seva/receipts/new">
               <Button size="lg" className="h-11 border-0 bg-white text-primary hover:bg-white/95">
                 <Plus /> New receipt
               </Button>
@@ -208,7 +208,7 @@ export default async function SevaDashboard() {
         <section className="min-w-0 space-y-3">
           <div className="flex items-center justify-between">
             <h2 className="text-sm font-semibold">Recent receipts</h2>
-            <Link href="/app/invoices" className="text-sm text-muted-foreground hover:text-foreground">
+            <Link href="/app/seva/receipts" className="text-sm text-muted-foreground hover:text-foreground">
               See all
             </Link>
           </div>
@@ -218,7 +218,7 @@ export default async function SevaDashboard() {
               title="No receipts yet"
               description="Make your first receipt and it will show up here."
               action={
-                <Link href="/app/invoices/new">
+                <Link href="/app/seva/receipts/new">
                   <Button>
                     <Plus /> New receipt
                   </Button>
@@ -239,7 +239,7 @@ export default async function SevaDashboard() {
                 {recent.map((r) => (
                   <TR key={r.id}>
                     <TD>
-                      <Link href={`/app/invoices/${r.id}`} className={tableLinkClass}>
+                      <Link href={`/app/seva/receipts/${r.id}`} className={tableLinkClass}>
                         {r.invoiceNo ?? 'Draft'}
                       </Link>
                     </TD>

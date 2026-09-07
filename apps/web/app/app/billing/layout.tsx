@@ -1,5 +1,6 @@
 import { trialDaysRemaining } from '@billwise/shared';
 import type { Metadata } from 'next';
+
 import { AppFrame } from '@/components/app-frame';
 import { isSuperAdminLive, requireMembership, requireUser } from '@/lib/auth/require-business';
 
@@ -18,7 +19,7 @@ export const metadata: Metadata = { robots: { index: false, follow: false } };
  * bare page that looks like a different product.
  */
 export default async function BillingLayout({ children }: { children: React.ReactNode }) {
-  const [{ businessName, status, trialEndsAt }, user] = await Promise.all([
+  const [{ businessName, status, trialEndsAt, type }, user] = await Promise.all([
     requireMembership(),
     requireUser(),
   ]);
@@ -28,6 +29,9 @@ export default async function BillingLayout({ children }: { children: React.Reac
   return (
     <AppFrame
       businessName={businessName}
+      // Billing is reachable from both kinds of business, so it must not
+      // assume the shop sidebar.
+      businessType={type}
       statusLabel={
         daysLeft === null
           ? undefined

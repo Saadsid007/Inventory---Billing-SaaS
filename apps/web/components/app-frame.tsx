@@ -1,27 +1,12 @@
 'use client';
 
 import { AppShell, Button, type NavItem } from '@billwise/ui';
-import {
-  ArrowLeftRight,
-  BarChart3,
-  CreditCard,
-  FileText,
-  FolderTree,
-  LayoutDashboard,
-  LogOut,
-  Package,
-  Palette,
-  Plus,
-  QrCode,
-  Settings,
-  Shield,
-  Undo2,
-  Users,
-} from 'lucide-react';
+import { LogOut, Plus, Shield } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import * as React from 'react';
 import { signOutAction } from '@/app/(auth)/actions';
+import { navFor } from './app-nav';
 
 /**
  * Client wrapper around the design system's AppShell.
@@ -39,20 +24,6 @@ import { signOutAction } from '@/app/(auth)/actions';
  * on a normal day a shopkeeper opens this product to make a bill and closes it
  * again, and everything else is occasional.
  */
-const NAV: readonly NavItem[] = [
-  { href: '/app', label: 'Dashboard', icon: LayoutDashboard },
-  { href: '/app/invoices', label: 'Invoices', icon: FileText, section: 'Billing' },
-  { href: '/app/parties', label: 'Customers', icon: Users, section: 'Billing' },
-  { href: '/app/returns', label: 'Returns', icon: Undo2, section: 'Billing' },
-  { href: '/app/products', label: 'Products', icon: Package, section: 'Catalogue' },
-  { href: '/app/categories', label: 'Categories', icon: FolderTree, section: 'Catalogue' },
-  { href: '/app/stock', label: 'Stock in / out', icon: ArrowLeftRight, section: 'Catalogue' },
-  { href: '/app/catalog', label: 'Online catalog', icon: QrCode, section: 'Catalogue' },
-  { href: '/app/storefront', label: 'Store Customizer', icon: Palette, section: 'Catalogue' },
-  { href: '/app/reports', label: 'Reports', icon: BarChart3, section: 'Business' },
-  { href: '/app/billing', label: 'Billing', icon: CreditCard, section: 'Business' },
-  { href: '/app/settings', label: 'Settings', icon: Settings, section: 'Business' },
-];
 
 /**
  * Shown only to super admins, and only as a shortcut — the panel guards itself.
@@ -89,7 +60,7 @@ export function AppFrame({
   userName,
   userEmail,
   isSuperAdmin = false,
-  nav: navItems = NAV,
+  businessType,
   banner,
   children,
 }: {
@@ -100,18 +71,16 @@ export function AppFrame({
   userEmail?: string | undefined;
   isSuperAdmin?: boolean;
   /**
-   * Which set of links to show. Defaults to the shop nav.
-   *
-   * Passed in rather than derived here because this is a client component and
-   * the business type is a server read — and because a nav that branches on a
-   * type inside itself is the first step towards every component doing so.
+   * Which trade this is. A plain string, because that is all React can carry
+   * across the server/client boundary — see app-nav.ts.
    */
-  nav?: readonly NavItem[];
+  businessType?: string | undefined;
   banner?: React.ReactNode;
   children: React.ReactNode;
 }) {
   const pathname = usePathname();
   const router = useRouter();
+  const navItems = navFor(businessType);
   const nav = isSuperAdmin ? [...navItems, ADMIN_NAV] : navItems;
 
   /**

@@ -24,6 +24,7 @@ export * from './admin';
 export * from './billing';
 export * from './returns';
 export * from './applications';
+export * from './seva-services';
 // Reads one bill by its share token, with no TenantCtx. See the file header for
 // why that is safe and what must never be added to it.
 export * from './public-receipt';

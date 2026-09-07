@@ -4,7 +4,7 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
 import { AppFrame } from '@/components/app-frame';
-import { SEVA_NAV } from '@/components/seva-nav';
+
 import {
   isSuperAdminLive,
   requireBusiness,
@@ -45,7 +45,7 @@ export default async function SevaLayout({ children }: { children: React.ReactNo
   return (
     <AppFrame
       businessName={businessName}
-      nav={SEVA_NAV}
+      businessType={type}
       statusLabel={statusLabel}
       statusTone={urgent ? 'warning' : 'default'}
       userName={user.name || user.email}
