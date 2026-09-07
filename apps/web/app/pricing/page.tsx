@@ -1,4 +1,5 @@
-import { MONTHLY_PRICE_INR, TRIAL_DAYS } from '@billwise/shared';
+import { listPlans } from '@billwise/db';
+import { TRIAL_DAYS } from '@billwise/shared';
 import { Badge, Button, Card } from '@billwise/ui';
 import { ArrowRight, Check } from 'lucide-react';
 import type { Metadata } from 'next';
@@ -7,88 +8,98 @@ import { auth } from '@/auth';
 import { MarketingFooter, MarketingHeader } from '@/components/marketing-chrome';
 
 export const metadata: Metadata = {
-  title: { absolute: `Pricing: ₹${MONTHLY_PRICE_INR} a month · Billwise` },
-  description: `One plan, everything included: ₹${MONTHLY_PRICE_INR} per month after ${TRIAL_DAYS} days free. No card required to start.`,
+  title: { absolute: 'Pricing · Billwise' },
+  description: `One price per kind of business, everything included, after ${TRIAL_DAYS} days free. No card required to start.`,
   alternates: { canonical: '/pricing' },
 };
 
-const INCLUDED = [
-  'Unlimited bills, products and customers',
-  'GST and non-GST billing',
-  'Tax invoice, bill of supply, cash memo, estimate, delivery challan',
-  'A4 and 80mm thermal printing',
-  'Automatic stock tracking with low-stock alerts',
-  'Customer khata with running balance',
-  'Public product catalog with a QR code',
-  'Sales, tax, stock and outstanding reports',
-  'CSV exports for your accountant',
-  'Works on phone, tablet and laptop',
-];
+/**
+ * Prices come from the database, not from this file.
+ *
+ * Which means this page cannot be built once at deploy time — an admin who
+ * changes a price expects the public page to say so within the minute, not at
+ * the next release.
+ */
+export const revalidate = 60;
 
 export default async function PricingPage() {
-  const session = await auth();
+  const [session, plans] = await Promise.all([auth(), listPlans()]);
   const signedIn = Boolean(session?.user?.id);
+  const sold = plans.filter((p) => p.isActive);
+
+  // Cheapest first. "From ₹149" is the honest headline, and putting the small
+  // counter's plan first stops it reading as an afterthought under the shop's.
+  sold.sort((a, b) => Number(a.monthlyPrice) - Number(b.monthlyPrice));
+  const cheapest = sold[0];
 
   return (
     <div className="min-h-dvh">
       <MarketingHeader />
 
-      <main className="mx-auto max-w-4xl px-5 py-16 sm:px-8 sm:py-20">
+      <main className="mx-auto max-w-5xl px-5 py-16 sm:px-8 sm:py-20">
         <div className="text-center">
           <Badge variant="subtle" className="mb-4">
-            One plan
+            No tiers, no per-bill charges
           </Badge>
           <h1 className="text-3xl font-semibold text-balance sm:text-4xl">
-            No tiers to work out
+            One price for your kind of business
           </h1>
           <p className="mt-4 text-lg text-muted-foreground">
-            {TRIAL_DAYS} days free, then ₹{MONTHLY_PRICE_INR} a month.
+            {TRIAL_DAYS} days free
+            {cheapest ? `, then from ₹${Number(cheapest.monthlyPrice).toFixed(0)} a month` : ''}.
+            No card needed to start.
           </p>
         </div>
 
-        <Card className="mt-10 overflow-hidden p-0 shadow-md">
-          <div className="grid md:grid-cols-[1fr_1.15fr]">
-            <div className="brand-wash flex flex-col justify-center gap-3 p-8 text-white sm:p-10">
-              <div className="flex flex-wrap items-baseline gap-2">
-                <span className="tabular text-5xl font-semibold">₹{MONTHLY_PRICE_INR}</span>
-                <span className="text-white/80">per month</span>
+        <div className="mt-10 grid gap-6 md:grid-cols-2">
+          {sold.map((plan) => (
+            <Card key={plan.businessType} className="flex flex-col overflow-hidden p-0 shadow-md">
+              <div className="brand-wash flex flex-col gap-2 p-7 text-white sm:p-8">
+                <span className="text-sm font-medium text-white/85">{plan.label}</span>
+                <div className="flex flex-wrap items-baseline gap-2">
+                  <span className="tabular text-4xl font-semibold">
+                    ₹{Number(plan.monthlyPrice).toFixed(0)}
+                  </span>
+                  <span className="text-white/80">per month</span>
+                </div>
+                {plan.tagline && (
+                  <p className="text-sm leading-relaxed text-white/85">{plan.tagline}</p>
+                )}
               </div>
-              <p className="text-sm leading-relaxed text-white/85">
-                Free for your first {TRIAL_DAYS} days. No card needed to start, and no approval to
-                wait for.
-              </p>
-              <Link href={signedIn ? '/app/billing' : '/register'} className="mt-3">
-                <Button
-                  size="lg"
-                  className="w-full bg-white text-primary shadow-sm hover:bg-white/90 active:bg-white/90"
-                >
-                  {signedIn ? 'Subscribe now' : `Start ${TRIAL_DAYS} days free`} <ArrowRight />
-                </Button>
-              </Link>
-              <p className="text-xs text-white/70">
-                Stop by simply not paying. Your data is never deleted.
-              </p>
-            </div>
 
-            <div className="p-8 sm:p-10">
-              <p className="text-xs font-semibold tracking-widest text-muted-foreground uppercase">
-                Everything included
-              </p>
-              <ul className="mt-4 space-y-2.5">
-                {INCLUDED.map((item) => (
-                  <li key={item} className="flex gap-2.5 text-sm leading-relaxed">
-                    <Check className="mt-0.5 size-4 shrink-0 text-success" />
-                    {item}
-                  </li>
-                ))}
-              </ul>
-            </div>
-          </div>
-        </Card>
+              <div className="flex flex-1 flex-col p-7 sm:p-8">
+                <p className="text-xs font-semibold tracking-widest text-muted-foreground uppercase">
+                  Everything included
+                </p>
+                <ul className="mt-4 flex-1 space-y-2.5">
+                  {plan.features.map((item) => (
+                    <li key={item} className="flex gap-2.5 text-sm leading-relaxed">
+                      <Check className="mt-0.5 size-4 shrink-0 text-success" />
+                      {item}
+                    </li>
+                  ))}
+                </ul>
+                <Link href={signedIn ? '/app/billing' : '/register'} className="mt-6 block">
+                  <Button className="w-full" size="lg">
+                    {signedIn ? 'Go to billing' : `Start ${plan.trialDays} days free`}{' '}
+                    <ArrowRight />
+                  </Button>
+                </Link>
+                <p className="mt-3 text-xs text-muted-foreground">
+                  Stop by simply not paying. Your data is never deleted.
+                </p>
+              </div>
+            </Card>
+          ))}
+        </div>
 
         <section className="mt-16">
           <h2 className="text-xl font-semibold">Questions people actually ask</h2>
           <div className="mt-6 grid gap-x-10 gap-y-7 sm:grid-cols-2">
+            <Faq
+              q="How do I know which one I am?"
+              a="You pick when you sign up, and it decides which screens you get. A shop gets stock, products and GST. A Jan Seva Kendra gets a work register and receipts instead — no stock anywhere in the app."
+            />
             <Faq
               q="What happens when the free trial ends?"
               a="Your data stays exactly where it is. You will not be able to make new bills until you subscribe, and everything comes back the moment you do. Nothing is deleted."
@@ -104,10 +115,6 @@ export default async function PricingPage() {
             <Faq
               q="Does it file my GST returns?"
               a="No. It gives you clean, correct data and exports your CA can work from. Filing stays with you and your accountant."
-            />
-            <Faq
-              q="Can my customers see my stock levels?"
-              a="They see whether something is in stock, low, or out, never the exact number. Your competitors read your catalog too."
             />
             <Faq
               q="What if I have more than one shop?"

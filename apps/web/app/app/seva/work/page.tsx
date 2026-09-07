@@ -34,7 +34,7 @@ export default async function WorkPage({
     <PageBody className="space-y-5">
       <PageHeader
         title="Work"
-        description="Har kaam jo laga hua hai — kiska hai, kahan tak pahuncha, aur kitna paisa baaki hai."
+        description="Every job you have taken on — whose it is, how far along it is, and what is still owed."
       />
       <WorkView
         rows={rows}

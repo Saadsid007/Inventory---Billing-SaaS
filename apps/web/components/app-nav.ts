@@ -10,6 +10,7 @@ import {
   IndianRupee,
   LayoutDashboard,
   Package,
+  PackageCheck,
   Palette,
   QrCode,
   Receipt,
@@ -62,6 +63,9 @@ const RETAIL_NAV: readonly NavItem[] = [
 const SEVA_NAV: readonly NavItem[] = [
   { href: '/app/seva', label: 'Dashboard', icon: LayoutDashboard },
   { href: '/app/seva/work', label: 'Work', icon: ClipboardList, section: 'Counter' },
+  // The handover desk. Its own entry rather than a tab on Work, because it is
+  // the busiest ten minutes of the day and should be one tap from anywhere.
+  { href: '/app/seva/deliveries', label: 'Deliveries', icon: PackageCheck, section: 'Counter' },
   { href: '/app/seva/receipts', label: 'Receipts', icon: Receipt, section: 'Counter' },
   { href: '/app/seva/customers', label: 'Customers', icon: Users, section: 'Counter' },
   { href: '/app/seva/services', label: 'Services & rates', icon: Wrench, section: 'Setup' },

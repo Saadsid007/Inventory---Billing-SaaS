@@ -4,6 +4,7 @@ import {
   createApplication,
   deleteApplication,
   getApplication,
+  getBusiness,
   setApplicationStatus,
   updateApplication,
 } from '@billwise/db';
@@ -47,6 +48,7 @@ export async function addWorkAction(raw: unknown): Promise<WorkResult> {
       note: input.note ?? null,
     });
     revalidatePath('/app/seva/work');
+    revalidatePath('/app/seva/deliveries');
     revalidatePath('/app/seva');
     return { ok: true, id: row?.id };
   } catch (error) {
@@ -66,6 +68,7 @@ export async function updateWorkAction(id: string, raw: unknown): Promise<WorkRe
   try {
     await updateApplication(ctx, id, parsed.data);
     revalidatePath('/app/seva/work');
+    revalidatePath('/app/seva/deliveries');
     revalidatePath('/app/seva');
     return { ok: true };
   } catch (error) {
@@ -84,6 +87,7 @@ export async function setWorkStatusAction(
   try {
     await setApplicationStatus(ctx, ids, status);
     revalidatePath('/app/seva/work');
+    revalidatePath('/app/seva/deliveries');
     revalidatePath('/app/seva');
     return { ok: true };
   } catch (error) {
@@ -97,6 +101,7 @@ export async function deleteWorkAction(id: string): Promise<WorkResult> {
   try {
     await deleteApplication(ctx, id);
     revalidatePath('/app/seva/work');
+    revalidatePath('/app/seva/deliveries');
     revalidatePath('/app/seva');
     return { ok: true };
   } catch (error) {
@@ -106,11 +111,16 @@ export async function deleteWorkAction(id: string): Promise<WorkResult> {
 }
 
 /**
- * The WhatsApp text for "your work is ready".
+ * The WhatsApp text for "your work is ready, come and collect it".
  *
  * Built on the server so the balance comes from the database rather than from
  * whatever the page was showing when it loaded — the customer may have paid
- * something in between.
+ * something in between, and quoting them a balance they have already settled is
+ * worse than sending nothing.
+ *
+ * The shop's name and phone number are in the message because the customer
+ * receives it from an unknown number. Without them it reads as spam, and the
+ * one message the whole feature exists to send gets ignored.
  */
 export async function readyMessageAction(
   id: string,
@@ -119,20 +129,26 @@ export async function readyMessageAction(
 
   // By id, not by listing the register and searching it — that cost a thousand
   // rows over the wire every time somebody tapped the WhatsApp button.
-  const row = await getApplication(ctx, id);
+  const [row, business] = await Promise.all([getApplication(ctx, id), getBusiness(ctx)]);
   if (!row) return { ok: false, error: 'That work is not on the register any more.' };
 
   const balance = Number(row.balance);
   const lines = [
-    `Namaste${row.partyName ? ` ${row.partyName}` : ''},`,
+    `Hello${row.partyName ? ` ${row.partyName}` : ''},`,
     '',
-    `Aapka kaam taiyaar hai: *${row.serviceName}*`,
+    `Your work is ready: *${row.serviceName}*`,
   ];
-  if (row.referenceNo) lines.push(`Reference: ${row.referenceNo}`);
+  if (row.referenceNo) lines.push(`Reference no: ${row.referenceNo}`);
+  if (row.invoiceNo) lines.push(`Receipt no: ${row.invoiceNo}`);
   if (balance > 0) {
-    lines.push('', `*Baaki: ₹${balance.toFixed(2)}*`);
+    lines.push('', `*Balance to pay on collection: ₹${balance.toFixed(2)}*`);
+  } else {
+    lines.push('', 'Nothing left to pay.');
   }
-  lines.push('', 'Aakar le jaaiye. Dhanyavaad.');
+  lines.push('', 'Please come and collect it. Thank you.');
+  if (business?.name) {
+    lines.push('', `— ${business.name}${business.phone ? `, ${business.phone}` : ''}`);
+  }
 
   return { ok: true, message: lines.join('\n'), phone: row.partyPhone };
 }

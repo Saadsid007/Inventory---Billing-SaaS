@@ -28,7 +28,7 @@ export default async function NewReceiptPage() {
           </Link>
         }
         title="New receipt"
-        description="Kaam chuniye, paisa likhiye, ho gaya."
+        description="Pick the work, enter what you were paid, done."
       />
       <ReceiptForm
         services={services}

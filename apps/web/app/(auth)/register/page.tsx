@@ -1,4 +1,4 @@
-import { MONTHLY_PRICE_INR, TRIAL_DAYS } from '@billwise/shared';
+import { FROM_PRICE_INR, TRIAL_DAYS } from '@billwise/shared';
 import { Badge } from '@billwise/ui';
 import type { Metadata } from 'next';
 import Link from 'next/link';
@@ -14,7 +14,7 @@ export default function RegisterPage() {
         <h1 className="text-2xl font-semibold">Create your account</h1>
         <p className="text-sm leading-relaxed text-muted-foreground">
           No card, and nothing to wait for. You can make your first bill in a minute. It is ₹
-          {MONTHLY_PRICE_INR} a month after the trial, only if you want to carry on.
+          {FROM_PRICE_INR} a month after the trial, only if you want to carry on.
         </p>
       </div>
 

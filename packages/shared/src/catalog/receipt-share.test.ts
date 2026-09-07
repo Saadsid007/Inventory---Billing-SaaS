@@ -18,21 +18,21 @@ describe('receiptShareMessage', () => {
     // still owed, not the total they already know.
     const msg = receiptShareMessage(base);
     expect(msg).toContain('Total: ₹200.00');
-    expect(msg).toContain('Jama: ₹100.00');
-    expect(msg).toContain('*Baaki: ₹100.00*');
+    expect(msg).toContain('Paid: ₹100.00');
+    expect(msg).toContain('*Balance due: ₹100.00*');
   });
 
   it('says paid instead of showing a zero balance', () => {
     const msg = receiptShareMessage({ ...base, amountPaid: '200.00', balance: '0.00' });
-    expect(msg).toContain('*Paid — dhanyavaad!*');
-    expect(msg).not.toContain('Baaki');
-    // "Jama: ₹200" beside "Total: ₹200" is noise when nothing is owed.
-    expect(msg).not.toContain('Jama');
+    expect(msg).toContain('*Paid in full — thank you!*');
+    expect(msg).not.toContain('Balance due');
+    // "Paid: ₹200" beside "Total: ₹200" is noise when nothing is owed.
+    expect(msg).not.toContain('Paid: ');
   });
 
   it('includes the link when there is one', () => {
     const msg = receiptShareMessage({ ...base, link: 'https://x.in/r/abc' });
-    expect(msg).toContain('Bill dekhein: https://x.in/r/abc');
+    expect(msg).toContain('View your bill: https://x.in/r/abc');
   });
 
   it('caps a long item list rather than sending a wall of text', () => {

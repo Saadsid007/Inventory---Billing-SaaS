@@ -1,4 +1,4 @@
-import { MONTHLY_PRICE_INR, TRIAL_DAYS } from '@billwise/shared';
+import { FROM_PRICE_INR, TRIAL_DAYS } from '@billwise/shared';
 import { Logo, LogoMark, ThemeToggle } from '@billwise/ui';
 import { Check } from 'lucide-react';
 import Link from 'next/link';
@@ -52,7 +52,7 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
         </div>
 
         <p className="text-sm text-white/75">
-          {TRIAL_DAYS} days free, then ₹{MONTHLY_PRICE_INR} a month. No card to start.
+          {TRIAL_DAYS} days free, then from ₹{FROM_PRICE_INR} a month. No card to start.
         </p>
       </aside>
 

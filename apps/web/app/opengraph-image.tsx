@@ -1,4 +1,4 @@
-import { MONTHLY_PRICE_INR, TRIAL_DAYS } from '@billwise/shared';
+import { FROM_PRICE_INR, TRIAL_DAYS } from '@billwise/shared';
 import { ImageResponse } from 'next/og';
 
 /**
@@ -99,7 +99,7 @@ export default async function OpengraphImage() {
               display: 'flex',
             }}
           >
-            ₹{MONTHLY_PRICE_INR} a month
+            From ₹{FROM_PRICE_INR} a month
           </div>
           <div
             style={{

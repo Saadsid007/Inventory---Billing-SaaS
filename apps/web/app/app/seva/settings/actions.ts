@@ -24,11 +24,11 @@ export async function saveSevaSettingsAction(raw: Input): Promise<SettingsResult
   const ctx = await requireBusiness();
 
   const name = text(raw.name, 80);
-  if (name.length < 2) return { ok: false, error: 'Kendra ka naam likhiye.' };
+  if (name.length < 2) return { ok: false, error: 'Enter the name of your centre.' };
 
   const phone = text(raw.phone, 20);
   if (phone && !/^[+\d][\d\s-]{7,}$/.test(phone)) {
-    return { ok: false, error: 'Mobile number theek nahi lag raha.' };
+    return { ok: false, error: 'That mobile number does not look right.' };
   }
 
   const gstinRaw = text(raw.gstin, 20);
@@ -38,7 +38,7 @@ export async function saveSevaSettingsAction(raw: Input): Promise<SettingsResult
     // Checked rather than accepted: a wrong GSTIN silently turns every receipt
     // into a tax invoice carrying a number that does not exist.
     if (!validateGstin(normalised).valid) {
-      return { ok: false, error: 'Yeh GSTIN sahi nahi hai. Dobara dekhiye ya khaali chhod dijiye.' };
+      return { ok: false, error: 'That GSTIN is not valid. Check it, or leave it blank.' };
     }
     gstin = normalised;
   }
@@ -59,6 +59,6 @@ export async function saveSevaSettingsAction(raw: Input): Promise<SettingsResult
     return { ok: true };
   } catch (error) {
     console.error('saveSevaSettings failed', error);
-    return { ok: false, error: 'Save nahi ho paya. Dobara koshish kariye.' };
+    return { ok: false, error: 'Could not save that. Please try again.' };
   }
 }

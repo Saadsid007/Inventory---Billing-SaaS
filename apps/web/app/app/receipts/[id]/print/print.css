@@ -10,16 +10,30 @@
  * Margins live on the element as padding, with `@page { margin: 0 }`. A browser
  * print dialog set to "Margins: None" overrides @page, and the result is a slip
  * printed into the very edge of the paper.
+ *
+ * ## Colour on a document people print in black and white
+ *
+ * There is exactly one accent — the header rule and the balance box — and both
+ * survive a mono printer because they carry weight and a border as well as a
+ * colour. Nothing on here is legible only because of its hue. A shop with a
+ * ₹4,000 laser printer and no toner budget still has to be able to hand this
+ * to a customer.
  */
 
 :root {
   color-scheme: light;
+  --ink: #0f172a;
+  --ink-soft: #475569;
+  --ink-faint: #94a3b8;
+  --line: #cbd5e1;
+  --line-faint: #e8edf3;
+  --accent: #0f2f6b;
 }
 
 body {
   margin: 0;
-  background: #f1f5f9;
-  color: #0f172a;
+  background: #eef2f7;
+  color: var(--ink);
   font-family: ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
   -webkit-print-color-adjust: exact;
   print-color-adjust: exact;
@@ -27,7 +41,7 @@ body {
 
 .slip {
   background: #fff;
-  margin: 12px auto;
+  margin: 14px auto;
   padding: 12mm;
   box-sizing: border-box;
   width: 210mm;
@@ -45,31 +59,115 @@ body {
 /* Anything that is chrome rather than the document. */
 .no-print {
   max-width: 210mm;
-  margin: 12px auto 0;
+  margin: 14px auto 0;
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
   align-items: center;
 }
 
+/* ------------------------------------------------------------------ head */
+
+.head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 8mm;
+  padding-bottom: 3mm;
+  border-bottom: 2.5px solid var(--accent);
+}
+
+.thermal .head {
+  display: block;
+  text-align: center;
+  border-bottom-width: 1.5px;
+}
+
+.head > * {
+  min-width: 0;
+}
+
 .shop-name {
-  font-size: 16pt;
+  font-size: 17pt;
   font-weight: 800;
   letter-spacing: -0.02em;
+  line-height: 1.1;
 }
 
 .thermal .shop-name {
   font-size: 12pt;
 }
 
+.doc-label {
+  font-size: 8pt;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+
+.doc-no {
+  font-size: 13pt;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  line-height: 1.2;
+}
+
+.head-right {
+  text-align: right;
+  white-space: nowrap;
+}
+
+.thermal .head-right {
+  text-align: center;
+  margin-top: 2mm;
+}
+
+/* ------------------------------------------------------------ meta strip */
+
+.meta {
+  display: flex;
+  justify-content: space-between;
+  gap: 8mm;
+  margin: 4mm 0;
+  padding: 3mm;
+  background: #f6f8fb;
+  border-radius: 2mm;
+  min-width: 0;
+}
+
+.thermal .meta {
+  display: block;
+  padding: 2mm;
+  margin: 3mm 0;
+}
+
+.meta > * {
+  min-width: 0;
+}
+
+.meta-label {
+  font-size: 7.5pt;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+  margin-bottom: 0.8mm;
+}
+
+.meta-value {
+  font-size: 11pt;
+  font-weight: 700;
+}
+
 .muted {
-  color: #475569;
+  color: var(--ink-soft);
   font-size: 9.5pt;
 }
 
 .rule {
   border: 0;
-  border-top: 1px solid #cbd5e1;
+  border-top: 1px solid var(--line);
   margin: 4mm 0;
 }
 
@@ -86,6 +184,8 @@ body {
   min-width: 0;
 }
 
+/* ---------------------------------------------------------------- tables */
+
 table {
   width: 100%;
   border-collapse: collapse;
@@ -98,17 +198,18 @@ table {
 
 th {
   text-align: left;
-  font-size: 8.5pt;
+  font-size: 8pt;
+  font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.06em;
-  color: #64748b;
-  border-bottom: 1px solid #cbd5e1;
-  padding: 1.5mm 0;
+  letter-spacing: 0.08em;
+  color: var(--ink-soft);
+  border-bottom: 1.5px solid var(--line);
+  padding: 1.8mm 1mm;
 }
 
 td {
-  padding: 1.8mm 0;
-  border-bottom: 1px solid #f1f5f9;
+  padding: 2mm 1mm;
+  border-bottom: 1px solid var(--line-faint);
   vertical-align: top;
 }
 
@@ -124,48 +225,110 @@ td {
   font-weight: 700;
 }
 
+.total-row.grand td {
+  border-top: 1.5px solid var(--line);
+  font-size: 11pt;
+}
+
 /* The number the customer came for. */
 .balance {
   margin-top: 4mm;
-  padding: 3mm;
+  padding: 3.5mm;
   text-align: center;
-  border: 1.5px solid #0f172a;
+  border: 2px solid var(--accent);
   border-radius: 2mm;
 }
 
+.balance.settled {
+  border-style: solid;
+  border-color: var(--line);
+}
+
 .balance .label {
-  font-size: 8.5pt;
-  letter-spacing: 0.1em;
+  font-size: 8pt;
+  font-weight: 700;
+  letter-spacing: 0.14em;
   text-transform: uppercase;
-  color: #475569;
+  color: var(--ink-soft);
 }
 
 .balance .amount {
-  font-size: 17pt;
+  font-size: 19pt;
   font-weight: 800;
   font-variant-numeric: tabular-nums;
+  line-height: 1.15;
 }
+
+.thermal .balance .amount {
+  font-size: 14pt;
+}
+
+/* --------------------------------------------------------- work register */
 
 .work {
   margin-top: 4mm;
-  border: 1px dashed #94a3b8;
+  border: 1px dashed var(--ink-faint);
   border-radius: 2mm;
   padding: 3mm;
 }
 
 .work h2 {
   margin: 0 0 2mm;
-  font-size: 9pt;
+  font-size: 8.5pt;
+  font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.08em;
-  color: #475569;
+  letter-spacing: 0.1em;
+  color: var(--ink-soft);
+}
+
+.work .promise {
+  margin-top: 2.5mm;
+  padding-top: 2mm;
+  border-top: 1px solid var(--line-faint);
+  font-size: 9pt;
+  color: var(--ink-soft);
+  line-height: 1.5;
+}
+
+.ref {
+  font-family: ui-monospace, 'Cascadia Mono', Menlo, monospace;
+  font-size: 9pt;
+}
+
+/* -------------------------------------------------------------- sign-off */
+
+.signature {
+  display: flex;
+  justify-content: space-between;
+  gap: 10mm;
+  margin-top: 10mm;
+}
+
+/* No point printing a signature line on an 80mm slip. */
+.thermal .signature {
+  display: none;
+}
+
+.signature > div {
+  flex: 1;
+  border-top: 1px solid var(--line);
+  padding-top: 1.5mm;
+  font-size: 8.5pt;
+  color: var(--ink-soft);
+}
+
+.signature > div:last-child {
+  text-align: right;
 }
 
 .foot {
   margin-top: 5mm;
+  padding-top: 2.5mm;
+  border-top: 1px solid var(--line-faint);
   font-size: 8.5pt;
-  color: #64748b;
+  color: var(--ink-soft);
   text-align: center;
+  line-height: 1.5;
 }
 
 @media print {
@@ -187,5 +350,12 @@ td {
     box-shadow: none;
     /* Half a sheet, so the rest can be torn off and reused. */
     min-height: 0;
+  }
+
+  /* A job and its promised date must not be split across a page break —
+     that is the half of the slip the customer keeps. */
+  .work,
+  .balance {
+    break-inside: avoid;
   }
 }

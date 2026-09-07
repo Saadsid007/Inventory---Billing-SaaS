@@ -20,3 +20,4 @@ export * from './invoices';
 export * from './billing';
 export * from './returns';
 export * from './applications';
+export * from './plans';

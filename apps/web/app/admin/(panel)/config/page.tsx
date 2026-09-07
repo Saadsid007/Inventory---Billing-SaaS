@@ -1,5 +1,5 @@
 import { Card, EmptyState, PageBody, PageHeader, Section } from '@billwise/ui';
-import { Megaphone, Plus, SlidersHorizontal, Tag, Wrench } from 'lucide-react';
+import { Megaphone, Plus, SlidersHorizontal, Wrench } from 'lucide-react';
 import type { Metadata } from 'next';
 import { requireSuperAdmin } from '@/lib/auth/require-business';
 
@@ -14,9 +14,11 @@ export const metadata: Metadata = { title: 'Site settings' };
  *
  * It renders nothing operable rather than fake controls on purpose: a toggle
  * that does not toggle anything is worse than no toggle, because someone will
- * flip it and believe it worked. When the first real setting exists, it lands
- * here, backed by a `site_settings` table read through a repository like every
- * other piece of data in the system.
+ * flip it and believe it worked.
+ *
+ * Pricing used to be listed below as "planned". It has its own tab now, backed
+ * by a real `plans` table — which is the shape everything else here should take
+ * when its turn comes.
  */
 const PLANNED = [
   {
@@ -33,11 +35,6 @@ const PLANNED = [
     icon: Plus,
     title: 'Extra fields',
     body: 'Add a field to the product or invoice form without a code change.',
-  },
-  {
-    icon: Tag,
-    title: 'Plan and pricing',
-    body: 'Change the monthly price and the trial length, which are constants in the code today.',
   },
 ];
 

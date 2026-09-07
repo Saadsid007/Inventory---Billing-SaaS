@@ -1,4 +1,5 @@
-import { MONTHLY_PRICE_INR, trialDaysRemaining } from '@billwise/shared';
+import { getPlan } from '@billwise/db';
+import { trialDaysRemaining } from '@billwise/shared';
 import { Clock } from 'lucide-react';
 import type { Metadata } from 'next';
 import Link from 'next/link';
@@ -57,6 +58,13 @@ export default async function DashboardLayout({ children }: { children: React.Re
   // and a shopkeeper learns to look past it long before it matters.
   const urgent = daysLeft !== null && daysLeft <= 3;
 
+  /*
+   * Only fetched when the banner is actually going to render. This layout wraps
+   * every page in the section, and a query on each one to print a price nobody
+   * is being shown is a round trip for nothing.
+   */
+  const plan = urgent ? await getPlan(type) : null;
+
   return (
     <AppFrame
       businessName={businessName}
@@ -69,14 +77,14 @@ export default async function DashboardLayout({ children }: { children: React.Re
       // so someone promoted this morning would not see the link for a month.
       isSuperAdmin={await isSuperAdminLive(user.id)}
       banner={
-        urgent ? (
+        urgent && plan ? (
           <div className="flex flex-wrap items-center gap-x-3 gap-y-1 border-b border-warning/30 bg-warning/10 px-4 py-2.5 text-sm text-warning sm:px-6">
             <Clock className="size-4 shrink-0" />
             <span className="font-medium">
               {daysLeft === 1 ? 'Your free trial ends today.' : `Free trial ends in ${daysLeft} days.`}
             </span>
             <span className="opacity-90">
-              Keep everything for ₹{MONTHLY_PRICE_INR} a month. Your data stays either way.
+              Keep everything for ₹{plan.monthlyPrice} a month. Your data stays either way.
             </span>
             <Link href="/app/billing" className="font-semibold underline underline-offset-4">
               Subscribe

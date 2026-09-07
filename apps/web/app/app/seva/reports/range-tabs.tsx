@@ -7,14 +7,14 @@ import Link from 'next/link';
  *
  * The shop's report page opens with a from-date and a to-date. That is right
  * when somebody is pulling a quarter for their CA, and wrong here: the whole
- * question is "aaj kitna hua" or "is mahine kitna hua", and typing two dates to
- * find out is three interactions too many.
+ * question is "how much today" or "how much this month", and typing two dates
+ * to find out is three interactions too many.
  */
 const RANGES = [
-  { key: 'today', label: 'Aaj' },
-  { key: 'week', label: '7 din' },
-  { key: 'month', label: 'Is mahine' },
-  { key: 'last_month', label: 'Pichhla mahina' },
+  { key: 'today', label: 'Today' },
+  { key: 'week', label: '7 days' },
+  { key: 'month', label: 'This month' },
+  { key: 'last_month', label: 'Last month' },
 ] as const;
 
 export function RangeTabs({ active }: { active: string }) {

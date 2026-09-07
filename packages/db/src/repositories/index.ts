@@ -25,6 +25,9 @@ export * from './billing';
 export * from './returns';
 export * from './applications';
 export * from './seva-services';
+// Site-wide pricing, one row per business type. Deliberately unscoped — see the
+// file header for why that is not a violation of the TenantCtx rule.
+export * from './plans';
 // Reads one bill by its share token, with no TenantCtx. See the file header for
 // why that is safe and what must never be added to it.
 export * from './public-receipt';

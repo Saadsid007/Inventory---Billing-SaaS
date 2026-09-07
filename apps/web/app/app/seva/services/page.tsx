@@ -14,7 +14,7 @@ export default async function SevaServicesPage() {
     <PageBody className="space-y-5">
       <PageHeader
         title="Services & rates"
-        description="Aap kya kaam karte hain aur kitna lete hain. Sarkari fees alag likhiye — usse pata chalta hai ki aapki apni kamai kitni hai."
+        description="The work you do and what you charge for it. Enter the government fee separately, so you can see what you actually earn."
       />
       <ServicesView services={services} />
     </PageBody>

@@ -6,11 +6,12 @@ import {
   createDraft,
   createParty,
   getBusiness,
+  getInvoice,
   issueInvoice,
   listSevaServices,
   recordPayment,
 } from '@billwise/db';
-import { sevaReceiptSchema } from '@billwise/shared';
+import { PAYMENT_METHODS, type PaymentMethod, sevaReceiptSchema } from '@billwise/shared';
 import { revalidatePath } from 'next/cache';
 import { requireBusiness } from '@/lib/auth/require-business';
 
@@ -207,7 +208,23 @@ export async function createReceiptAction(raw: unknown): Promise<ReceiptResult> 
 
 export type PayResult = { ok: true } | { ok: false; error: string };
 
-/** Take the rest of the money when the customer collects their work. */
+/**
+ * Take the rest of the money when the customer collects their work.
+ *
+ * Three things are checked here rather than trusted from the form, because the
+ * form is a browser and a browser is not a place to enforce anything:
+ *
+ *  - the receipt belongs to this business (`getInvoice` is tenant-scoped, so a
+ *    guessed id from another shop comes back empty)
+ *  - the method is one we actually know about, not an arbitrary string landing
+ *    in a column that reports group by
+ *  - the amount does not exceed what is owed
+ *
+ * That last one used to be missing, and a fat-fingered 5000 against a ₹50
+ * balance would have written a ₹4,950 credit into the customer's ledger with
+ * nothing on any screen explaining where it came from. Overpayment at this
+ * counter is a typo, not an advance.
+ */
 export async function collectBalanceAction(
   invoiceId: string,
   raw: { amount: string; method: string; paidOn: string },
@@ -219,12 +236,29 @@ export async function collectBalanceAction(
     return { ok: false, error: 'Enter an amount greater than zero.' };
   }
 
+  if (!(PAYMENT_METHODS as readonly string[]).includes(raw.method)) {
+    return { ok: false, error: 'Choose how the money was paid.' };
+  }
+
+  const invoice = await getInvoice(ctx, invoiceId);
+  if (!invoice) return { ok: false, error: 'That receipt no longer exists.' };
+  if (invoice.status === 'cancelled') {
+    return { ok: false, error: 'This receipt is cancelled. Payment cannot be added to it.' };
+  }
+
+  const balance = Number(invoice.grandTotal) - Number(invoice.amountPaid);
+  if (balance <= 0) return { ok: false, error: 'This receipt is already fully paid.' };
+  if (amount > balance + 0.005) {
+    return { ok: false, error: `Only ₹${balance.toFixed(2)} is outstanding on this receipt.` };
+  }
+
   try {
     await recordPayment(ctx, {
       invoiceId,
+      partyId: invoice.partyId,
       amount: amount.toFixed(2),
       direction: 'in',
-      method: raw.method as 'cash',
+      method: raw.method as PaymentMethod,
       paidOn: raw.paidOn,
     });
     revalidatePath(`/app/seva/receipts/${invoiceId}`);

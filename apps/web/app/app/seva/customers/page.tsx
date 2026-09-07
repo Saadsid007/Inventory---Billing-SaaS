@@ -43,21 +43,21 @@ export default async function SevaCustomersPage() {
     <PageBody className="space-y-5">
       <PageHeader
         title="Customers"
-        description="Kiska paisa baaki hai, aur kis number pe call karna hai."
+        description="Who owes you money, and the number to ring them on."
       />
 
       <div className="grid gap-3.5 sm:grid-cols-2">
         <StatCard
-          label="Kul baaki"
+          label="Total outstanding"
           value={inr(total.toFixed(2))}
-          hint={`${owing.length} ${owing.length === 1 ? 'customer' : 'customers'} se`}
+          hint={`Across ${owing.length} ${owing.length === 1 ? 'customer' : 'customers'}`}
           icon={Wallet}
           tone={total > 0 ? 'warning' : 'default'}
         />
         <StatCard
           label="Customers"
           value={String(rows.length)}
-          hint="Jo bhi aapke record me hain"
+          hint="Everyone on your records"
           icon={Users}
         />
       </div>
@@ -65,18 +65,18 @@ export default async function SevaCustomersPage() {
       {rows.length === 0 ? (
         <EmptyState
           icon={Users}
-          title="Abhi koi customer nahi"
-          description="Receipt banate waqt naam aur mobile daaliye — customer khud yahan aa jaayega."
+          title="No customers yet"
+          description="Add a name and mobile number while making a receipt, and the customer appears here on their own."
         />
       ) : (
         <Table>
           <THead>
             <TR>
-              <TH>Naam</TH>
+              <TH>Name</TH>
               <TH>Mobile</TH>
-              <TH numeric>Kul kaam</TH>
-              <TH numeric>Mila</TH>
-              <TH numeric>Baaki</TH>
+              <TH numeric>Billed</TH>
+              <TH numeric>Received</TH>
+              <TH numeric>Outstanding</TH>
             </TR>
           </THead>
           <TBody>

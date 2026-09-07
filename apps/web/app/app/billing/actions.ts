@@ -4,8 +4,8 @@ import {
   createSubscriptionPayment,
   creditSubscriptionPayment,
   expireSubscriptionPayment,
+  getPlan,
 } from '@billwise/db';
-import { MONTHLY_PRICE_INR } from '@billwise/shared';
 import { hasRazorpay } from '@billwise/shared/env';
 import { revalidatePath } from 'next/cache';
 import { requireMembership } from '@/lib/auth/require-business';
@@ -19,8 +19,10 @@ import { createUpiQr, listQrPayments } from '@/lib/payments/razorpay';
  * locked out. Gating payment on having access would mean nobody could ever pay
  * their way back in.
  *
- * Money is never taken from the client. The amount comes from a constant on
- * the server, so a tampered request cannot buy a month for ₹1.
+ * Money is never taken from the client. The amount is looked up on the server
+ * from this business's own plan, so a tampered request cannot buy a month for
+ * ₹1 — and a Jan Seva counter cannot be charged a shop's price by editing a
+ * form field.
  */
 
 export type StartPaymentResult =
@@ -28,7 +30,7 @@ export type StartPaymentResult =
   | { ok: false; error: string };
 
 export async function startUpiPaymentAction(): Promise<StartPaymentResult> {
-  const { ctx, businessName } = await requireMembership();
+  const { ctx, businessName, type } = await requireMembership();
 
   if (!hasRazorpay()) {
     return {
@@ -37,9 +39,13 @@ export async function startUpiPaymentAction(): Promise<StartPaymentResult> {
     };
   }
 
+  // Read every time rather than caching. An admin who corrects a price expects
+  // the next person who pays to pay the new one.
+  const plan = await getPlan(type);
+
   try {
     const qr = await createUpiQr({
-      amountRupees: MONTHLY_PRICE_INR,
+      amountRupees: plan.monthlyPrice,
       businessId: ctx.businessId,
       businessName,
       description: `Billwise, 1 month (${businessName})`,
@@ -47,14 +53,14 @@ export async function startUpiPaymentAction(): Promise<StartPaymentResult> {
 
     // Recorded before the money moves, so a payment can never arrive against a
     // reference we have no row for.
-    await createSubscriptionPayment(ctx, { providerRef: qr.id, amount: MONTHLY_PRICE_INR });
+    await createSubscriptionPayment(ctx, { providerRef: qr.id, amount: plan.monthlyPrice });
 
     return {
       ok: true,
       qrId: qr.id,
       imageUrl: qr.imageUrl,
       closeBy: qr.closeBy,
-      amount: MONTHLY_PRICE_INR,
+      amount: plan.monthlyPrice,
     };
   } catch (error) {
     console.error('startUpiPayment failed', error);

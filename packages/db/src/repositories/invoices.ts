@@ -6,7 +6,7 @@ import {
   type TaxMode,
   type TenantCtx,
 } from '@billwise/shared';
-import { and, desc, eq, sql } from 'drizzle-orm';
+import { and, asc, desc, eq, sql } from 'drizzle-orm';
 import { getDb, type Executor } from '../client';
 import {
   invoiceAudit,
@@ -490,6 +490,47 @@ export async function recordPayment(ctx: TenantCtx, input: PaymentInput): Promis
       await refreshPaymentStatus(ctx, tx, input.invoiceId);
     }
   });
+}
+
+export type InvoicePaymentRow = {
+  id: string;
+  paidOn: string;
+  amount: string;
+  method: PaymentMethod;
+  direction: 'in' | 'out';
+  reference: string | null;
+  note: string | null;
+};
+
+/**
+ * Every payment made against one bill, oldest first.
+ *
+ * "I paid you ₹100 last Tuesday" is a claim the shopkeeper has to be able to
+ * check while the customer is standing there. A single `amount_paid` total
+ * cannot answer it; these rows can.
+ *
+ * Oldest first, matching the party ledger — a list of money going in reads
+ * forwards, not backwards.
+ */
+export async function listInvoicePayments(
+  ctx: TenantCtx,
+  invoiceId: string,
+): Promise<InvoicePaymentRow[]> {
+  const rows = await getDb()
+    .select({
+      id: payments.id,
+      paidOn: payments.paidOn,
+      amount: payments.amount,
+      method: payments.method,
+      direction: payments.direction,
+      reference: payments.reference,
+      note: payments.note,
+    })
+    .from(payments)
+    .where(and(eq(payments.businessId, ctx.businessId), eq(payments.invoiceId, invoiceId)))
+    .orderBy(asc(payments.paidOn), asc(payments.createdAt));
+
+  return rows as InvoicePaymentRow[];
 }
 
 export async function refreshPaymentStatus(

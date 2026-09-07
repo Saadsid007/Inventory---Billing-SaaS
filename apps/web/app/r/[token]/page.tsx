@@ -63,7 +63,7 @@ export default async function PublicReceiptPage({
             </p>
           )}
           {receipt.business.phone && (
-            <p className="text-sm text-muted-foreground">Ph: {receipt.business.phone}</p>
+            <p className="text-sm text-muted-foreground">Phone: {receipt.business.phone}</p>
           )}
           {receipt.business.gstin && (
             <p className="tabular text-xs text-muted-foreground">
@@ -142,7 +142,7 @@ export default async function PublicReceiptPage({
           >
             {balance > 0 ? (
               <>
-                <p className="text-xs font-semibold tracking-widest uppercase">Baaki / Balance due</p>
+                <p className="text-xs font-semibold tracking-widest uppercase">Balance due</p>
                 <p className="tabular mt-0.5 text-2xl font-bold">{inr(receipt.balance)}</p>
               </>
             ) : (

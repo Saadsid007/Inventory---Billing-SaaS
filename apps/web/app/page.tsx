@@ -1,4 +1,4 @@
-import { MONTHLY_PRICE_INR, TRIAL_DAYS } from '@billwise/shared';
+import { FROM_PRICE_INR, MONTHLY_PRICE_INR, TRIAL_DAYS } from '@billwise/shared';
 import { Badge, Button, Card } from '@billwise/ui';
 import {
   ArrowRight,
@@ -23,7 +23,7 @@ import { MarketingFooter, MarketingHeader } from '@/components/marketing-chrome'
 
 export const metadata: Metadata = {
   title: { absolute: 'Billwise: GST billing, stock and khata software for Indian shops' },
-  description: `Billing software for kirana, general, hardware and retail shops. Make GST and non-GST bills in seconds, track stock automatically, keep a customer khata, and put your products online with a QR code. ${TRIAL_DAYS} days free, then ₹${MONTHLY_PRICE_INR} a month.`,
+  description: `Billing software for kirana, general, hardware and retail shops. Make GST and non-GST bills in seconds, track stock automatically, keep a customer khata, and put your products online with a QR code. ${TRIAL_DAYS} days free, then from ₹${FROM_PRICE_INR} a month.`,
   alternates: { canonical: '/' },
 };
 
@@ -132,7 +132,7 @@ const FAQ = [
   },
   {
     q: 'How much does it cost?',
-    a: `₹${MONTHLY_PRICE_INR} a month, everything included. ${TRIAL_DAYS} days free first, with no card needed to start. One plan, no tiers, no per-invoice charge.`,
+    a: `₹${MONTHLY_PRICE_INR} a month for a shop, ₹${FROM_PRICE_INR} for a Jan Seva Kendra — everything included. ${TRIAL_DAYS} days free first, with no card needed to start. One plan, no tiers, no per-invoice charge.`,
   },
 ];
 
@@ -156,7 +156,7 @@ export default async function HomePage() {
       name: 'Billwise',
       applicationCategory: 'BusinessApplication',
       operatingSystem: 'Web',
-      description: `GST billing, inventory and khata software for Indian shops. ${TRIAL_DAYS} days free, then ₹${MONTHLY_PRICE_INR} a month.`,
+      description: `GST billing, inventory and khata software for Indian shops. ${TRIAL_DAYS} days free, then from ₹${FROM_PRICE_INR} a month.`,
       offers: {
         '@type': 'Offer',
         price: MONTHLY_PRICE_INR,
@@ -407,7 +407,7 @@ export default async function HomePage() {
         <section className="mx-auto max-w-6xl px-5 py-14 sm:px-8 sm:py-20">
           <div className="brand-wash overflow-hidden rounded-2xl px-6 py-14 text-center text-white sm:px-12">
             <h2 className="text-2xl font-semibold text-balance sm:text-3xl">
-              ₹{MONTHLY_PRICE_INR} a month. That is the whole price.
+              ₹{MONTHLY_PRICE_INR} a month for a shop. That is the whole price.
             </h2>
             <p className="mx-auto mt-3 max-w-lg text-balance text-white/85">
               Everything included, no tiers to work out. {TRIAL_DAYS} days free first, so you can

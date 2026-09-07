@@ -58,6 +58,21 @@ export default async function PrintSevaReceiptPage({
   const thermal = format === 'thermal';
   const balance = Math.max(0, Number(invoice.grandTotal) - Number(invoice.amountPaid));
 
+  /**
+   * The furthest-out promised date on this receipt.
+   *
+   * One line at the bottom saying when everything should be done, rather than
+   * asking the customer to read three dates out of a table and pick the last
+   * one. The latest is the honest one to quote — "come back on Tuesday" when
+   * one of three jobs runs to Friday means one wasted trip.
+   */
+  const latestExpected =
+    work
+      .map((w) => w.expectedOn)
+      .filter((d): d is string => Boolean(d))
+      .sort()
+      .at(-1) ?? null;
+
   const money = (v: string | number) => `₹${Number(v).toFixed(2)}`;
   const date = (value: string | null) => {
     if (!value) return '';
@@ -70,39 +85,53 @@ export default async function PrintSevaReceiptPage({
       <PrintToolbar invoiceId={invoice.id} format={thermal ? 'thermal' : 'a4'} />
 
       <div className={thermal ? 'slip thermal' : 'slip'}>
-        <div style={{ textAlign: 'center' }}>
-          <div className="shop-name">{business?.name}</div>
-          {business?.addressLine1 && <div className="muted">{business.addressLine1}</div>}
-          {(business?.city || business?.pincode) && (
-            <div className="muted">
-              {[business?.city, business?.pincode].filter(Boolean).join(' ')}
-            </div>
-          )}
-          {business?.phone && <div className="muted">Ph: {business.phone}</div>}
-          {/* Printed only when there is one. Most CSCs are not registered, and
-              an empty GSTIN line invites the question. */}
-          {business?.gstin && <div className="muted">GSTIN: {business.gstin}</div>}
-        </div>
-
-        <hr className="rule" />
-
-        <div className="row">
+        <header className="head">
           <div>
-            <strong>{invoice.invoiceNo ?? 'Draft'}</strong>
+            <div className="shop-name">{business?.name}</div>
+            {business?.addressLine1 && <div className="muted">{business.addressLine1}</div>}
+            {(business?.city || business?.pincode) && (
+              <div className="muted">
+                {[business?.city, business?.pincode].filter(Boolean).join(' ')}
+              </div>
+            )}
+            {business?.phone && <div className="muted">Phone: {business.phone}</div>}
+            {/* Printed only when there is one. Most CSCs are not registered, and
+                an empty GSTIN line invites the question. */}
+            {business?.gstin && <div className="muted">GSTIN: {business.gstin}</div>}
+          </div>
+
+          <div className="head-right">
+            <div className="doc-label">Receipt</div>
+            <div className="doc-no">{invoice.invoiceNo ?? 'Draft'}</div>
             <div className="muted">{date(invoice.invoiceDate)}</div>
           </div>
-          <div style={{ textAlign: 'right' }}>
-            <strong>{invoice.partyName}</strong>
+        </header>
+
+        {/* Who paid, and what state the money is in. Two facts, one strip —
+            the pair somebody checks first when they pull this out of a drawer
+            six months later. */}
+        <section className="meta">
+          <div>
+            <div className="meta-label">Received from</div>
+            <div className="meta-value">{invoice.partyName}</div>
             {invoice.partyPhone && <div className="muted">{invoice.partyPhone}</div>}
           </div>
-        </div>
-
-        <hr className="rule" />
+          <div style={{ textAlign: thermal ? 'left' : 'right' }}>
+            <div className="meta-label">Status</div>
+            <div className="meta-value">
+              {invoice.status === 'cancelled'
+                ? 'Cancelled'
+                : balance > 0
+                  ? 'Part paid'
+                  : 'Paid in full'}
+            </div>
+          </div>
+        </section>
 
         <table>
           <thead>
             <tr>
-              <th>Kaam</th>
+              <th>Work done</th>
               <th className="num">Qty</th>
               <th className="num">Rate</th>
               <th className="num">Amount</th>
@@ -117,14 +146,14 @@ export default async function PrintSevaReceiptPage({
                 <td className="num">{Number(line.lineTotal).toFixed(2)}</td>
               </tr>
             ))}
-            <tr className="total-row">
+            <tr className="total-row grand">
               <td colSpan={3}>Total</td>
               <td className="num">{money(invoice.grandTotal)}</td>
             </tr>
             {Number(invoice.amountPaid) > 0 && (
               <tr className="total-row">
                 <td colSpan={3} style={{ fontWeight: 400 }}>
-                  Jama
+                  Paid
                 </td>
                 <td className="num" style={{ fontWeight: 400 }}>
                   {money(invoice.amountPaid)}
@@ -134,15 +163,18 @@ export default async function PrintSevaReceiptPage({
           </tbody>
         </table>
 
-        <div className="balance">
+        <div className={balance > 0 ? 'balance' : 'balance settled'}>
           {balance > 0 ? (
             <>
-              <div className="label">Baaki / Balance</div>
+              <div className="label">Balance to pay</div>
               <div className="amount">{money(balance)}</div>
+              <div className="muted" style={{ marginTop: '1mm' }}>
+                Payable when you collect your work.
+              </div>
             </>
           ) : (
-            <div className="amount" style={{ fontSize: '12pt' }}>
-              Poora paisa mil gaya
+            <div className="amount" style={{ fontSize: '13pt' }}>
+              Paid in full — nothing outstanding
             </div>
           )}
         </div>
@@ -150,29 +182,33 @@ export default async function PrintSevaReceiptPage({
         {/* The reason the customer keeps this slip. */}
         {work.length > 0 && (
           <div className="work">
-            <h2>Aapka kaam</h2>
+            <h2>Your work</h2>
             <table>
               <thead>
                 <tr>
-                  <th>Kaam</th>
+                  <th>Work</th>
                   <th>Reference no.</th>
-                  <th className="num">Kab tak</th>
+                  <th className="num">Expected by</th>
                 </tr>
               </thead>
               <tbody>
                 {work.map((w) => (
                   <tr key={w.id}>
                     <td>{w.serviceName}</td>
-                    <td style={{ fontFamily: 'monospace', fontSize: '9pt' }}>
-                      {w.referenceNo ?? '—'}
-                    </td>
-                    <td className="num">{w.expectedOn ? date(w.expectedOn) : '—'}</td>
+                    <td className="ref">{w.referenceNo ?? '—'}</td>
+                    <td className="num">{w.expectedOn ? date(w.expectedOn) : 'Not fixed'}</td>
                   </tr>
                 ))}
               </tbody>
             </table>
-            <div className="muted" style={{ marginTop: '2mm' }}>
-              Kaam taiyaar hone par hum message bhej denge. Aate waqt yeh parchi saath laaiye.
+
+            {/* Said plainly, because it is the promise that stops the customer
+                walking back in every second day to ask. */}
+            <div className="promise">
+              We will send you a message
+              {invoice.partyPhone ? ` on ${invoice.partyPhone}` : ''} as soon as your work is
+              ready. Please bring this slip with you when you come to collect it.
+              {latestExpected && ` Expected by ${date(latestExpected)}.`}
             </div>
           </div>
         )}
@@ -183,9 +219,12 @@ export default async function PrintSevaReceiptPage({
           </div>
         )}
 
-        <div className="foot">
-          {settings?.invoiceFooter ?? 'Dhanyavaad.'}
+        <div className="signature">
+          <div>Customer signature</div>
+          <div>For {business?.name}</div>
         </div>
+
+        <div className="foot">{settings?.invoiceFooter ?? 'Thank you.'}</div>
       </div>
     </>
   );

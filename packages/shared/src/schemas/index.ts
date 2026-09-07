@@ -5,3 +5,4 @@ export * from './product';
 export * from './party';
 export * from './invoice';
 export * from './application';
+export * from './plan';

@@ -26,7 +26,7 @@ export default async function SevaSettingsPage() {
     <PageBody className="mx-auto max-w-2xl space-y-5">
       <PageHeader
         title="Settings"
-        description="Yeh sab aapke har receipt pe chhapta hai."
+        description="All of this is printed on every receipt you give out."
       />
       <SevaSettingsForm
         initial={{

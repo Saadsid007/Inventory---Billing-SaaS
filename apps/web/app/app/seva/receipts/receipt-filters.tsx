@@ -40,7 +40,7 @@ export function ReceiptFilters({
         <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
         <Input
           className="pl-9"
-          placeholder="Receipt number ya naam…"
+          placeholder="Receipt number or name…"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           onKeyDown={(e) => {
@@ -59,10 +59,10 @@ export function ReceiptFilters({
         }}
         aria-label="Filter by payment"
       >
-        <option value="">Sab receipts</option>
-        <option value="unpaid">Paisa baaki</option>
-        <option value="partial">Aadha mila</option>
-        <option value="paid">Poora mil gaya</option>
+        <option value="">All receipts</option>
+        <option value="unpaid">Unpaid</option>
+        <option value="partial">Part paid</option>
+        <option value="paid">Fully paid</option>
       </Select>
     </div>
   );

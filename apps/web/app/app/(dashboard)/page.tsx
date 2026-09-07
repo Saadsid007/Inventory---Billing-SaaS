@@ -1,5 +1,11 @@
-import { getBusiness, getDashboardStats, getRecentInvoices, getSettings } from '@billwise/db';
-import { MONTHLY_PRICE_INR, trialDaysRemaining } from '@billwise/shared';
+import {
+  getBusiness,
+  getDashboardStats,
+  getPlan,
+  getRecentInvoices,
+  getSettings,
+} from '@billwise/db';
+import { trialDaysRemaining } from '@billwise/shared';
 import {
   Alert,
   Badge,
@@ -121,16 +127,20 @@ export default async function DashboardPage() {
   const trialDaysLeft =
     status === 'trial' && trialEndsAt ? trialDaysRemaining(trialEndsAt) : null;
 
+  // Only while the reminder is on screen — a shop that has paid should not pay
+  // for a round trip to look up a price it is not being quoted.
+  const plan = trialDaysLeft !== null ? await getPlan('retail') : null;
+
   const greetingHour = new Date().getHours();
   const greeting =
     greetingHour < 12 ? 'Good morning' : greetingHour < 17 ? 'Good afternoon' : 'Good evening';
 
   return (
     <PageBody className="space-y-6">
-      {trialDaysLeft !== null && trialEndsAt && (
+      {trialDaysLeft !== null && trialEndsAt && plan && (
         <TrialReminder
           daysLeft={trialDaysLeft}
-          monthlyPrice={MONTHLY_PRICE_INR}
+          monthlyPrice={plan.monthlyPrice}
           endsOn={trialEndsAt.toLocaleDateString('en-IN', {
             day: 'numeric',
             month: 'long',

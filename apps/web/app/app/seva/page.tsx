@@ -81,7 +81,7 @@ export default async function SevaDashboard() {
               {businessName}
             </h1>
             <p className="max-w-xl text-sm leading-relaxed text-white/80">
-              Aaj ka kaam, kiska paisa baaki hai, aur kaunsa kaam taiyaar hai — sab ek jagah.
+              Today's work, who still owes you money, and what is ready to collect — all in one place.
             </p>
           </div>
           <div className="flex shrink-0 flex-wrap gap-2">
@@ -90,13 +90,13 @@ export default async function SevaDashboard() {
                 <Plus /> New receipt
               </Button>
             </Link>
-            <Link href="/app/seva/work">
+            <Link href="/app/seva/deliveries">
               <Button
                 size="lg"
                 variant="outline"
                 className="h-11 border-white/30 bg-white/10 text-white hover:bg-white/20 hover:text-white"
               >
-                <ClipboardList /> Work
+                <ClipboardList /> Deliveries
               </Button>
             </Link>
           </div>
@@ -113,14 +113,14 @@ export default async function SevaDashboard() {
         <StatCard
           label="Ready to collect"
           value={String(work.ready)}
-          hint={work.ready === 0 ? 'Nobody to call' : 'Call the customer'}
+          hint={work.ready === 0 ? 'Nobody to call in' : 'Tell them it is ready'}
           icon={BellRing}
           tone={work.ready > 0 ? 'success' : 'default'}
         />
         <StatCard
           label="Owed to you"
           value={inr(stats.totalOutstanding)}
-          hint="Half-paid work and udhaar"
+          hint="Part-paid work and credit given"
           icon={Wallet}
         />
         <StatCard
@@ -167,7 +167,7 @@ export default async function SevaDashboard() {
         <section className="min-w-0 space-y-3">
           <div className="flex items-center justify-between">
             <h2 className="text-sm font-semibold">Ready to collect</h2>
-            <Link href="/app/seva/work?status=ready" className="text-sm text-muted-foreground hover:text-foreground">
+            <Link href="/app/seva/deliveries" className="text-sm text-muted-foreground hover:text-foreground">
               See all
             </Link>
           </div>
@@ -190,7 +190,7 @@ export default async function SevaDashboard() {
                 {ready.map((a) => (
                   <TR key={a.id}>
                     <TD>
-                      <Link href={`/app/seva/work?q=${encodeURIComponent(a.serviceName)}`} className={tableLinkClass}>
+                      <Link href={`/app/seva/deliveries?q=${encodeURIComponent(a.partyName ?? a.serviceName)}`} className={tableLinkClass}>
                         {a.serviceName}
                       </Link>
                     </TD>

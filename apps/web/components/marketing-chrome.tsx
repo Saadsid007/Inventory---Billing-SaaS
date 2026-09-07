@@ -1,4 +1,4 @@
-import { MONTHLY_PRICE_INR, TRIAL_DAYS } from '@billwise/shared';
+import { FROM_PRICE_INR, TRIAL_DAYS } from '@billwise/shared';
 import { Logo, ThemeToggle } from '@billwise/ui';
 import { LayoutDashboard } from 'lucide-react';
 import Link from 'next/link';
@@ -92,7 +92,7 @@ export async function MarketingFooter() {
             <BrandMark />
             <p className="mt-3 max-w-sm text-sm leading-relaxed text-muted-foreground">
               GST billing, stock and khata software for Indian shops. {TRIAL_DAYS} days free, then
-              ₹{MONTHLY_PRICE_INR} a month, everything included.
+              From ₹{FROM_PRICE_INR} a month, everything included.
             </p>
           </div>
 

@@ -65,8 +65,30 @@ export type AppShellProps = {
   }>;
 };
 
-function isActive(currentPath: string, href: string): boolean {
-  return href === '/app' ? currentPath === '/app' : currentPath.startsWith(href);
+/**
+ * Which nav entry is the current one.
+ *
+ * Longest match wins, and there is only ever one winner. The obvious rule —
+ * "highlight anything the path starts with" — lights up two entries the moment
+ * one section lives inside another: `/app/seva/receipts` starts with
+ * `/app/seva`, so Dashboard and Receipts were both blue at once, and the
+ * sidebar looked like it was changing as you moved between pages.
+ *
+ * The old code special-cased `/app` to dodge exactly this. That worked until
+ * `/app/seva` became a section home as well, which is the trouble with fixing a
+ * general rule one exception at a time.
+ *
+ * A trailing slash is required for the prefix test, so `/app/settings` does not
+ * mark `/app/set` active — not a real route today, and not a trap worth
+ * leaving lying around either.
+ */
+function activeHref(currentPath: string, nav: readonly NavItem[]): string | null {
+  let best: string | null = null;
+  for (const { href } of nav) {
+    const matches = currentPath === href || currentPath.startsWith(`${href}/`);
+    if (matches && (best === null || href.length > best.length)) best = href;
+  }
+  return best;
 }
 
 /** Groups items by `section`, preserving the order sections first appear. */
@@ -104,6 +126,7 @@ export function AppShell({
   const searchRef = React.useRef<HTMLInputElement>(null);
   const mobileSearchRef = React.useRef<HTMLInputElement>(null);
   const groups = React.useMemo(() => groupNav(nav), [nav]);
+  const current = React.useMemo(() => activeHref(currentPath, nav), [currentPath, nav]);
 
   React.useEffect(() => {
     setCollapsed(localStorage.getItem(COLLAPSE_KEY) === '1');
@@ -161,53 +184,63 @@ export function AppShell({
   }
 
   const statusClass = {
-    default: 'text-muted-foreground',
+    default: 'text-sidebar-muted',
     warning: 'text-warning',
     destructive: 'text-destructive',
   }[statusTone];
 
+  /**
+   * The rail.
+   *
+   * Typography is a step smaller than the page it sits beside — 13px items,
+   * 10px section headings — because navigation is read by shape and position
+   * once someone has used the app twice, not by reading the words. Making it
+   * quieter gives the content room without hiding anything.
+   *
+   * Every surface in here is expressed as white-alpha rather than as a `card`
+   * or `muted` token. The rail is dark in light mode too, and those tokens are
+   * light there, so a `bg-card` panel would come out as a white slab.
+   */
   function sidebarContent(rail: boolean) {
     return (
       <div className="relative flex h-full flex-col overflow-hidden bg-sidebar text-sidebar-foreground">
         <div
           className={cn(
-            'relative flex h-16 items-center border-b border-sidebar-border/80',
-            rail ? 'justify-center px-2' : 'gap-3 px-4',
+            'relative flex h-16 items-center border-b border-sidebar-border',
+            rail ? 'justify-center px-2' : 'gap-2.5 px-4',
           )}
         >
-          <LogoMark className="size-9 shrink-0 shadow-sm shadow-primary/20" />
+          <LogoMark className="size-8 shrink-0 shadow-sm shadow-primary/25" />
           {!rail && (
             <div className="min-w-0">
-              <span className="block text-[0.95rem] font-bold tracking-tight">Billwise</span>
-              <span className="block text-[0.65rem] font-medium tracking-wider text-muted-foreground uppercase">
+              <span className="block text-sm font-bold tracking-tight">Billwise</span>
+              <span className="block text-[0.6rem] font-semibold tracking-[0.16em] text-sidebar-muted uppercase">
                 Business panel
               </span>
             </div>
           )}
         </div>
 
-        <div className={cn('relative p-3', rail && 'px-2')}>
+        <div className={cn('relative p-2.5', rail && 'px-2')}>
           <button
             type="button"
             onClick={onSwitchBusiness}
             disabled={!onSwitchBusiness}
             title={rail ? businessName : undefined}
             className={cn(
-              'flex w-full items-center rounded-xl border border-sidebar-border/80 bg-card/70 text-left shadow-xs backdrop-blur-xs transition-all',
-              rail ? 'justify-center p-1.5' : 'gap-2.5 p-2.5',
-              onSwitchBusiness
-                ? 'hover:border-primary/30 hover:bg-card hover:shadow-sm'
-                : 'cursor-default',
+              'flex w-full items-center rounded-lg border border-white/8 bg-white/5 text-left transition-colors',
+              rail ? 'justify-center p-1.5' : 'gap-2.5 p-2',
+              onSwitchBusiness ? 'hover:border-white/15 hover:bg-white/10' : 'cursor-default',
             )}
           >
-            <span className="grid size-9 shrink-0 place-items-center rounded-lg bg-primary text-sm font-black text-primary-foreground shadow-xs">
+            <span className="grid size-8 shrink-0 place-items-center rounded-md bg-primary text-xs font-black text-primary-foreground shadow-xs">
               {businessName.charAt(0).toUpperCase()}
             </span>
             {!rail && (
               <span className="min-w-0 flex-1">
-                <span className="block truncate text-sm font-semibold">{businessName}</span>
+                <span className="block truncate text-[0.8rem] font-semibold">{businessName}</span>
                 {statusLabel && (
-                  <span className={cn('block truncate text-[0.7rem] font-medium', statusClass)}>
+                  <span className={cn('block truncate text-[0.65rem] font-medium', statusClass)}>
                     {statusLabel}
                   </span>
                 )}
@@ -218,22 +251,22 @@ export function AppShell({
 
         <nav
           className={cn(
-            'relative flex-1 space-y-4 overflow-y-auto pb-4',
-            rail ? 'px-2' : 'space-y-5 px-3',
+            'relative flex-1 overflow-y-auto pb-4',
+            rail ? 'space-y-2 px-2' : 'space-y-4 px-2.5',
           )}
         >
           {groups.map((group) => (
-            <div key={group.section} className="space-y-1">
+            <div key={group.section} className="space-y-0.5">
               {group.section &&
                 (rail ? (
                   <div className="mx-auto my-2 h-px w-6 bg-sidebar-border" aria-hidden />
                 ) : (
-                  <p className="px-2.5 pb-1.5 text-[0.65rem] font-bold tracking-[0.14em] text-muted-foreground/70 uppercase">
+                  <p className="px-2 pt-1 pb-1.5 text-[0.6rem] font-bold tracking-[0.16em] text-sidebar-muted/80 uppercase">
                     {group.section}
                   </p>
                 ))}
               {group.items.map(({ href, label, icon: Icon, badge }) => {
-                const active = isActive(currentPath, href);
+                const active = href === current;
                 return (
                   <Link
                     key={href}
@@ -241,29 +274,27 @@ export function AppShell({
                     title={rail ? label : undefined}
                     aria-current={active ? 'page' : undefined}
                     className={cn(
-                      'group relative flex items-center rounded-xl text-sm font-medium transition-all duration-150',
-                      rail ? 'justify-center p-2.5' : 'gap-2.5 px-2.5 py-2.5',
+                      'group relative flex items-center rounded-lg text-[0.8rem] font-medium transition-colors duration-150',
+                      rail ? 'justify-center p-2' : 'gap-2.5 px-2 py-[0.44rem]',
                       active
-                        ? 'bg-primary text-primary-foreground shadow-sm shadow-primary/20'
-                        : 'text-muted-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground',
+                        ? 'bg-primary text-primary-foreground shadow-sm shadow-primary/25'
+                        : 'text-sidebar-muted hover:bg-sidebar-accent hover:text-sidebar-accent-foreground',
                     )}
                   >
                     <Icon
                       className={cn(
-                        'size-4 shrink-0 transition-colors',
-                        active
-                          ? 'text-primary-foreground'
-                          : 'text-muted-foreground group-hover:text-primary',
+                        'size-[0.95rem] shrink-0 transition-colors',
+                        active ? 'text-primary-foreground' : 'text-sidebar-muted/80',
                       )}
                     />
                     {!rail && <span className="truncate">{label}</span>}
                     {!rail && badge !== undefined && (
                       <span
                         className={cn(
-                          'tabular ml-auto rounded-full px-1.5 py-0.5 text-[0.65rem] font-bold',
+                          'tabular ml-auto rounded-full px-1.5 py-px text-[0.62rem] font-bold',
                           active
                             ? 'bg-primary-foreground/20 text-primary-foreground'
-                            : 'bg-primary-subtle text-primary-subtle-foreground',
+                            : 'bg-white/10 text-sidebar-foreground',
                         )}
                       >
                         {badge}
@@ -276,25 +307,25 @@ export function AppShell({
           ))}
         </nav>
 
-        <div className={cn('relative border-t border-sidebar-border/80 p-3', rail && 'px-2')}>
+        <div className={cn('relative border-t border-sidebar-border p-2.5', rail && 'px-2')}>
           <div
             className={cn(
-              'flex items-center rounded-xl border border-transparent bg-card/40 p-1.5',
-              rail ? 'flex-col justify-center gap-2' : 'gap-2.5',
+              'flex items-center rounded-lg bg-white/5 p-1.5',
+              rail ? 'flex-col justify-center gap-2' : 'gap-2',
             )}
           >
             <span
               title={rail ? userName : undefined}
-              className="grid size-9 shrink-0 place-items-center rounded-full bg-primary/10 text-xs font-bold text-primary ring-1 ring-primary/25"
+              className="grid size-7 shrink-0 place-items-center rounded-full bg-white/10 text-[0.65rem] font-bold text-sidebar-foreground ring-1 ring-white/15"
             >
               {userName.charAt(0).toUpperCase()}
             </span>
             {!rail && (
               <>
                 <span className="min-w-0 flex-1">
-                  <span className="block truncate text-sm font-semibold">{userName}</span>
+                  <span className="block truncate text-[0.78rem] font-semibold">{userName}</span>
                   {userEmail && (
-                    <span className="block truncate text-[0.7rem] text-muted-foreground">
+                    <span className="block truncate text-[0.65rem] text-sidebar-muted">
                       {userEmail}
                     </span>
                   )}
@@ -314,7 +345,7 @@ export function AppShell({
       <aside
         className={cn(
           'hidden shrink-0 border-r border-sidebar-border transition-[width] duration-200 md:block print:hidden',
-          collapsed ? 'w-[4.75rem]' : 'w-64',
+          collapsed ? 'w-[4.25rem]' : 'w-[15rem]',
         )}
       >
         <div className="sticky top-0 h-dvh">{sidebarContent(collapsed)}</div>

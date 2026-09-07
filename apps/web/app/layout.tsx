@@ -1,4 +1,4 @@
-import { MONTHLY_PRICE_INR, TRIAL_DAYS, appOrigin } from '@billwise/shared';
+import { FROM_PRICE_INR, TRIAL_DAYS, appOrigin } from '@billwise/shared';
 import { ThemeScript } from '@billwise/ui';
 import type { Metadata, Viewport } from 'next';
 import './globals.css';
@@ -14,7 +14,7 @@ import './globals.css';
  */
 const appUrl = appOrigin(process.env['NEXT_PUBLIC_APP_URL']);
 
-const description = `Make GST and non-GST bills in seconds, track stock automatically, see who owes you money, and put your products online with a QR code. ${TRIAL_DAYS} days free, then ₹${MONTHLY_PRICE_INR} a month.`;
+const description = `Make GST and non-GST bills in seconds, track stock automatically, see who owes you money, and put your products online with a QR code. ${TRIAL_DAYS} days free, then from ₹${FROM_PRICE_INR} a month.`;
 
 export const metadata: Metadata = {
   metadataBase: new URL(appUrl),

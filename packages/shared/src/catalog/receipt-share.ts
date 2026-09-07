@@ -57,22 +57,22 @@ export function receiptShareMessage(input: ReceiptShareInput): string {
   const paid = Number(input.amountPaid);
   const balance = Number(input.balance);
 
-  if (paid > 0 && balance > 0) lines.push(`Jama: ${rupees(input.amountPaid)}`);
+  if (paid > 0 && balance > 0) lines.push(`Paid: ${rupees(input.amountPaid)}`);
 
   if (balance > 0) {
-    lines.push(`*Baaki: ${rupees(input.balance)}*`);
+    lines.push(`*Balance due: ${rupees(input.balance)}*`);
   } else {
-    lines.push('*Paid — dhanyavaad!*');
+    lines.push('*Paid in full — thank you!*');
   }
 
   if (input.link) {
     lines.push('');
-    lines.push(`Bill dekhein: ${input.link}`);
+    lines.push(`View your bill: ${input.link}`);
   }
 
   if (input.businessPhone) {
     lines.push('');
-    lines.push(`Koi sawaal ho to: ${input.businessPhone}`);
+    lines.push(`Any questions: ${input.businessPhone}`);
   }
 
   return lines.join('\n');

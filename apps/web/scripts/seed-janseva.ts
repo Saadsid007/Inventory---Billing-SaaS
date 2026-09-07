@@ -280,7 +280,7 @@ async function main() {
     defaultTaxMode: 'exclusive',
     invoiceTerms:
       'Sarkari fees alag hai, wo receipt me shaamil hai.\nKaam poora hone par baaki paisa dena hoga.',
-    invoiceFooter: 'Aapka kaam taiyaar hone par hum message bhej denge.',
+    invoiceFooter: 'We will send you a message as soon as your work is ready.',
     catalogEnabled: true,
     showCatalogPrices: true,
     catalogWhatsapp: '9838001122',

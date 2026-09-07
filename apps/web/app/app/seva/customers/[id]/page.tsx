@@ -77,7 +77,7 @@ export default async function SevaCustomerPage({
         actions={
           <Card className="px-5 py-3 text-right">
             <p className="text-xs font-medium tracking-wide text-muted-foreground uppercase">
-              Baaki
+              Outstanding
             </p>
             <p
               className={`tabular mt-0.5 text-2xl font-semibold ${
@@ -92,19 +92,19 @@ export default async function SevaCustomerPage({
 
       <section className="space-y-3">
         <h2 className="flex items-center gap-2 text-sm font-semibold">
-          <ClipboardList className="size-4" /> Kaam
+          <ClipboardList className="size-4" /> Work
         </h2>
         {work.length === 0 ? (
           <EmptyState
             icon={ClipboardList}
-            title="Koi kaam nahi"
-            description="Is customer ka koi kaam register pe nahi hai."
+            title="No work on the register"
+            description="Nothing has been taken on for this customer yet."
           />
         ) : (
           <Table>
             <THead>
               <TR>
-                <TH>Kaam</TH>
+                <TH>Work</TH>
                 <TH>Reference</TH>
                 <TH>Status</TH>
               </TR>
@@ -133,8 +133,8 @@ export default async function SevaCustomerPage({
         {receipts.length === 0 ? (
           <EmptyState
             icon={Receipt}
-            title="Koi receipt nahi"
-            description="Abhi tak koi bill nahi bana."
+            title="No receipts"
+            description="Nothing has been billed to this customer yet."
           />
         ) : (
           <Table>
@@ -143,7 +143,7 @@ export default async function SevaCustomerPage({
                 <TH>Number</TH>
                 <TH>Date</TH>
                 <TH numeric>Total</TH>
-                <TH numeric>Baaki</TH>
+                <TH numeric>Outstanding</TH>
               </TR>
             </THead>
             <TBody>

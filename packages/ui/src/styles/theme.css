@@ -75,15 +75,31 @@
   --info: oklch(0.58 0.13 232);
   --info-foreground: oklch(0.99 0.005 258);
 
-  /* ------------------------------------------------------------- sidebar */
-  --sidebar: oklch(0.985 0.003 260);
-  --sidebar-foreground: oklch(0.22 0.015 260);
-  --sidebar-primary: oklch(0.55 0.21 258);
+  /* ------------------------------------------------------------- sidebar
+   *
+   * Dark in BOTH themes, deliberately.
+   *
+   * It used to be near-white in light mode, which made the whole window one
+   * flat sheet — the nav and the page it navigates read as the same surface,
+   * and nothing anchored the eye. A dark rail is what most tools people
+   * already pay for look like, and it costs nothing: the sidebar shows
+   * navigation, never content, so it does not have to follow the reading
+   * surface.
+   *
+   * Because of that, nothing inside the sidebar may use the global
+   * `muted-foreground` / `card` tokens — in light mode those are dark ink and
+   * white, and both vanish here. `--sidebar-muted` exists for exactly that.
+   */
+  --sidebar: oklch(0.205 0.022 264);
+  --sidebar-foreground: oklch(0.95 0.006 258);
+  --sidebar-primary: oklch(0.6 0.2 258);
   --sidebar-primary-foreground: oklch(0.99 0.005 258);
-  --sidebar-accent: oklch(0.945 0.006 260);
-  --sidebar-accent-foreground: oklch(0.18 0.015 260);
-  --sidebar-border: oklch(0.92 0.004 260);
-  --sidebar-ring: oklch(0.55 0.21 258);
+  --sidebar-accent: oklch(0.27 0.028 264);
+  --sidebar-accent-foreground: oklch(0.98 0.005 258);
+  --sidebar-border: oklch(0.99 0.02 258 / 11%);
+  --sidebar-ring: oklch(0.6 0.2 258);
+  /** Secondary text on the dark rail: section headings, email, inactive items. */
+  --sidebar-muted: oklch(0.7 0.022 258);
 
   /* -------------------------------------------------------------- charts */
   --chart-1: oklch(0.55 0.21 258);
@@ -144,14 +160,17 @@
   --info: oklch(0.68 0.13 232);
   --info-foreground: oklch(0.16 0.02 264);
 
-  --sidebar: oklch(0.17 0.01 264);
-  --sidebar-foreground: oklch(0.93 0.008 258);
+  /* A shade darker than the page, so the rail still reads as a separate
+     surface when everything around it is already dark. */
+  --sidebar: oklch(0.145 0.018 264);
+  --sidebar-foreground: oklch(0.94 0.008 258);
   --sidebar-primary: oklch(0.62 0.19 258);
   --sidebar-primary-foreground: oklch(0.99 0.005 258);
-  --sidebar-accent: oklch(0.23 0.015 264);
+  --sidebar-accent: oklch(0.235 0.022 264);
   --sidebar-accent-foreground: oklch(0.98 0.005 258);
-  --sidebar-border: oklch(0.25 0.012 264);
+  --sidebar-border: oklch(0.99 0.02 258 / 10%);
   --sidebar-ring: oklch(0.62 0.19 258);
+  --sidebar-muted: oklch(0.68 0.022 258);
 
   --chart-1: oklch(0.65 0.18 258);
   --chart-2: oklch(0.7 0.14 200);
@@ -205,6 +224,7 @@
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-ring: var(--sidebar-ring);
+  --color-sidebar-muted: var(--sidebar-muted);
 
   --color-chart-1: var(--chart-1);
   --color-chart-2: var(--chart-2);

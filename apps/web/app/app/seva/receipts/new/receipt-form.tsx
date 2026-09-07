@@ -292,16 +292,17 @@ export function ReceiptForm({
                 }
               />
               <label htmlFor={`l-trk-${line.key}`} className="min-w-0 cursor-pointer">
-                <span className="block text-sm font-medium">Yeh kaam baad me milega</span>
+                <span className="block text-sm font-medium">This work will be ready later</span>
                 <span className="text-xs text-muted-foreground">
-                  Register me chadh jaayega. Same-day kaam ke liye band rehne dijiye.
+                  It goes onto the work register so you can track it. Leave this off for
+                  anything finished the same day.
                 </span>
               </label>
             </div>
 
             {line.tracked && (
               <div className="grid gap-3 sm:grid-cols-3">
-                <Field label="Kab tak dena hai" htmlFor={`l-exp-${line.key}`}>
+                <Field label="Promised by" htmlFor={`l-exp-${line.key}`}>
                   <Input
                     id={`l-exp-${line.key}`}
                     type="date"
@@ -312,7 +313,7 @@ export function ReceiptForm({
                 <Field
                   label="Reference no."
                   htmlFor={`l-ref-${line.key}`}
-                  hint="Sarkari acknowledgement. Aadhaar number nahi."
+                  hint="Government acknowledgement number. Never the Aadhaar number."
                 >
                   <Input
                     id={`l-ref-${line.key}`}
@@ -320,10 +321,10 @@ export function ReceiptForm({
                     onChange={(e) => patch(line.key, { referenceNo: e.target.value })}
                   />
                 </Field>
-                <Field label="Documents liye" htmlFor={`l-doc-${line.key}`}>
+                <Field label="Documents taken" htmlFor={`l-doc-${line.key}`}>
                   <Input
                     id={`l-doc-${line.key}`}
-                    placeholder="Aadhaar copy, 2 photo"
+                    placeholder="Aadhaar copy, 2 photos"
                     value={line.documentsHeld}
                     onChange={(e) => patch(line.key, { documentsHeld: e.target.value })}
                   />
@@ -346,7 +347,7 @@ export function ReceiptForm({
         </div>
 
         <div className="grid gap-3 sm:grid-cols-3">
-          <Field label="Abhi mila" htmlFor="r-recv" hint="Poora ya thoda — dono chalega.">
+          <Field label="Received now" htmlFor="r-recv" hint="All of it or part of it — either is fine.">
             <Input
               id="r-recv"
               inputMode="decimal"
@@ -355,7 +356,7 @@ export function ReceiptForm({
               onChange={(e) => setAmountReceived(e.target.value)}
             />
           </Field>
-          <Field label="Kaise" htmlFor="r-method">
+          <Field label="Paid by" htmlFor="r-method">
             <Select
               id="r-method"
               value={method}
@@ -384,14 +385,14 @@ export function ReceiptForm({
             className="h-8 text-xs"
             onClick={() => setAmountReceived(total.toFixed(2))}
           >
-            Poora ₹{total.toFixed(0)}
+            Full ₹{total.toFixed(0)}
           </Button>
           <Button
             variant="outline"
             className="h-8 text-xs"
             onClick={() => setAmountReceived((total / 2).toFixed(2))}
           >
-            Aadha
+            Half
           </Button>
           {amountReceived !== '' && (
             <Button
@@ -399,14 +400,14 @@ export function ReceiptForm({
               className="h-8 text-xs"
               onClick={() => setAmountReceived('')}
             >
-              <X className="size-3.5" /> Kuch nahi
+              <X className="size-3.5" /> Nothing
             </Button>
           )}
         </div>
 
         {balance > 0 && (
           <p className="rounded-md bg-warning/10 px-3 py-2 text-sm font-medium text-warning">
-            Baaki rahega: {inr(balance)}
+            Balance outstanding: {inr(balance)}
           </p>
         )}
 
@@ -415,7 +416,7 @@ export function ReceiptForm({
             id="r-note"
             value={note}
             onChange={(e) => setNote(e.target.value)}
-            placeholder="Kal shaam tak aana"
+            placeholder="Come back tomorrow evening"
           />
         </Field>
       </div>
