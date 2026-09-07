@@ -151,7 +151,7 @@ export default async function SevaReceiptPage({
           <CollectPanel invoiceId={invoice.id} balance={balance.toFixed(2)} />
         )}
         {!cancelled && <ShareButton invoiceId={invoice.id} />}
-        <Link href={`/app/invoices/${invoice.id}/print?format=thermal`}>
+        <Link href={`/app/receipts/${invoice.id}/print`}>
           <Button variant="outline">
             <Printer /> Print
           </Button>

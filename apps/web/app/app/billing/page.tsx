@@ -30,15 +30,34 @@ import { PayPanel } from './pay-panel';
 
 export const metadata: Metadata = { title: 'Billing' };
 
-const INCLUDED = [
-  'Unlimited bills, products and customers',
-  'GST and non-GST billing, with all five document types',
-  'A4 and 80mm thermal printing',
-  'Automatic stock tracking and low-stock alerts',
-  'Customer khata with a running balance',
-  'Your public catalog and QR code',
-  'Sales, tax, stock and outstanding reports, with CSV exports',
-];
+/**
+ * What the money buys, in the words of the trade paying it.
+ *
+ * The same plan either way — one price, one product. But a Jan Seva owner
+ * reading "automatic stock tracking" on the page where they are being asked
+ * for ₹299 is being sold somebody else's software, and it is a fair question
+ * why they should pay for it.
+ */
+const INCLUDED_BY_TYPE: Record<string, readonly string[]> = {
+  retail: [
+    'Unlimited bills, products and customers',
+    'GST and non-GST billing, with all five document types',
+    'A4 and 80mm thermal printing',
+    'Automatic stock tracking and low-stock alerts',
+    'Customer khata with a running balance',
+    'Your public catalog and QR code',
+    'Sales, tax, stock and outstanding reports, with CSV exports',
+  ],
+  jan_seva: [
+    'Unlimited receipts, services aur customers',
+    'Kaam ka register — applied, in process, taiyaar, de diya',
+    'Aadha paisa abhi, aadha kaam milne par — dono ka hisaab',
+    'WhatsApp par bill, aur "kaam taiyaar hai" ka message',
+    'A4 aur 80mm parchi, reference number ke saath',
+    'Kis customer ka kitna baaki hai, ek jagah',
+    'Kamai ki report — sarkari fees nikaal kar',
+  ],
+};
 
 const longDate = (d: Date) =>
   d.toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' });
@@ -51,7 +70,9 @@ const longDate = (d: Date) =>
  * paid up?" should never have to ask us.
  */
 export default async function BillingPage() {
-  const { ctx, businessName, status, access, trialEndsAt, paidUntil } = await requireMembership();
+  const { ctx, businessName, status, access, trialEndsAt, paidUntil, type } =
+    await requireMembership();
+  const included = INCLUDED_BY_TYPE[type] ?? INCLUDED_BY_TYPE.retail!;
   const payments = await listSubscriptionPayments(ctx);
   const paymentsEnabled = hasRazorpay();
 
@@ -155,7 +176,7 @@ export default async function BillingPage() {
               What you get
             </p>
             <ul className="mt-3 grid gap-2 sm:grid-cols-2">
-              {INCLUDED.map((item) => (
+              {included.map((item) => (
                 <li key={item} className="flex gap-2 text-sm leading-relaxed">
                   <Check className="mt-0.5 size-4 shrink-0 text-success" />
                   {item}

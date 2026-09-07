@@ -1,0 +1,191 @@
+/*
+ * A Jan Seva receipt.
+ *
+ * Default is A4, not thermal, and that is the opposite of the shop side on
+ * purpose: a CSC prints government forms all day, so it certainly owns an A4
+ * printer and may well not own a thermal one. But the slip only fills the top
+ * of the sheet — a half-page receipt on A4 can be torn in half and the rest of
+ * the paper used again, which is what these shops actually do.
+ *
+ * Margins live on the element as padding, with `@page { margin: 0 }`. A browser
+ * print dialog set to "Margins: None" overrides @page, and the result is a slip
+ * printed into the very edge of the paper.
+ */
+
+:root {
+  color-scheme: light;
+}
+
+body {
+  margin: 0;
+  background: #f1f5f9;
+  color: #0f172a;
+  font-family: ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
+  -webkit-print-color-adjust: exact;
+  print-color-adjust: exact;
+}
+
+.slip {
+  background: #fff;
+  margin: 12px auto;
+  padding: 12mm;
+  box-sizing: border-box;
+  width: 210mm;
+  min-height: 148mm;
+  box-shadow: 0 1px 3px rgb(15 23 42 / 0.15);
+}
+
+.slip.thermal {
+  width: 80mm;
+  min-height: 0;
+  padding: 4mm;
+  font-size: 9pt;
+}
+
+/* Anything that is chrome rather than the document. */
+.no-print {
+  max-width: 210mm;
+  margin: 12px auto 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+
+.shop-name {
+  font-size: 16pt;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+
+.thermal .shop-name {
+  font-size: 12pt;
+}
+
+.muted {
+  color: #475569;
+  font-size: 9.5pt;
+}
+
+.rule {
+  border: 0;
+  border-top: 1px solid #cbd5e1;
+  margin: 4mm 0;
+}
+
+.row {
+  display: flex;
+  justify-content: space-between;
+  gap: 6mm;
+  /* Grid and flex children default to min-width:auto, so a long service name
+     pushes the row wider than the paper instead of wrapping. */
+  min-width: 0;
+}
+
+.row > * {
+  min-width: 0;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 10pt;
+}
+
+.thermal table {
+  font-size: 9pt;
+}
+
+th {
+  text-align: left;
+  font-size: 8.5pt;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: #64748b;
+  border-bottom: 1px solid #cbd5e1;
+  padding: 1.5mm 0;
+}
+
+td {
+  padding: 1.8mm 0;
+  border-bottom: 1px solid #f1f5f9;
+  vertical-align: top;
+}
+
+.num {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.total-row td {
+  border-bottom: 0;
+  padding-top: 2.5mm;
+  font-weight: 700;
+}
+
+/* The number the customer came for. */
+.balance {
+  margin-top: 4mm;
+  padding: 3mm;
+  text-align: center;
+  border: 1.5px solid #0f172a;
+  border-radius: 2mm;
+}
+
+.balance .label {
+  font-size: 8.5pt;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #475569;
+}
+
+.balance .amount {
+  font-size: 17pt;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+}
+
+.work {
+  margin-top: 4mm;
+  border: 1px dashed #94a3b8;
+  border-radius: 2mm;
+  padding: 3mm;
+}
+
+.work h2 {
+  margin: 0 0 2mm;
+  font-size: 9pt;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #475569;
+}
+
+.foot {
+  margin-top: 5mm;
+  font-size: 8.5pt;
+  color: #64748b;
+  text-align: center;
+}
+
+@media print {
+  @page {
+    size: A4;
+    margin: 0;
+  }
+
+  body {
+    background: #fff;
+  }
+
+  .no-print {
+    display: none !important;
+  }
+
+  .slip {
+    margin: 0;
+    box-shadow: none;
+    /* Half a sheet, so the rest can be torn off and reused. */
+    min-height: 0;
+  }
+}

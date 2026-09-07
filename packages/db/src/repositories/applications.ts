@@ -130,6 +130,39 @@ export type ApplicationRow = {
   isOverdue: boolean;
 };
 
+
+/**
+ * The columns every application read returns.
+ *
+ * Shared so `listApplications` and `getApplication` cannot drift. The second
+ * one used to be written as "list the register and search the result", which
+ * was correct and cost a thousand rows — 2.1 seconds against a database 200ms
+ * away — to return one of them.
+ */
+const APPLICATION_SELECT = sql`
+    select a.id::text                as "id",
+           a.service_name            as "serviceName",
+           a.party_id::text          as "partyId",
+           coalesce(a.party_name, p.name) as "partyName",
+           coalesce(a.party_phone, p.phone) as "partyPhone",
+           a.invoice_id::text        as "invoiceId",
+           i.invoice_no              as "invoiceNo",
+           a.status                  as "status",
+           a.reference_no            as "referenceNo",
+           a.applied_on::text        as "appliedOn",
+           a.expected_on::text       as "expectedOn",
+           a.delivered_on::text      as "deliveredOn",
+           a.documents_held          as "documentsHeld",
+           a.note                    as "note",
+           coalesce((i.grand_total - i.amount_paid), 0)::numeric(12,2)::text as "balance",
+           (a.expected_on is not null
+             and a.expected_on < (now() at time zone 'Asia/Kolkata')::date
+             and a.status in ('applied', 'in_process')) as "isOverdue"
+    from service_applications a
+    left join parties p  on p.id = a.party_id
+    left join invoices i on i.id = a.invoice_id
+`;
+
 export type ApplicationFilters = {
   status?: ApplicationStatus | undefined;
   /** Everything not yet handed over or rejected. */
@@ -166,27 +199,7 @@ export async function listApplications(
   }
 
   const rows = await getDb().execute<ApplicationRow>(sql`
-    select a.id::text                as "id",
-           a.service_name            as "serviceName",
-           a.party_id::text          as "partyId",
-           coalesce(a.party_name, p.name) as "partyName",
-           coalesce(a.party_phone, p.phone) as "partyPhone",
-           a.invoice_id::text        as "invoiceId",
-           i.invoice_no              as "invoiceNo",
-           a.status                  as "status",
-           a.reference_no            as "referenceNo",
-           a.applied_on::text        as "appliedOn",
-           a.expected_on::text       as "expectedOn",
-           a.delivered_on::text      as "deliveredOn",
-           a.documents_held          as "documentsHeld",
-           a.note                    as "note",
-           coalesce((i.grand_total - i.amount_paid), 0)::numeric(12,2)::text as "balance",
-           (a.expected_on is not null
-             and a.expected_on < (now() at time zone 'Asia/Kolkata')::date
-             and a.status in ('applied', 'in_process')) as "isOverdue"
-    from service_applications a
-    left join parties p  on p.id = a.party_id
-    left join invoices i on i.id = a.invoice_id
+    ${APPLICATION_SELECT}
     where ${sql.join(where, sql` and `)}
     order by
       -- Anything late floats to the top; then the newest work.
@@ -200,24 +213,26 @@ export async function listApplications(
   return [...rows];
 }
 
+/**
+ * One job, by id.
+ *
+ * Queries for the row rather than listing the register and searching it. The
+ * first version did the latter — a thousand rows over the wire, 2.1 seconds
+ * against a database 200ms away, to return one of them. That is the sort of
+ * thing that is invisible on a test account with nine rows and ruinous on a
+ * real one after a year.
+ */
 export async function getApplication(
   ctx: TenantCtx,
   applicationId: string,
 ): Promise<ApplicationRow | undefined> {
-  const [row] = await getDb()
-    .select({ id: serviceApplications.id })
-    .from(serviceApplications)
-    .where(
-      and(
-        eq(serviceApplications.id, applicationId),
-        eq(serviceApplications.businessId, ctx.businessId),
-      ),
-    )
-    .limit(1);
-  if (!row) return undefined;
-
-  const all = await listApplications(ctx, { limit: 1000 });
-  return all.find((a) => a.id === applicationId);
+  const rows = await getDb().execute<ApplicationRow>(sql`
+    ${APPLICATION_SELECT}
+    where a.business_id = ${ctx.businessId}::uuid
+      and a.id = ${applicationId}::uuid
+    limit 1
+  `);
+  return rows[0];
 }
 
 /** Everything booked against one receipt, so the bill can list the work. */

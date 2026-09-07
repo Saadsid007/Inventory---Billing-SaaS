@@ -3,7 +3,7 @@
 import {
   createApplication,
   deleteApplication,
-  listApplications,
+  getApplication,
   setApplicationStatus,
   updateApplication,
 } from '@billwise/db';
@@ -117,8 +117,9 @@ export async function readyMessageAction(
 ): Promise<{ ok: true; message: string; phone: string | null } | { ok: false; error: string }> {
   const ctx = await requireBusiness();
 
-  const all = await listApplications(ctx, { limit: 1000 });
-  const row = all.find((a) => a.id === id);
+  // By id, not by listing the register and searching it — that cost a thousand
+  // rows over the wire every time somebody tapped the WhatsApp button.
+  const row = await getApplication(ctx, id);
   if (!row) return { ok: false, error: 'That work is not on the register any more.' };
 
   const balance = Number(row.balance);
