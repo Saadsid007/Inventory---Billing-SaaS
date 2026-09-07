@@ -205,12 +205,64 @@ export async function listPartyBalances(
   return [...rows];
 }
 
+/**
+ * One party's balance.
+ *
+ * Scoped in SQL rather than by computing every party's balance and picking one
+ * out of the result. The old version did the latter, and it worked — but it
+ * asked Postgres to aggregate every invoice, payment and return in the
+ * business, then threw all of it away except one row, on a page that shows one
+ * customer. The cost grew with the shop rather than with the answer.
+ *
+ * The arithmetic is deliberately identical to `listPartyBalances`. Two
+ * different sums of "what does this person owe" is the bug this codebase has
+ * already had twice — once on the dashboard, once in the outstanding CSV.
+ */
 export async function getPartyBalance(
   ctx: TenantCtx,
   partyId: string,
+  tx: Executor = getDb(),
 ): Promise<PartyBalance | undefined> {
-  const all = await listPartyBalances(ctx);
-  return all.find((b) => b.partyId === partyId);
+  const rows = await tx.execute<PartyBalance>(sql`
+    select
+      p.id    as "partyId",
+      p.name  as "name",
+      p.phone as "phone",
+      p.gstin as "gstin",
+      p.city  as "city",
+      p.opening_balance::text as "openingBalance",
+      coalesce(i.total, 0)::numeric(12,2)::text    as "invoicedTotal",
+      coalesce(r.paid_in, 0)::numeric(12,2)::text  as "paidIn",
+      coalesce(r.paid_out, 0)::numeric(12,2)::text as "paidOut",
+      coalesce(rt.total, 0)::numeric(12,2)::text   as "returned",
+      (p.opening_balance
+        + coalesce(i.total, 0)
+        - coalesce(r.paid_in, 0)
+        + coalesce(r.paid_out, 0)
+        - coalesce(rt.total, 0))::numeric(12,2)::text as "outstanding"
+    from parties p
+    left join lateral (
+      select sum(grand_total) total from invoices
+      where business_id = ${ctx.businessId}::uuid
+        and party_id = p.id
+        and status = 'issued'
+        and kind not in ('estimate', 'delivery_challan')
+    ) i on true
+    left join lateral (
+      select sum(case when direction = 'in'  then amount else 0 end) as paid_in,
+             sum(case when direction = 'out' then amount else 0 end) as paid_out
+      from payments
+      where business_id = ${ctx.businessId}::uuid and party_id = p.id
+    ) r on true
+    left join lateral (
+      select sum(total_amount) total from sales_returns
+      where business_id = ${ctx.businessId}::uuid and party_id = p.id
+    ) rt on true
+    where p.business_id = ${ctx.businessId}::uuid
+      and p.id = ${partyId}::uuid
+    limit 1
+  `);
+  return rows[0];
 }
 
 export type LedgerEntry = {

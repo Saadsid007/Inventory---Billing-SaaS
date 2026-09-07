@@ -25,7 +25,18 @@ function connect() {
     // Neon's pooled endpoint runs PgBouncer in transaction mode, which cannot
     // hold server-side prepared statements across a pooled connection.
     prepare: false,
-    max: env.NODE_ENV === 'production' ? 10 : 3,
+    /**
+     * Sized against how many queries one page fires, not against the database.
+     *
+     * The dashboard runs five reads in a `Promise.all`. With three connections
+     * two of them queued, and against a database ~40ms away that is a wasted
+     * round trip per page for no reason — the pooled Neon endpoint is PgBouncer,
+     * so these are cheap client-side slots rather than real Postgres backends.
+     *
+     * Ten is comfortably above the widest page and still far below anything
+     * Neon minds.
+     */
+    max: 10,
     idle_timeout: 20,
     connect_timeout: 15,
     // Do not add a numeric type parser here. postgres.js returns `numeric` as a
