@@ -63,11 +63,28 @@ bug in the page that is fine.
 The fix is to throw the cache away:
 
 ```bash
-pnpm --filter @billwise/web clean
+pnpm --filter @billwise/web run clean
 ```
+
+The `run` is not optional. `pnpm --filter @billwise/web clean` is pnpm's own
+`clean` command, which takes different flags and fails with
+`Unknown option: 'recursive'` — it looks like the script is broken when in fact
+it never ran.
 
 Then start dev again. Stop the dev server before building, or build in a
 separate checkout.
+
+### A stale `.next` also shows up as a hydration mismatch
+
+Same cause, different symptom. Change the props of a client component that the
+app shell renders — the sidebar, say — and Turbopack can keep serving the old
+client chunk while the server renders the new one. React then reports
+`Hydration failed because the server rendered text didn't match the client`
+with a diff that makes no sense against the source, because the source is not
+what the browser is running.
+
+Before hunting for a server/client branch or a `Date.now()`, check whether the
+diff is showing you code you have already changed. If it is, clean and restart.
 
 ### Stale dev servers on Windows
 
