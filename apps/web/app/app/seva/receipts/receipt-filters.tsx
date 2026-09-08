@@ -4,6 +4,7 @@ import { Input, Select } from '@billwise/ui';
 import { Search } from 'lucide-react';
 import { usePathname, useRouter } from 'next/navigation';
 import * as React from 'react';
+import { startNavProgress } from '@/components/nav-progress';
 
 /**
  * Two controls, and no more.
@@ -31,6 +32,8 @@ export function ReceiptFilters({
     if (q.trim()) params.set('q', q.trim());
     if (p) params.set('payment', p);
     const search = params.toString();
+    // Not a link click, so the top bar cannot see it on its own.
+    startNavProgress();
     router.push(search ? `${pathname}?${search}` : pathname);
   }
 

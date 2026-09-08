@@ -7,6 +7,7 @@ import { usePathname, useRouter } from 'next/navigation';
 import * as React from 'react';
 import { signOutAction } from '@/app/(auth)/actions';
 import { navFor } from './app-nav';
+import { startNavProgress } from './nav-progress';
 
 /**
  * Client wrapper around the design system's AppShell.
@@ -96,6 +97,10 @@ export function AppFrame({
     const q = query.trim();
     if (!q) return;
     const encoded = encodeURIComponent(q);
+
+    // The header search is the app's most-used navigation and none of it is a
+    // link click, so the top bar has to be told by hand.
+    startNavProgress();
 
     /*
      * A Jan Seva Kendra has none of these screens — /app/invoices and

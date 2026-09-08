@@ -101,6 +101,16 @@
   /** Secondary text on the dark rail: section headings, email, inactive items. */
   --sidebar-muted: oklch(0.7 0.022 258);
 
+  /**
+   * The band of light that travels across a loading placeholder.
+   *
+   * Lighter than `--muted` in the light theme and lighter again in the dark
+   * one — a sweep has to move *towards* the light in both, or it reads as a
+   * shadow passing over and looks like a rendering fault.
+   */
+  --shimmer-base: oklch(0.945 0.008 258);
+  --shimmer-highlight: oklch(0.985 0.004 258);
+
   /* -------------------------------------------------------------- charts */
   --chart-1: oklch(0.55 0.21 258);
   --chart-2: oklch(0.65 0.16 200);
@@ -172,6 +182,9 @@
   --sidebar-ring: oklch(0.62 0.19 258);
   --sidebar-muted: oklch(0.68 0.022 258);
 
+  --shimmer-base: oklch(0.255 0.022 264);
+  --shimmer-highlight: oklch(0.325 0.025 264);
+
   --chart-1: oklch(0.65 0.18 258);
   --chart-2: oklch(0.7 0.14 200);
   --chart-3: oklch(0.68 0.14 155);
@@ -225,6 +238,8 @@
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-ring: var(--sidebar-ring);
   --color-sidebar-muted: var(--sidebar-muted);
+  --color-shimmer-base: var(--shimmer-base);
+  --color-shimmer-highlight: var(--shimmer-highlight);
 
   --color-chart-1: var(--chart-1);
   --color-chart-2: var(--chart-2);
@@ -250,7 +265,19 @@
 
   --animate-fade-in: fade-in 0.18s ease-out;
   --animate-slide-in: slide-in 0.22s cubic-bezier(0.32, 0.72, 0, 1);
-  --animate-shimmer: shimmer 1.6s ease-in-out infinite;
+  /**
+   * A band of light travelling left to right across a placeholder.
+   *
+   * It used to be an opacity pulse — the whole block fading in and out
+   * together. That reads as "broken", because nothing on a real screen
+   * breathes. A sweep reads as "loading" because it has a direction, which is
+   * the entire trick: the eye follows it and waits rather than wondering.
+   *
+   * Linear, not eased. An eased sweep slows in the middle and the pause looks
+   * like a stall.
+   */
+  --animate-shimmer: shimmer 1.8s linear infinite;
+  --animate-progress-glow: progress-glow 1s ease-in-out infinite;
 }
 
 @keyframes fade-in {
@@ -274,12 +301,36 @@
 }
 
 @keyframes shimmer {
+  from {
+    background-position: 150% 0;
+  }
+  to {
+    background-position: -150% 0;
+  }
+}
+
+/* The soft halo on the leading edge of the navigation bar. */
+@keyframes progress-glow {
   0%,
   100% {
     opacity: 0.55;
   }
   50% {
-    opacity: 0.9;
+    opacity: 1;
+  }
+}
+
+/**
+ * Motion is decoration here, never information.
+ *
+ * A skeleton that does not shimmer is still a skeleton, and a progress bar
+ * that does not pulse still shows progress. Somebody who has asked their
+ * operating system to stop things moving gets the same screens, holding still.
+ */
+@media (prefers-reduced-motion: reduce) {
+  .animate-shimmer,
+  .animate-progress-glow {
+    animation: none;
   }
 }
 

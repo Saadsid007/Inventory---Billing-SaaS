@@ -1,6 +1,8 @@
 import { FROM_PRICE_INR, TRIAL_DAYS, appOrigin } from '@billwise/shared';
 import { ThemeScript } from '@billwise/ui';
 import type { Metadata, Viewport } from 'next';
+import { Suspense } from 'react';
+import { NavProgress } from '@/components/nav-progress';
 import './globals.css';
 
 /**
@@ -75,7 +77,22 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             white flash on every navigation. */}
         <ThemeScript />
       </head>
-      <body className="min-h-dvh bg-background text-foreground antialiased">{children}</body>
+      <body className="min-h-dvh bg-background text-foreground antialiased">
+        {/*
+         * Mounted at the root so one bar covers the marketing site, both apps
+         * and the admin panel — a shopkeeper crossing from /pricing into
+         * /app/seva should not notice a seam.
+         *
+         * Suspense because it reads `useSearchParams()`, which opts a route
+         * into dynamic rendering unless it sits behind a boundary. Without
+         * this, the static marketing pages would be rendered per request for
+         * the sake of a loading bar.
+         */}
+        <Suspense fallback={null}>
+          <NavProgress />
+        </Suspense>
+        {children}
+      </body>
     </html>
   );
 }

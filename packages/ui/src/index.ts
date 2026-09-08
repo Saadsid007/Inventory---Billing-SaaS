@@ -67,11 +67,17 @@ export {
   Skeleton,
 } from './components/page';
 export {
+  CardGridSkeleton,
+  DashboardSkeleton,
   DetailPageSkeleton,
+  DocumentSkeleton,
   FormPageSkeleton,
   FormSkeleton,
+  HeroSkeleton,
   ListPageSkeleton,
+  MarketingPageSkeleton,
   PageHeaderSkeleton,
+  ReportsSkeleton,
   StatCardsSkeleton,
   TableSkeleton,
 } from './components/skeletons';

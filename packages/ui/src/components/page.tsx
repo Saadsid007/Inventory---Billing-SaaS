@@ -154,11 +154,29 @@ export function Detail({
   );
 }
 
-/** Loading placeholder. Pulses via opacity, so it works on both surfaces. */
+/**
+ * Loading placeholder.
+ *
+ * A band of light sweeping left to right, not a block fading in and out. The
+ * fade was cheaper and read as a fault — nothing on a working screen breathes.
+ * A sweep has a direction, and a direction is what tells somebody to wait
+ * rather than to reload.
+ *
+ * The gradient is painted at 250% width and the *background position* is what
+ * animates, so nothing here paints outside the element, needs `overflow-hidden`
+ * or forces a layout pass. Colour comes from two tokens that move in opposite
+ * directions between themes: in the dark theme a sweep still has to travel
+ * towards the light, or it looks like a shadow crossing the page.
+ */
 export function Skeleton({ className, ...props }: React.ComponentProps<'div'>) {
   return (
     <div
-      className={cn('animate-shimmer rounded-md bg-muted', className)}
+      className={cn(
+        'animate-shimmer rounded-md bg-shimmer-base',
+        'bg-[linear-gradient(100deg,var(--shimmer-base)_38%,var(--shimmer-highlight)_50%,var(--shimmer-base)_62%)]',
+        'bg-[length:250%_100%]',
+        className,
+      )}
       aria-hidden
       {...props}
     />

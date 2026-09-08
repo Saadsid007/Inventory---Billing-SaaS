@@ -6,6 +6,7 @@ import { Button, Field, FormError, Input, Select, Switch } from '@billwise/ui';
 import { Plus, Trash2, X } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import * as React from 'react';
+import { startNavProgress } from '@/components/nav-progress';
 import { createReceiptAction } from '../actions';
 
 type Party = { id: string; name: string; phone: string | null };
@@ -157,6 +158,7 @@ export function ReceiptForm({
         router.refresh();
         return;
       }
+      startNavProgress();
       router.push(`/app/seva/receipts/${result.invoiceId}`);
     });
   }
