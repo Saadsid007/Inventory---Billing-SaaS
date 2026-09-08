@@ -82,7 +82,12 @@ export {
   TableSkeleton,
 } from './components/skeletons';
 export { ThemeScript, ThemeToggle, ThemeIconButton, type Theme } from './components/theme';
-export { AppShell, type AppShellProps, type NavItem } from './components/app-shell';
+export {
+  AppShell,
+  AppShellSkeleton,
+  type AppShellProps,
+  type NavItem,
+} from './components/app-shell';
 export {
   Tabs,
   TabsContent,

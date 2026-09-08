@@ -103,6 +103,109 @@ function groupNav(nav: readonly NavItem[]) {
   return groups;
 }
 
+/**
+ * The shell, before it knows anything.
+ *
+ * ## Why this has to exist
+ *
+ * `AppShell` is rendered by a layout, and those layouts are async — they await
+ * the session, the membership and the business before they can render anything
+ * at all. Next.js has no shell to show while a layout is suspending, so it
+ * falls back to the *parent* segment's `loading.tsx`. The result was a page
+ * skeleton floating full-bleed on an empty background: no rail, no header, no
+ * max width. It looked like the app had failed to load rather than like it was
+ * loading.
+ *
+ * So `/app/loading.tsx` renders this instead, and the frame is on screen from
+ * the first paint. Once the layout resolves, the real shell takes over and the
+ * route's own fallback renders inside it — the outline never moves, because the
+ * geometry here is copied from the component directly below.
+ *
+ * ## Why it is not interactive
+ *
+ * Nothing in here is a button. A sidebar you can click before the app knows who
+ * you are is a sidebar that can navigate you somewhere you are not allowed to
+ * be, and the answer to that is a redirect the user did not ask for.
+ *
+ * ## Why the rail is not made of `Skeleton`s
+ *
+ * `Skeleton` shimmers between two light greys, which is right on a card and
+ * invisible on the dark rail. The placeholders in here are white-alpha for the
+ * same reason nothing in the real sidebar uses `bg-card`.
+ */
+export function AppShellSkeleton({ children }: { children?: React.ReactNode }) {
+  return (
+    <div className="flex min-h-dvh bg-background" aria-busy="true" aria-label="Loading">
+      <aside className="hidden w-[15rem] shrink-0 border-r border-sidebar-border md:block">
+        <div className="sticky top-0 flex h-dvh flex-col bg-sidebar">
+          <div className="flex h-16 items-center gap-2.5 border-b border-sidebar-border px-4">
+            <div className="size-8 shrink-0 rounded-lg bg-white/15" />
+            <div className="min-w-0 flex-1 space-y-1.5">
+              <div className="h-3 w-20 rounded bg-white/15" />
+              <div className="h-2 w-24 rounded bg-white/10" />
+            </div>
+          </div>
+
+          <div className="p-2.5">
+            <div className="flex items-center gap-2.5 rounded-lg border border-white/8 bg-white/5 p-2">
+              <div className="size-8 shrink-0 rounded-md bg-white/15" />
+              <div className="min-w-0 flex-1 space-y-1.5">
+                <div className="h-3 w-24 rounded bg-white/15" />
+                <div className="h-2 w-16 rounded bg-white/10" />
+              </div>
+            </div>
+          </div>
+
+          {/* Three groups of a few items, which is the shape of both navs. */}
+          <nav className="flex-1 space-y-4 px-2.5">
+            {[1, 3, 3].map((count, group) => (
+              <div key={group} className="space-y-1">
+                {group > 0 && <div className="mx-2 mb-1.5 h-2 w-14 rounded bg-white/8" />}
+                {Array.from({ length: count }, (_, i) => (
+                  <div key={i} className="flex items-center gap-2.5 px-2 py-[0.44rem]">
+                    <div className="size-[0.95rem] shrink-0 rounded bg-white/12" />
+                    <div
+                      className="h-2.5 rounded bg-white/12"
+                      style={{ width: `${58 + ((i * 17) % 34)}%` }}
+                    />
+                  </div>
+                ))}
+              </div>
+            ))}
+          </nav>
+
+          <div className="border-t border-sidebar-border p-2.5">
+            <div className="flex items-center gap-2 rounded-lg bg-white/5 p-1.5">
+              <div className="size-7 shrink-0 rounded-full bg-white/12" />
+              <div className="min-w-0 flex-1 space-y-1.5">
+                <div className="h-2.5 w-20 rounded bg-white/15" />
+                <div className="h-2 w-28 rounded bg-white/10" />
+              </div>
+            </div>
+          </div>
+        </div>
+      </aside>
+
+      <div className="flex min-w-0 flex-1 flex-col">
+        <header className="sticky top-0 z-40 border-b border-border/70 bg-card/90 backdrop-blur-xl">
+          <div className="flex h-16 items-center gap-2.5 px-3 sm:gap-3 sm:px-5">
+            <div className="size-9 shrink-0 rounded-xl border border-border/80 bg-background" />
+            <div className="mx-auto hidden h-11 w-full max-w-lg rounded-2xl border border-border/80 bg-card sm:block lg:max-w-xl" />
+            <div className="ml-auto flex shrink-0 items-center gap-2 sm:ml-0">
+              <div className="h-9 w-28 rounded-xl bg-primary/15" />
+              <div className="size-9 rounded-xl bg-muted" />
+            </div>
+          </div>
+        </header>
+
+        <main className="min-w-0 flex-1 p-4 sm:p-5 lg:p-7">
+          <div className="mx-auto w-full max-w-6xl">{children}</div>
+        </main>
+      </div>
+    </div>
+  );
+}
+
 export function AppShell({
   businessName,
   statusLabel,

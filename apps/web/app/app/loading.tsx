@@ -1,15 +1,37 @@
-import { ListPageSkeleton } from '@billwise/ui';
+import { AppShellSkeleton, PageHeaderSkeleton, StatCardsSkeleton, TableSkeleton } from '@billwise/ui';
 
 /**
- * The safety net for anything under `/app` without its own fallback.
+ * The first frame of the app, before it knows who you are.
  *
- * Every screen in both apps defines one, so this should never actually paint.
- * It exists because the alternative fallback is the root `loading.tsx`, and a
- * marketing hero with its own header bar appearing inside the app shell would
- * be a genuinely confusing thing to ship by forgetting a file.
+ * ## Why this one draws the whole window
  *
- * A list is the right shape to guess with: most screens in here are one.
+ * Every other `loading.tsx` renders *inside* the shell, so it only has to
+ * outline the page. This one does not: the section layouts under `/app` —
+ * `(dashboard)`, `seva`, `billing` — are async, and each awaits the session,
+ * the membership and the business before it can render `AppFrame` at all.
+ * While a layout is suspending there is no shell yet, and Next.js falls back to
+ * the nearest ancestor fallback, which is this file.
+ *
+ * It used to be a bare `ListPageSkeleton`, and the result was a page outline
+ * floating full-bleed on an empty background with no rail and no header. That
+ * does not read as "loading", it reads as "broken" — the app appeared to have
+ * lost its own furniture. So this draws the furniture.
+ *
+ * ## Why the content underneath is generic
+ *
+ * It covers both apps and every section, so it cannot know whether a dashboard,
+ * a list or a form is coming. Header, four figures, a table: the shape most
+ * screens in here share, and it is on screen for the length of one auth check.
+ * The route's own fallback takes over the moment the layout resolves.
  */
 export default function Loading() {
-  return <ListPageSkeleton />;
+  return (
+    <AppShellSkeleton>
+      <div className="space-y-5">
+        <PageHeaderSkeleton />
+        <StatCardsSkeleton />
+        <TableSkeleton rows={6} cols={5} />
+      </div>
+    </AppShellSkeleton>
+  );
 }
