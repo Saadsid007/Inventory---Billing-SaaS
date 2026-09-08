@@ -267,27 +267,136 @@ export function ReportsSkeleton({ stats = 4 }: { stats?: number }) {
 }
 
 /**
- * A public page: header bar, a big centred heading, then content.
+ * The public site's top bar.
+ *
+ * Its own export because the marketing routes have no app shell around them —
+ * every public placeholder has to draw this itself, or the screen looks like it
+ * lost its navigation. Geometry copied from `MarketingHeader`: h-16, max-w-6xl,
+ * brand left, links and a CTA right.
+ */
+export function MarketingHeaderSkeleton() {
+  return (
+    <div className="border-b">
+      <div className="mx-auto flex h-16 max-w-6xl items-center justify-between gap-4 px-5 sm:px-8">
+        <div className="flex items-center gap-2.5">
+          <Skeleton className="size-8 rounded-lg" />
+          <Skeleton className="h-4 w-24" />
+        </div>
+        <div className="flex items-center gap-3">
+          <Skeleton className="hidden h-4 w-14 sm:block" />
+          <Skeleton className="size-9 rounded-md" />
+          <Skeleton className="h-9 w-36 rounded-md" />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/**
+ * The landing page.
+ *
+ * ## Why this is not `MarketingPageSkeleton`
+ *
+ * It was, and it was wrong on screen: that one is shaped like the pricing page
+ * — a short centred heading and then plan cards with a blue wash. On `/` it
+ * produced a narrow stack of bars above a big blue slab that corresponds to
+ * nothing on the real page, so the layout visibly rearranged itself the moment
+ * the page arrived.
+ *
+ * This follows the actual landing page instead: a centred hero inside
+ * `max-w-3xl`, the bill preview under it, then the six feature cards. Two
+ * shapes, two skeletons — the alternative is one that fits neither.
+ */
+export function LandingPageSkeleton() {
+  return (
+    <div className="min-h-dvh" aria-busy="true" aria-label="Loading">
+      <MarketingHeaderSkeleton />
+
+      {/* Hero. The grid and the glow are real, not placeholders: they are the
+          part of this page that does not depend on any data, and painting them
+          late is a bigger jump than anything the outline saves. */}
+      <section className="relative overflow-hidden">
+        <div className="grid-lines pointer-events-none absolute inset-0 opacity-60" aria-hidden />
+        <div
+          className="pointer-events-none absolute -top-40 left-1/2 size-[42rem] -translate-x-1/2 rounded-full bg-primary/10 blur-3xl"
+          aria-hidden
+        />
+        <div className="relative mx-auto flex max-w-3xl flex-col items-center px-5 pt-14 pb-12 sm:px-8 sm:pt-24 sm:pb-20">
+          <Skeleton className="mb-5 h-6 w-52 rounded-full" />
+          <Skeleton className="h-10 w-full max-w-2xl sm:h-12" />
+          <Skeleton className="mt-3 h-10 w-4/5 max-w-xl sm:h-12" />
+          <Skeleton className="mt-6 h-4 w-full max-w-xl" />
+          <Skeleton className="mt-2 h-4 w-2/3 max-w-md" />
+
+          <div className="mt-9 flex w-full flex-col gap-3 sm:w-auto sm:flex-row">
+            <Skeleton className="h-11 w-full rounded-md sm:w-44" />
+            <Skeleton className="h-11 w-full rounded-md sm:w-36" />
+          </div>
+
+          <div className="mt-8 flex flex-wrap justify-center gap-x-6 gap-y-2">
+            {Array.from({ length: 3 }, (_, i) => (
+              <Skeleton key={i} className="h-3.5 w-32" />
+            ))}
+          </div>
+        </div>
+
+        {/* The bill mock-up that sits under the hero. */}
+        <div className="relative mx-auto max-w-3xl px-5 pb-16 sm:px-8 sm:pb-24">
+          <Card className="space-y-4 p-5 sm:p-6">
+            <div className="flex items-start justify-between gap-4">
+              <div className="space-y-2">
+                <Skeleton className="h-4 w-32" />
+                <Skeleton className="h-3 w-24" />
+              </div>
+              <Skeleton className="h-6 w-24 rounded-full" />
+            </div>
+            <div className="space-y-2.5 border-t pt-4">
+              {Array.from({ length: 4 }, (_, i) => (
+                <div key={i} className="flex items-center justify-between gap-4">
+                  <Skeleton className="h-3.5 flex-1" />
+                  <Skeleton className="h-3.5 w-16" />
+                </div>
+              ))}
+            </div>
+            <div className="flex items-center justify-between border-t pt-4">
+              <Skeleton className="h-4 w-20" />
+              <Skeleton className="h-6 w-28" />
+            </div>
+          </Card>
+        </div>
+      </section>
+
+      {/* Six feature cards, three across. */}
+      <section className="mx-auto max-w-6xl px-5 pb-16 sm:px-8 sm:pb-20">
+        <div className="mx-auto mb-10 flex max-w-2xl flex-col items-center">
+          <Skeleton className="h-7 w-full max-w-lg" />
+          <Skeleton className="mt-3 h-4 w-full max-w-md" />
+        </div>
+        <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+          {Array.from({ length: 6 }, (_, i) => (
+            <Card key={i} className="p-6">
+              <Skeleton className="mb-4 size-10 rounded-lg" />
+              <Skeleton className="h-4 w-32" />
+              <Skeleton className="mt-2.5 h-3.5 w-full" />
+              <Skeleton className="mt-1.5 h-3.5 w-5/6" />
+            </Card>
+          ))}
+        </div>
+      </section>
+    </div>
+  );
+}
+
+/**
+ * The pricing page: header bar, a centred heading, then plan cards.
  *
  * Full-bleed rather than page-padded, because the marketing routes have no app
- * shell around them — this placeholder has to draw its own top bar or the
- * screen looks like it lost its navigation.
+ * shell around them.
  */
 export function MarketingPageSkeleton({ cards = 2 }: { cards?: number }) {
   return (
     <div className="min-h-dvh" aria-busy="true" aria-label="Loading">
-      <div className="border-b">
-        <div className="mx-auto flex max-w-6xl items-center justify-between px-5 py-4 sm:px-8">
-          <div className="flex items-center gap-2.5">
-            <Skeleton className="size-8 rounded-lg" />
-            <Skeleton className="h-4 w-24" />
-          </div>
-          <div className="flex items-center gap-3">
-            <Skeleton className="h-4 w-16" />
-            <Skeleton className="h-9 w-32 rounded-lg" />
-          </div>
-        </div>
-      </div>
+      <MarketingHeaderSkeleton />
 
       <div className="mx-auto max-w-5xl px-5 py-16 sm:px-8 sm:py-20">
         <div className="flex flex-col items-center space-y-4">
