@@ -1,5 +1,5 @@
 import { TRIAL_DAYS } from '@billwise/shared';
-import { Alert } from '@billwise/ui';
+import { Alert, Card } from '@billwise/ui';
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { LoginForm } from './login-form';
@@ -14,9 +14,9 @@ export default async function LoginPage({
   const { next, ended } = await searchParams;
 
   return (
-    <div className="space-y-7">
+    <div className="space-y-6 py-6">
       <div className="space-y-1.5">
-        <h1 className="text-2xl font-semibold">Welcome back</h1>
+        <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">Welcome back</h1>
         <p className="text-sm text-muted-foreground">
           Log in to carry on billing where you left off.
         </p>
@@ -30,7 +30,11 @@ export default async function LoginPage({
         </Alert>
       )}
 
-      <LoginForm next={next} />
+      {/* Same treatment as signup: heading outside, form inside a card that
+          disappears on a phone, where the screen is already the card. */}
+      <Card className="border-0 bg-transparent p-0 shadow-none sm:border sm:bg-card sm:p-7 sm:shadow-sm">
+        <LoginForm next={next} />
+      </Card>
 
       <p className="text-center text-sm text-muted-foreground">
         New here?{' '}

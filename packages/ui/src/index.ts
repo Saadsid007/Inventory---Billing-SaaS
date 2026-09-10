@@ -28,6 +28,7 @@ export {
   Input,
   Label,
   Select,
+  type ControlSize,
   type FieldProps,
 } from './components/field';
 export {

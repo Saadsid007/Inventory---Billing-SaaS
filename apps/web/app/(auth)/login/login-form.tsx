@@ -5,6 +5,13 @@ import { Eye, EyeOff, LogIn } from 'lucide-react';
 import * as React from 'react';
 import { loginAction } from '../actions';
 
+/**
+ * Log in.
+ *
+ * Controls are the `lg` size, matching signup. These two pages are seen back to
+ * back often enough that a 38px field on one and a 44px field on the other
+ * reads as two different products.
+ */
 export function LoginForm({ next }: { next?: string }) {
   const [email, setEmail] = React.useState('');
   const [password, setPassword] = React.useState('');
@@ -30,12 +37,13 @@ export function LoginForm({ next }: { next?: string }) {
   }
 
   return (
-    <div className="space-y-4" onKeyDown={onKeyDown}>
+    <div className="space-y-4.5" onKeyDown={onKeyDown}>
       <FormError>{state.formError}</FormError>
 
       <Field label="Email" htmlFor="email" error={state.fieldErrors?.['email']} required>
         <Input
           id="email"
+          size="lg"
           type="email"
           autoComplete="email"
           inputMode="email"
@@ -51,6 +59,7 @@ export function LoginForm({ next }: { next?: string }) {
         <div className="relative">
           <Input
             id="password"
+            size="lg"
             // A shopkeeper typing a password on a phone keyboard, in a hurry,
             // gets it wrong often enough that hiding it by default and letting
             // them look is kinder than a second failed login.
@@ -65,14 +74,19 @@ export function LoginForm({ next }: { next?: string }) {
             type="button"
             onClick={() => setReveal((v) => !v)}
             aria-label={reveal ? 'Hide password' : 'Show password'}
-            className="absolute inset-y-0 right-0 grid w-11 place-items-center rounded-r-md text-muted-foreground transition-colors hover:text-foreground"
+            className="absolute inset-y-0 right-0 grid w-11 place-items-center rounded-r-lg text-muted-foreground transition-colors hover:text-foreground focus-visible:ring-[3px] focus-visible:ring-ring/25 focus-visible:outline-none"
           >
             {reveal ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
           </button>
         </div>
       </Field>
 
-      <Button className="w-full" size="lg" onClick={submit} disabled={pending}>
+      <Button
+        className="h-12 w-full text-[0.95rem] shadow-sm shadow-primary/20"
+        size="lg"
+        onClick={submit}
+        disabled={pending}
+      >
         {pending ? (
           'Signing in…'
         ) : (

@@ -36,16 +36,44 @@ const controlBase = [
   'aria-invalid:border-destructive aria-invalid:ring-destructive/25 aria-invalid:hover:border-destructive',
 ];
 
-export function Input({ className, ...props }: React.ComponentProps<'input'>) {
-  return <input className={cn(controlBase, 'h-9.5 px-3 py-1', className)} {...props} />;
+/**
+ * Two sizes, and only two.
+ *
+ * `default` is 38px, which is what the billing screens need: a shopkeeper works
+ * down a dense form one-handed with a customer waiting, and every extra pixel
+ * of height is a row that falls off the bottom of a phone.
+ *
+ * `lg` is 44px, for the screens somebody fills in once — signing up, logging
+ * in. Nobody is in a hurry there and the form is the entire page, so the
+ * density that helps at a counter just makes it look cramped and cheap.
+ */
+export type ControlSize = 'default' | 'lg';
+
+const controlSize: Record<ControlSize, string> = {
+  default: 'h-9.5 rounded-md px-3 py-1 text-sm',
+  lg: 'h-11 rounded-lg px-3.5 text-[0.95rem]',
+};
+
+export function Input({
+  className,
+  size = 'default',
+  ...props
+}: Omit<React.ComponentProps<'input'>, 'size'> & { size?: ControlSize }) {
+  return <input className={cn(controlBase, controlSize[size], className)} {...props} />;
 }
 
-export function Select({ className, children, ...props }: React.ComponentProps<'select'>) {
+export function Select({
+  className,
+  children,
+  size = 'default',
+  ...props
+}: Omit<React.ComponentProps<'select'>, 'size'> & { size?: ControlSize }) {
   return (
     <select
       className={cn(
         controlBase,
-        'ui-select h-9.5 cursor-pointer appearance-none py-1.5 pl-3 pr-8.5 text-sm font-medium text-foreground bg-background shadow-2xs transition-all hover:border-border-hover focus:border-primary',
+        controlSize[size],
+        'ui-select cursor-pointer appearance-none bg-background pr-8.5 font-medium text-foreground shadow-2xs transition-all hover:border-border-hover focus:border-primary',
         className,
       )}
       {...props}
