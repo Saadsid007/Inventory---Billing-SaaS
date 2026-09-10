@@ -19,7 +19,7 @@
  * code would cost a rewrite."
  */
 
-export const BUSINESS_TYPES = ['retail', 'jan_seva'] as const;
+export const BUSINESS_TYPES = ['retail', 'jan_seva', 'medical'] as const;
 export type BusinessType = (typeof BUSINESS_TYPES)[number];
 
 export type BusinessProfile = {
@@ -89,6 +89,47 @@ export const BUSINESS_PROFILES: Record<BusinessType, BusinessProfile> = {
     // Most CSCs are under the GST threshold. One that is registered switches to
     // tax invoices simply by saving a GSTIN in settings.
     defaultInvoiceKind: 'cash_memo',
+  },
+
+  /**
+   * A chemist.
+   *
+   * ## Why this shares the shop's screens rather than getting its own section
+   *
+   * Because it genuinely is a shop: it holds stock, that stock goes down when
+   * something is sold, it is GST registered, and it keeps a running balance for
+   * the regulars. `home` is `/app` for that reason, and everything under it —
+   * billing, stock in/out, the catalog, the reports — works untouched.
+   *
+   * What changes is the vocabulary. A chemist does not "add a product", they
+   * add a medicine, and a screen that says otherwise is a screen built for
+   * somebody else. That is the whole difference, and it is the right size of
+   * difference: `jan_seva` earned its own routes by having no stock at all.
+   *
+   * ## What is deliberately not claimed
+   *
+   * Batch numbers, expiry dates and schedule H registers are what a pharmacy
+   * eventually needs, and none of them exist yet. Nothing on the pricing page
+   * or in the plan features mentions them. Selling a chemist an expiry tracker
+   * that is not built is how a shop discovers on day three that it has to keep
+   * the paper register anyway.
+   */
+  medical: {
+    label: 'Medical store / pharmacy',
+    description:
+      'Chemist, medical store, surgical supplies — you sell medicines and keep stock, with GST on every bill.',
+    home: '/app',
+    terms: {
+      item: 'Medicine',
+      itemPlural: 'Medicines',
+      document: 'Invoice',
+      documentPlural: 'Invoices',
+      cost: 'Purchase price',
+    },
+    features: { inventory: true, gstFields: true, applications: false },
+    // A medical store is registered in practice — the turnover threshold is far
+    // below what one takes — so tax invoice is the honest default.
+    defaultInvoiceKind: 'tax_invoice',
   },
 };
 

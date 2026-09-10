@@ -1,4 +1,5 @@
-import { FROM_PRICE_INR, MONTHLY_PRICE_INR, TRIAL_DAYS } from '@billwise/shared';
+import { listPlans } from '@billwise/db';
+import { FROM_PRICE_INR, TRIAL_DAYS } from '@billwise/shared';
 import { Badge, Button, Card } from '@billwise/ui';
 import {
   ArrowRight,
@@ -130,17 +131,43 @@ const FAQ = [
     q: 'Can my customers see how much stock I have?',
     a: 'They see in stock, low stock, or out of stock, never the number. Your competitors read your catalog too, and an exact count tells them your volume and your turnover.',
   },
-  {
-    q: 'How much does it cost?',
-    a: `₹${MONTHLY_PRICE_INR} a month for a shop, ₹${FROM_PRICE_INR} for a Jan Seva Kendra — everything included. ${TRIAL_DAYS} days free first, with no card needed to start. One plan, no tiers, no per-invoice charge.`,
-  },
 ];
+
+/**
+ * The price question, answered from the `plans` table rather than from a
+ * constant.
+ *
+ * It was a constant, and the constant went stale the first time somebody
+ * changed a price in the admin panel — this page was advertising ₹299 while
+ * billing charged ₹249. Marketing copy that quotes a number has to read the
+ * same number the checkout does, or the panel is a way to make the site lie.
+ */
+function priceFaq(plans: readonly { label: string; monthlyPrice: string }[]) {
+  // Label then price, rather than "₹149 for a jan seva kendra". Lower-casing a
+  // proper noun to make it fit a sentence reads worse than dropping the
+  // sentence.
+  const list = plans
+    .map((p) => `${p.label} ₹${Number(p.monthlyPrice).toFixed(0)}`)
+    .join(', ');
+  return {
+    q: 'How much does it cost?',
+    a: `${list} — everything included. ${TRIAL_DAYS} days free first, with no card needed to start. No tiers, no per-invoice charge.`,
+  };
+}
 
 export default async function HomePage() {
   // Somebody already logged in should never be offered "start free" as the main
   // action on their own product's home page.
-  const session = await auth();
+  const [session, plans] = await Promise.all([auth(), listPlans()]);
   const signedIn = Boolean(session?.user?.id);
+
+  // Cheapest first, so "from ₹X" is honest and the smallest trade is not
+  // listed as an afterthought under the largest.
+  const sold = plans
+    .filter((p) => p.isActive)
+    .sort((a, b) => Number(a.monthlyPrice) - Number(b.monthlyPrice));
+  const fromPrice = sold[0] ? Number(sold[0].monthlyPrice).toFixed(0) : FROM_PRICE_INR;
+  const faqs = [...FAQ, priceFaq(sold)];
 
   /**
    * FAQPage structured data.
@@ -159,7 +186,7 @@ export default async function HomePage() {
       description: `GST billing, inventory and khata software for Indian shops. ${TRIAL_DAYS} days free, then from ₹${FROM_PRICE_INR} a month.`,
       offers: {
         '@type': 'Offer',
-        price: MONTHLY_PRICE_INR,
+        price: fromPrice,
         priceCurrency: 'INR',
         category: 'subscription',
       },
@@ -176,7 +203,7 @@ export default async function HomePage() {
     {
       '@context': 'https://schema.org',
       '@type': 'FAQPage',
-      mainEntity: FAQ.map((item) => ({
+      mainEntity: faqs.map((item) => ({
         '@type': 'Question',
         name: item.q,
         acceptedAnswer: { '@type': 'Answer', text: item.a },
@@ -393,7 +420,7 @@ export default async function HomePage() {
           <div className="mx-auto max-w-4xl px-5 py-14 sm:px-8 sm:py-20">
             <h2 className="text-2xl font-semibold sm:text-3xl">Questions people actually ask</h2>
             <div className="mt-8 grid gap-x-10 gap-y-8 sm:grid-cols-2">
-              {FAQ.map((item) => (
+              {faqs.map((item) => (
                 <div key={item.q}>
                   <h3 className="font-medium">{item.q}</h3>
                   <p className="mt-1.5 text-sm leading-relaxed text-muted-foreground">{item.a}</p>
@@ -407,7 +434,7 @@ export default async function HomePage() {
         <section className="mx-auto max-w-6xl px-5 py-14 sm:px-8 sm:py-20">
           <div className="brand-wash overflow-hidden rounded-2xl px-6 py-14 text-center text-white sm:px-12">
             <h2 className="text-2xl font-semibold text-balance sm:text-3xl">
-              ₹{MONTHLY_PRICE_INR} a month for a shop. That is the whole price.
+              From ₹{fromPrice} a month. That is the whole price.
             </h2>
             <p className="mx-auto mt-3 max-w-lg text-balance text-white/85">
               Everything included, no tiers to work out. {TRIAL_DAYS} days free first, so you can

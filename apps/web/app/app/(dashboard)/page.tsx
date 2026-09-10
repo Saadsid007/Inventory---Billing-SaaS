@@ -70,7 +70,7 @@ export default async function DashboardPage() {
   // its own during client-side navigation, and the guard is cached.
   const ctx = await requireBusiness();
 
-  const [{ businessName, slug, status, trialEndsAt }, stats, recent, business, settings] =
+  const [{ businessName, slug, status, trialEndsAt, profile }, stats, recent, business, settings] =
     await Promise.all([
       requireMembership(),
       getDashboardStats(ctx),
@@ -78,6 +78,13 @@ export default async function DashboardPage() {
       getBusiness(ctx),
       getSettings(ctx),
     ]);
+
+  /*
+   * The nouns this trade uses. A chemist adds a medicine, not a product, and a
+   * dashboard that says otherwise was written for a different shop.
+   */
+  const one = profile.terms.item.toLowerCase();
+  const many = profile.terms.itemPlural.toLowerCase();
 
   /**
    * What is still missing, and where to fix it.
@@ -103,8 +110,8 @@ export default async function DashboardPage() {
     },
     {
       id: 'product',
-      label: 'Add your first product',
-      hint: 'Billing gets much faster once your items are in.',
+      label: `Add your first ${one}`,
+      hint: 'Billing gets much faster once your list is in.',
       href: '/app/products/new',
       done: stats.productCount > 0,
     },
@@ -202,7 +209,7 @@ export default async function DashboardPage() {
                 variant="outline"
                 className="h-11 border-white/30 bg-white/10 text-white hover:bg-white/20 hover:text-white"
               >
-                <PackagePlus /> Add product
+                <PackagePlus /> Add {one}
               </Button>
             </Link>
           </div>
@@ -238,7 +245,7 @@ export default async function DashboardPage() {
           hint={
             stats.lowStockCount > 0
               ? 'Needs restocking'
-              : `All ${stats.productCount} products are fine`
+              : `All ${stats.productCount} ${many} are fine`
           }
           icon={TriangleAlert}
           tone={stats.lowStockCount > 0 ? 'destructive' : 'success'}
@@ -393,7 +400,7 @@ export default async function DashboardPage() {
             <QuickAction
               href="/app/products/new"
               icon={PackagePlus}
-              label="Add a product"
+              label={`Add a ${one}`}
               hint="Price, tax, stock"
               accent="sky"
             />

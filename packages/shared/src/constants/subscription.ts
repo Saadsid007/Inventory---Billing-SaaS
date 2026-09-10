@@ -74,6 +74,28 @@ export const PLAN_DEFAULTS: Record<BusinessType, PlanDefaults> = {
       'Earnings report, after the government fee is taken out',
     ],
   },
+  /*
+   * Between the two, and on purpose. A chemist runs the same screens as a shop
+   * — stock, GST, ledger, catalog — so it is not the counter's price; but the
+   * batch and expiry tracking a pharmacy eventually wants is not built, so it
+   * is not the full shop price either. Nothing below claims a feature that
+   * does not exist.
+   */
+  medical: {
+    label: 'Medical store / pharmacy',
+    tagline: 'Billing, stock and GST for a chemist.',
+    monthlyPrice: '249.00',
+    trialDays: TRIAL_DAYS,
+    features: [
+      'Unlimited bills, medicines and customers',
+      'GST billing with HSN, on every bill',
+      'A4 and 80mm thermal printing',
+      'Stock goes down by itself, with low-stock alerts',
+      'Customer ledger with a running balance',
+      'Your medicine list online, with a QR code',
+      'Sales, tax, stock and outstanding reports, with CSV exports',
+    ],
+  },
 };
 
 /**

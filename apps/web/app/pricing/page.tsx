@@ -36,7 +36,7 @@ export default async function PricingPage() {
     <div className="min-h-dvh">
       <MarketingHeader />
 
-      <main className="mx-auto max-w-5xl px-5 py-16 sm:px-8 sm:py-20">
+      <main className="mx-auto max-w-6xl px-5 py-16 sm:px-8 sm:py-20">
         <div className="text-center">
           <Badge variant="subtle" className="mb-4">
             No tiers, no per-bill charges
@@ -51,7 +51,13 @@ export default async function PricingPage() {
           </p>
         </div>
 
-        <div className="mt-10 grid gap-6 md:grid-cols-2">
+        {/* Columns follow the number of plans, so a third vertical does not
+            leave one card stranded on its own row. */}
+        <div
+          className={`mt-10 grid gap-6 ${
+            sold.length >= 3 ? 'md:grid-cols-2 lg:grid-cols-3' : 'md:grid-cols-2'
+          }`}
+        >
           {sold.map((plan) => (
             <Card key={plan.businessType} className="flex flex-col overflow-hidden p-0 shadow-md">
               <div className="brand-wash flex flex-col gap-2 p-7 text-white sm:p-8">
@@ -98,7 +104,7 @@ export default async function PricingPage() {
           <div className="mt-6 grid gap-x-10 gap-y-7 sm:grid-cols-2">
             <Faq
               q="How do I know which one I am?"
-              a="You pick when you sign up, and it decides which screens you get. A shop gets stock, products and GST. A Jan Seva Kendra gets a work register and receipts instead — no stock anywhere in the app."
+              a="You pick when you sign up, and it decides which screens you get. A shop and a medical store both get stock, GST and a catalog — the medical store just calls them medicines. A Jan Seva Kendra gets a work register and receipts instead, with no stock anywhere in the app."
             />
             <Faq
               q="What happens when the free trial ends?"
