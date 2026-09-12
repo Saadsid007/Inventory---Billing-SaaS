@@ -1,16 +1,14 @@
 'use client';
 
 import { Button } from '@billwise/ui';
+import { ArrowLeft, Printer, ReceiptText } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import * as React from 'react';
 
 const STORAGE_KEY = 'billwise-print-format';
 
 /**
- * Format switcher. Screen only — `.no-print` keeps it off the paper.
- *
- * The choice is remembered, because a shop uses one printer: a counter with a
- * thermal roll should not be asked "A4 or 80mm?" on every single bill.
+ * Format switcher & print action toolbar. Screen only — `.no-print` keeps it off the PDF.
  */
 export function PrintToolbar({
   invoiceId,
@@ -31,41 +29,62 @@ export function PrintToolbar({
   }
 
   return (
-    /*
-     * The toolbar is deliberately light in both themes. What is below it is a
-     * sheet of white paper, and a dark bar clamped to the top of a white page
-     * reads as a rendering fault rather than a choice. Colours are literal
-     * rather than tokens for the same reason: this bar must not follow the
-     * app's theme.
-     */
-    <div className="no-print sticky top-0 z-10 flex flex-wrap items-center gap-2 border-b border-slate-200 bg-slate-50 p-3 text-slate-900">
-      <div className="inline-flex rounded-md border border-slate-300 bg-white p-0.5">
-        {(['a4', 'thermal'] as const).map((f) => (
+    <div className="no-print sticky top-0 z-50 flex flex-wrap items-center justify-between gap-3 border-b border-slate-200 bg-white/95 px-4 py-2.5 shadow-xs backdrop-blur-md">
+      {/* Format Toggle */}
+      <div className="flex items-center gap-2">
+        <div className="inline-flex rounded-lg border border-slate-200 bg-slate-100 p-0.5 shadow-2xs">
           <button
-            key={f}
             type="button"
-            onClick={() => choose(f)}
-            className={
-              current === f
-                ? 'rounded-sm bg-slate-200 px-3 py-1 text-sm font-medium text-slate-900'
-                : 'rounded-sm px-3 py-1 text-sm text-slate-500 hover:text-slate-900'
-            }
+            onClick={() => choose('a4')}
+            className={`inline-flex items-center gap-1.5 rounded-md px-3 py-1.5 text-xs font-bold transition-all ${
+              current === 'a4'
+                ? 'bg-white text-slate-900 shadow-xs ring-1 ring-slate-900/5'
+                : 'text-slate-600 hover:text-slate-900'
+            }`}
           >
-            {f === 'a4' ? 'A4' : '80mm thermal'}
+            <ReceiptText className="size-3.5" />
+            <span>Full A4 Invoice</span>
           </button>
-        ))}
+          <button
+            type="button"
+            onClick={() => choose('thermal')}
+            className={`inline-flex items-center gap-1.5 rounded-md px-3 py-1.5 text-xs font-bold transition-all ${
+              current === 'thermal'
+                ? 'bg-white text-slate-900 shadow-xs ring-1 ring-slate-900/5'
+                : 'text-slate-600 hover:text-slate-900'
+            }`}
+          >
+            <Printer className="size-3.5" />
+            <span>80mm Thermal</span>
+          </button>
+        </div>
+
+        <span className="hidden sm:inline-block text-[11px] text-slate-500 font-medium">
+          PDF format: {current === 'a4' ? 'Standard A4 GST Tax Invoice' : 'Compact POS Slip'}
+        </span>
       </div>
-      <Button size="sm" onClick={() => window.print()}>
-        Print
-      </Button>
-      <Button
-        variant="ghost"
-        size="sm"
-        className="text-slate-600 hover:bg-slate-200 hover:text-slate-900"
-        onClick={() => router.push(`/app/invoices/${invoiceId}`)}
-      >
-        Back
-      </Button>
+
+      {/* Action Buttons */}
+      <div className="flex items-center gap-2">
+        <Button
+          variant="outline"
+          size="sm"
+          className="h-8 gap-1.5 border-slate-200 text-slate-700 hover:bg-slate-100 text-xs"
+          onClick={() => router.push(`/app/invoices/${invoiceId}`)}
+        >
+          <ArrowLeft className="size-3.5" />
+          <span>Back to Invoice</span>
+        </Button>
+
+        <Button
+          size="sm"
+          className="h-8 gap-1.5 bg-slate-900 text-white hover:bg-slate-800 shadow-sm text-xs font-semibold"
+          onClick={() => window.print()}
+        >
+          <Printer className="size-3.5" />
+          <span>Print / Save as PDF</span>
+        </Button>
+      </div>
     </div>
   );
 }

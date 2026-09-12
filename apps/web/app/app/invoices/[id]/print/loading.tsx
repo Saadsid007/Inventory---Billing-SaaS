@@ -8,7 +8,11 @@ import { Skeleton } from '@billwise/ui';
  */
 export default function Loading() {
   return (
-    <div className="mx-auto my-4 w-full max-w-[210mm] bg-card p-8 shadow-sm" aria-busy="true" aria-label="Loading">
+    <div
+      className="mx-auto my-4 w-full max-w-[210mm] bg-card p-8 shadow-sm"
+      aria-busy="true"
+      aria-label="Loading"
+    >
       <div className="flex items-start justify-between gap-8 border-b pb-4">
         <div className="space-y-2">
           <Skeleton className="h-6 w-48" />

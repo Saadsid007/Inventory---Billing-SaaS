@@ -1,55 +1,82 @@
 /**
- * Print styles. Build spec Phase 1e.
+ * Modern Professional Invoice Print & PDF Styles.
  *
- * Two layouts, one document: A4 for a filing copy, 80mm for a thermal counter
- * printer. No PDF library — `@media print` and the browser's own dialog do the
- * job, and every shopkeeper already knows how to use it.
+ * Supports A4 full tax invoice layout & 80mm thermal counter slip.
+ * High-fidelity print rules with forced exact color reproduction for
+ * borders, fills, and brand badges.
  */
 
 .print-sheet {
-  color: #000;
-  background: #fff;
-  font-family: ui-sans-serif, system-ui, sans-serif;
+  color: #0f172a;
+  background: #ffffff;
+  font-family:
+    -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  -webkit-print-color-adjust: exact !important;
+  print-color-adjust: exact !important;
+  box-sizing: border-box;
 }
 
-/* Money and quantity columns must line up. */
+.print-sheet * {
+  box-sizing: border-box;
+}
+
+/* Money and quantity columns */
 .print-sheet .num {
   text-align: right;
   font-variant-numeric: tabular-nums;
   white-space: nowrap;
 }
 
-/* ---------------------------------------------------------------- A4 ---- */
+.print-sheet .font-mono {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+}
 
-/*
- * A column, not a block. The signature sits in an `margin-top: auto` footer, so
- * on a one-line invoice it drops to the bottom of the sheet instead of floating
- * under the totals with 150mm of blank paper beneath it. Filling the page on
- * purpose is what makes a short bill look deliberate rather than unfinished.
- */
+/* ---------------------------------------------------------------- A4 Professional ---- */
+
 .print-a4 {
   display: flex;
   flex-direction: column;
   width: 210mm;
   min-height: 297mm;
-  padding: 12mm;
+  padding: 10mm 12mm;
   margin: 0 auto;
-  font-size: 11pt;
-  line-height: 1.4;
+  font-size: 9.5pt;
+  line-height: 1.35;
+  background: #ffffff;
+  position: relative;
 }
 
-/*
- * Two-column rows: business against invoice number, bill-to against place of
- * supply, notes against signature.
- *
- * `min-width: 0` is the whole point. A flex item defaults to min-width:auto, so
- * a long unwrapped shop address refuses to shrink, forces the row wider than
- * the printable area, and pushes the right-hand column off the edge of the
- * paper. It fitted on a 210mm screen sheet and lost 20mm to the page margins
- * the moment it was printed.
- */
+/* Screen shadow preview when viewed in browser */
+@media screen {
+  body {
+    background-color: #f1f5f9;
+    padding: 20px 0 40px;
+  }
+  .print-a4 {
+    box-shadow:
+      0 10px 30px -5px rgba(0, 0, 0, 0.1),
+      0 4px 12px -2px rgba(0, 0, 0, 0.05);
+    border-radius: 4px;
+  }
+  .print-thermal {
+    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
+  }
+}
+
+/* Top Decorative Accent Banner */
+.print-a4 .top-accent-bar {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4.5mm;
+  background: linear-gradient(90deg, #0f172a 0%, #1e293b 60%, #3b82f6 100%);
+}
+
 .print-a4 .sheet-row {
+  display: flex;
   justify-content: space-between;
+  width: 100%;
 }
 
 .print-a4 .sheet-row > * {
@@ -57,57 +84,187 @@
   overflow-wrap: anywhere;
 }
 
-.print-a4 .sheet-row > *:last-child {
-  flex-shrink: 0;
-  text-align: right;
+/* Metadata and Address Cards */
+.print-a4 .info-card {
+  background: #f8fafc;
+  border: 0.3mm solid #e2e8f0;
+  border-radius: 2mm;
+  padding: 3mm 3.5mm;
+}
+
+.print-a4 .card-title {
+  font-size: 7.5pt;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #64748b;
+  margin-bottom: 1.5mm;
+  border-bottom: 0.25mm solid #e2e8f0;
+  padding-bottom: 1mm;
+}
+
+/* Invoice Status Badges / Stamp */
+.invoice-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 1.5mm;
+  padding: 1mm 2.5mm;
+  border-radius: 1.5mm;
+  font-size: 8pt;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.invoice-badge-paid {
+  background: #ecfdf5;
+  color: #065f46;
+  border: 0.3mm solid #a7f3d0;
+}
+
+.invoice-badge-partial {
+  background: #fffbeb;
+  color: #92400e;
+  border: 0.3mm solid #fde68a;
+}
+
+.invoice-badge-due {
+  background: #f1f5f9;
+  color: #334155;
+  border: 0.3mm solid #cbd5e1;
+}
+
+.invoice-badge-cancelled {
+  background: #fef2f2;
+  color: #991b1b;
+  border: 0.3mm solid #fecaca;
+}
+
+/* Main Items Table */
+.print-a4 table.invoice-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  margin-top: 4mm;
+  border: 0.3mm solid #cbd5e1;
+  border-radius: 1.8mm;
+  overflow: hidden;
+}
+
+.print-a4 table.invoice-table th {
+  background: #0f172a;
+  color: #ffffff;
+  padding: 2.2mm 2.5mm;
+  font-size: 8pt;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  border: none;
+  border-right: 0.2mm solid #334155;
+}
+
+.print-a4 table.invoice-table th:last-child {
+  border-right: none;
+}
+
+.print-a4 table.invoice-table td {
+  padding: 2mm 2.5mm;
+  font-size: 9pt;
+  border: none;
+  border-top: 0.25mm solid #e2e8f0;
+  border-right: 0.25mm solid #e2e8f0;
+  vertical-align: middle;
+}
+
+.print-a4 table.invoice-table td:last-child {
+  border-right: none;
+}
+
+.print-a4 table.invoice-table tbody tr:nth-child(even) td {
+  background: #f8fafc;
+}
+
+/* HSN Tax Summary Table */
+.print-a4 table.tax-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 3.5mm;
+  border: 0.25mm solid #e2e8f0;
+  font-size: 8pt;
+}
+
+.print-a4 table.tax-table th {
+  background: #f1f5f9;
+  color: #334155;
+  padding: 1.5mm 2mm;
+  font-size: 7.5pt;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  border: 0.25mm solid #e2e8f0;
+  text-align: left;
+}
+
+.print-a4 table.tax-table td {
+  padding: 1.5mm 2mm;
+  border: 0.25mm solid #e2e8f0;
+  font-size: 8pt;
+}
+
+/* Totals Box */
+.print-a4 .totals-card {
+  width: 82mm;
+  border: 0.3mm solid #cbd5e1;
+  border-radius: 2mm;
+  overflow: hidden;
+  background: #ffffff;
+}
+
+.print-a4 .totals-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.print-a4 .totals-table td {
+  padding: 1.8mm 3mm;
+  font-size: 9pt;
+  border-bottom: 0.25mm solid #f1f5f9;
+}
+
+.print-a4 .totals-table tr.grand-total-row td {
+  background: #0f172a;
+  color: #ffffff;
+  font-weight: 800;
+  font-size: 11pt;
+  border: none;
+  padding: 2.5mm 3mm;
+}
+
+.print-a4 .totals-table tr.due-row td {
+  background: #fffbeb;
+  color: #92400e;
+  font-weight: 700;
+  border-top: 0.3mm solid #fde68a;
+  border-bottom: none;
 }
 
 .print-a4 .sheet-footer {
   margin-top: auto;
-  padding-top: 10mm;
+  padding-top: 6mm;
   page-break-inside: avoid;
   break-inside: avoid;
 }
 
-.print-a4 table {
-  width: 100%;
-  border-collapse: collapse;
-  margin-top: 6mm;
-}
-
-.print-a4 th,
-.print-a4 td {
-  border: 0.25mm solid #cbd5e1;
-  padding: 2mm 2.5mm;
-  font-size: 9.5pt;
-}
-
-.print-a4 th {
-  background: #f1f5f9;
-  color: #0f172a;
-  text-align: left;
-  font-weight: 700;
-  font-size: 8.5pt;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-  border-bottom: 0.4mm solid #475569;
-}
-
-.print-a4 tr:nth-child(even) td {
-  background: #f8fafc;
-}
-
-/* -------------------------------------------------------------- 80mm ---- */
+/* -------------------------------------------------------------- 80mm Thermal ---- */
 
 .print-thermal {
-  width: 72mm; /* 80mm paper minus the printer's own margins */
-  padding: 2mm;
+  width: 72mm;
+  padding: 3mm 2.5mm;
   margin: 0 auto;
-  /* Monospace so the two-column receipt layout stays aligned on a printer
-     that has no idea what proportional fonts are. */
   font-family: ui-monospace, 'Courier New', monospace;
-  font-size: 9pt;
+  font-size: 8.5pt;
   line-height: 1.35;
+  background: #ffffff;
 }
 
 .print-thermal table {
@@ -117,67 +274,48 @@
 
 .print-thermal td,
 .print-thermal th {
-  padding: 0.6mm 0;
+  padding: 0.8mm 0;
   font-size: 8.5pt;
 }
 
 .print-thermal .rule {
-  border-top: 1px dashed #000;
-  margin: 1.5mm 0;
+  border-top: 1px dashed #475569;
+  margin: 2mm 0;
 }
 
-/* ------------------------------------------------------------- print ---- */
+.print-thermal .rule-thick {
+  border-top: 1.5px solid #0f172a;
+  margin: 2mm 0;
+}
+
+/* ------------------------------------------------------------- Print Media ---- */
 
 @media print {
-  /* The toolbar is for choosing a format on screen; it must never print. */
   .no-print {
     display: none !important;
   }
 
   html,
   body {
-    background: #fff;
-    margin: 0;
-    padding: 0;
+    background: #ffffff !important;
+    margin: 0 !important;
+    padding: 0 !important;
   }
 
-  /*
-   * The page box supplies the margin, so the sheet's own padding has to go or
-   * the two add up. Height comes from the page box too: `min-height: 297mm`
-   * plus a 10mm page margin is 317mm of content on a 297mm sheet, which is how
-   * a one-item invoice ended up printing a second page containing nothing but
-   * the signature line.
-   */
-  /*
-   * `height: 100%` here resolved against a parent that is not the page box, so
-   * it is a min-height instead: enough to push the signature near the foot of
-   * the sheet, and comfortably inside the shortest printable area a browser
-   * will hand us even with generous margins. Anything taller risks spilling a
-   * one-item invoice onto a second page, which is the bug this replaced.
-   */
   .print-a4 {
-    width: auto;
-    height: auto;
-    min-height: 250mm;
-    /* The sheet carries its own margin as padding rather than leaning on the
-       page box, because the print dialog's Margins dropdown overrides @page.
-       Someone printing with Margins: None was getting an invoice with text
-       against the edge of the paper. This way the result is the same whatever
-       they pick. */
-    padding: 12mm;
+    width: auto !important;
+    height: auto !important;
+    min-height: 250mm !important;
+    padding: 10mm 12mm !important;
+    box-shadow: none !important;
   }
 
-  /*
-   * Thermal keeps its 72mm width on paper. Letting it go `width: auto` on an
-   * A4 printer stretched a receipt designed for a 80mm roll across a full page,
-   * which is what made the printout look broken.
-   */
   .print-thermal {
-    width: 72mm;
-    padding: 3mm 2mm;
+    width: 72mm !important;
+    padding: 3mm 2mm !important;
+    box-shadow: none !important;
   }
 
-  /* A long invoice must not split a line item across two pages. */
   tr {
     page-break-inside: avoid;
   }
@@ -187,11 +325,6 @@
   }
 }
 
-/*
- * Named pages, so each format gets the paper it was designed for. A thermal
- * roll is 80mm wide and as long as the bill needs; asking for A4 there wastes
- * most of a page per sale.
- */
 .print-a4 {
   page: sheet-a4;
 }
@@ -200,8 +333,6 @@
   page: sheet-thermal;
 }
 
-/* Zero, because the sheet supplies its own. Anything here is a suggestion the
-   print dialog is free to overrule; padding on the element is not. */
 @page sheet-a4 {
   size: A4;
   margin: 0;
