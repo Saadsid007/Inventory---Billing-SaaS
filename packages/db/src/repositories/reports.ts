@@ -125,26 +125,97 @@ export type SalesSummaryRow = {
   taxableValue: string;
   taxTotal: string;
   grandTotal: string;
+  cogsTotal: string;
+  grossProfit: string;
+  marginPct: string;
 };
 
-/** Day-by-day sales for a date range. Backs the sales report and its CSV. */
+/** Day-by-day or month-by-month sales for a date range with COGS and gross profit. */
 export async function getSalesSummary(
   ctx: TenantCtx,
   range: { from: string; to: string },
+  groupBy: 'day' | 'month' = 'day',
 ): Promise<SalesSummaryRow[]> {
+  const isMonth = groupBy === 'month';
+  const dateExpr = isMonth ? sql`to_char(i.invoice_date, 'YYYY-MM')` : sql`i.invoice_date::text`;
+  const groupExpr = isMonth ? sql`to_char(i.invoice_date, 'YYYY-MM')` : sql`i.invoice_date`;
+
   const rows = await getDb().execute<SalesSummaryRow>(sql`
+    with line_costs as (
+      select
+        l.invoice_id,
+        sum(l.qty * coalesce(p.purchase_price, 0)) as cogs
+      from invoice_lines l
+      left join products p on p.id = l.product_id
+      where l.business_id = ${ctx.businessId}::uuid
+      group by l.invoice_id
+    )
     select
-      invoice_date::text                                   as "date",
+      ${dateExpr}                                          as "date",
       count(*)::int                                        as "invoiceCount",
-      sum(subtotal)::numeric(12,2)::text                   as "taxableValue",
-      sum(cgst_total + sgst_total + igst_total + cess_total)::numeric(12,2)::text as "taxTotal",
-      sum(grand_total)::numeric(12,2)::text                as "grandTotal"
-    from invoices
-    where business_id = ${ctx.businessId}::uuid
+      sum(i.subtotal)::numeric(12,2)::text                 as "taxableValue",
+      sum(i.cgst_total + i.sgst_total + i.igst_total + i.cess_total)::numeric(12,2)::text as "taxTotal",
+      sum(i.grand_total)::numeric(12,2)::text              as "grandTotal",
+      coalesce(sum(lc.cogs), 0)::numeric(12,2)::text       as "cogsTotal",
+      (sum(i.subtotal) - coalesce(sum(lc.cogs), 0))::numeric(12,2)::text as "grossProfit",
+      case
+        when sum(i.subtotal) > 0 then
+          round(((sum(i.subtotal) - coalesce(sum(lc.cogs), 0)) / sum(i.subtotal) * 100)::numeric, 1)::text
+        else '0.0'
+      end                                                  as "marginPct"
+    from invoices i
+    left join line_costs lc on lc.invoice_id = i.id
+    where i.business_id = ${ctx.businessId}::uuid
       and ${SALES_FILTER}
-      and invoice_date between ${range.from}::date and ${range.to}::date
-    group by invoice_date
-    order by invoice_date desc
+      and i.invoice_date between ${range.from}::date and ${range.to}::date
+    group by ${groupExpr}
+    order by ${groupExpr} desc
+  `);
+  return [...rows];
+}
+
+export type ProductProfitRow = {
+  productId: string;
+  name: string;
+  sku: string | null;
+  unit: string | null;
+  qtySold: string;
+  revenue: string;
+  cogs: string;
+  profit: string;
+  marginPct: string;
+};
+
+/** Product-wise sales, costs, and profit breakdown for a date range. */
+export async function getProductProfitSummary(
+  ctx: TenantCtx,
+  range: { from: string; to: string },
+): Promise<ProductProfitRow[]> {
+  const rows = await getDb().execute<ProductProfitRow>(sql`
+    select
+      coalesce(p.id::text, l.product_id::text, l.name) as "productId",
+      l.name as "name",
+      p.sku as "sku",
+      l.unit as "unit",
+      sum(l.qty)::numeric(12,3)::text as "qtySold",
+      sum(l.taxable_value)::numeric(12,2)::text as "revenue",
+      sum(l.qty * coalesce(p.purchase_price, 0))::numeric(12,2)::text as "cogs",
+      (sum(l.taxable_value) - sum(l.qty * coalesce(p.purchase_price, 0)))::numeric(12,2)::text as "profit",
+      case
+        when sum(l.taxable_value) > 0 then
+          round(((sum(l.taxable_value) - sum(l.qty * coalesce(p.purchase_price, 0))) / sum(l.taxable_value) * 100)::numeric, 1)::text
+        else '0.0'
+      end as "marginPct"
+    from invoice_lines l
+    join invoices i on i.id = l.invoice_id
+    left join products p on p.id = l.product_id
+    where l.business_id = ${ctx.businessId}::uuid
+      and i.status = 'issued'
+      and i.kind not in ('estimate', 'delivery_challan')
+      and i.invoice_date between ${range.from}::date and ${range.to}::date
+    group by coalesce(p.id::text, l.product_id::text, l.name), l.name, p.sku, l.unit
+    order by (sum(l.taxable_value) - sum(l.qty * coalesce(p.purchase_price, 0))) desc
+    limit 100
   `);
   return [...rows];
 }
@@ -196,17 +267,19 @@ export type StockSummaryRow = {
   unit: string | null;
   currentStock: string;
   lowStockAlert: string | null;
+  purchasePrice: string;
   salePrice: string;
+  stockCost: string;
   stockValue: string;
+  potentialProfit: string;
+  potentialMarginPct: string;
   isLow: boolean;
 };
 
 /**
- * What is on the shelf and what it is worth.
+ * What is on the shelf, what it cost, and what it is worth.
  *
- * Valued at SALE price, not cost. Cost is often blank — plenty of shops never
- * enter it — and a stock report full of zeros is worse than one that answers a
- * slightly different question, clearly labelled.
+ * Provides both sale price value and purchase cost, computing unrealised margin.
  */
 export async function getStockSummary(ctx: TenantCtx): Promise<StockSummaryRow[]> {
   const rows = await getDb().execute<StockSummaryRow>(sql`
@@ -217,8 +290,16 @@ export async function getStockSummary(ctx: TenantCtx): Promise<StockSummaryRow[]
       u.short_name          as "unit",
       p.current_stock::text as "currentStock",
       p.low_stock_alert::text as "lowStockAlert",
+      coalesce(p.purchase_price, 0)::numeric(12,2)::text as "purchasePrice",
       p.sale_price::text    as "salePrice",
+      (p.current_stock * coalesce(p.purchase_price, 0))::numeric(12,2)::text as "stockCost",
       (p.current_stock * p.sale_price)::numeric(12,2)::text as "stockValue",
+      ((p.current_stock * p.sale_price) - (p.current_stock * coalesce(p.purchase_price, 0)))::numeric(12,2)::text as "potentialProfit",
+      case
+        when (p.current_stock * p.sale_price) > 0 then
+          round((((p.current_stock * p.sale_price) - (p.current_stock * coalesce(p.purchase_price, 0))) / (p.current_stock * p.sale_price) * 100)::numeric, 1)::text
+        else '0.0'
+      end                   as "potentialMarginPct",
       (p.low_stock_alert is not null and p.current_stock <= p.low_stock_alert) as "isLow"
     from products p
     left join units u on u.id = p.unit_id
@@ -276,6 +357,9 @@ export type SalesExportRow = {
   sgstAmount: string;
   igstAmount: string;
   cessAmount: string;
+  costPrice: string;
+  cogs: string;
+  profit: string;
   lineTotal: string;
   invoiceTotal: string;
   amountPaid: string;
@@ -317,6 +401,9 @@ export async function listInvoiceLinesForExport(
            l.rate::text as "rate",
            l.tax_rate::text as "taxRate",
            l.taxable_value::text as "taxableValue",
+           coalesce(p.purchase_price, 0)::numeric(12,2)::text as "costPrice",
+           (l.qty * coalesce(p.purchase_price, 0))::numeric(12,2)::text as "cogs",
+           (l.taxable_value - (l.qty * coalesce(p.purchase_price, 0)))::numeric(12,2)::text as "profit",
            l.cgst_amount::text as "cgstAmount",
            l.sgst_amount::text as "sgstAmount",
            l.igst_amount::text as "igstAmount",
@@ -328,6 +415,7 @@ export async function listInvoiceLinesForExport(
            i.fy as "fy"
     from invoice_lines l
     join invoices i on i.id = l.invoice_id
+    left join products p on p.id = l.product_id
     where i.business_id = ${ctx.businessId}::uuid
       and i.status <> 'draft'
       ${range ? sql`and i.invoice_date between ${range.from} and ${range.to}` : sql``}
@@ -335,4 +423,84 @@ export async function listInvoiceLinesForExport(
     limit 5000
   `);
   return [...rows];
+}
+
+export type ProfitLossRow = {
+  date: string;
+  invoiceCount: number;
+  returnCount: number;
+  grossSales: string;
+  taxableSales: string;
+  returnedValue: string;
+  returnedTaxable: string;
+  netRevenue: string;
+  salesCogs: string;
+  returnedCogs: string;
+  netCogs: string;
+  grossProfit: string;
+  marginPct: string;
+  taxTotal: string;
+  netTaxTotal: string;
+};
+
+/**
+ * Profit and loss breakdown (Daily or Month-wise) combining sales and returns.
+ */
+export async function getProfitLossSummary(
+  ctx: TenantCtx,
+  range: { from: string; to: string },
+  groupBy: 'day' | 'month' = 'day',
+): Promise<ProfitLossRow[]> {
+  const { getReturnsSummary } = await import('./returns');
+  const [sales, returns] = await Promise.all([
+    getSalesSummary(ctx, range, groupBy),
+    getReturnsSummary(ctx, range, groupBy),
+  ]);
+
+  const returnMap = new Map(returns.map((r) => [r.date, r]));
+  const allDates = Array.from(
+    new Set([...sales.map((s) => s.date), ...returns.map((r) => r.date)]),
+  );
+  allDates.sort((a, b) => b.localeCompare(a));
+
+  return allDates.map((date) => {
+    const s = sales.find((x) => x.date === date);
+    const r = returnMap.get(date);
+
+    const invoiceCount = s?.invoiceCount ?? 0;
+    const returnCount = r?.returnCount ?? 0;
+    const grossSalesNum = Number(s?.grandTotal ?? 0);
+    const taxableSalesNum = Number(s?.taxableValue ?? 0);
+    const salesTaxNum = Number(s?.taxTotal ?? 0);
+    const salesCogsNum = Number(s?.cogsTotal ?? 0);
+
+    const returnedValueNum = Number(r?.grandTotal ?? 0);
+    const returnedTaxableNum = Number(r?.taxableValue ?? 0);
+    const returnedTaxNum = Number(r?.taxTotal ?? 0);
+    const returnedCogsNum = Number(r?.cogsTotal ?? 0);
+
+    const netRevenueNum = taxableSalesNum - returnedTaxableNum;
+    const netCogsNum = salesCogsNum - returnedCogsNum;
+    const grossProfitNum = netRevenueNum - netCogsNum;
+    const marginPctNum = netRevenueNum > 0 ? (grossProfitNum / netRevenueNum) * 100 : 0;
+    const netTaxNum = salesTaxNum - returnedTaxNum;
+
+    return {
+      date,
+      invoiceCount,
+      returnCount,
+      grossSales: grossSalesNum.toFixed(2),
+      taxableSales: taxableSalesNum.toFixed(2),
+      returnedValue: returnedValueNum.toFixed(2),
+      returnedTaxable: returnedTaxableNum.toFixed(2),
+      netRevenue: netRevenueNum.toFixed(2),
+      salesCogs: salesCogsNum.toFixed(2),
+      returnedCogs: returnedCogsNum.toFixed(2),
+      netCogs: netCogsNum.toFixed(2),
+      grossProfit: grossProfitNum.toFixed(2),
+      marginPct: marginPctNum.toFixed(1),
+      taxTotal: salesTaxNum.toFixed(2),
+      netTaxTotal: netTaxNum.toFixed(2),
+    };
+  });
 }

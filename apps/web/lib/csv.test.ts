@@ -82,4 +82,19 @@ describe('text columns', () => {
     const out = body('" & cmd|" /c calc"!A0 & "');
     expect(out.startsWith('="')).toBe(false);
   });
+
+  it('formats profit and loss rows with accurate columns', () => {
+    const pnlCols = [
+      { header: 'Period', value: (r: { period: string }) => r.period, text: true },
+      { header: 'Net revenue', value: (r: { rev: string }) => r.rev },
+      { header: 'COGS', value: (r: { cogs: string }) => r.cogs },
+      { header: 'Profit', value: (r: { profit: string }) => r.profit },
+      { header: 'Margin %', value: (r: { margin: string }) => r.margin },
+    ];
+    const csv = toCsv(
+      [{ period: '2026-09', rev: '50000.00', cogs: '35000.00', profit: '15000.00', margin: '30.0' }],
+      pnlCols,
+    );
+    expect(csv).toBe('Period,Net revenue,COGS,Profit,Margin %\r\n="2026-09",50000.00,35000.00,15000.00,30.0');
+  });
 });

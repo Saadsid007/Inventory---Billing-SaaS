@@ -54,9 +54,7 @@ export async function recordSalesReturn(
   ctx: TenantCtx,
   input: RecordReturnInput,
 ): Promise<{ returnId: string; total: string }> {
-  const total = input.lines
-    .reduce((sum, line) => sum + Number(line.amount), 0)
-    .toFixed(2);
+  const total = input.lines.reduce((sum, line) => sum + Number(line.amount), 0).toFixed(2);
 
   return getDb().transaction(async (tx) => {
     const [head] = await tx
@@ -149,9 +147,7 @@ export async function listReturnsForInvoice(
       createdAt: salesReturns.createdAt,
     })
     .from(salesReturns)
-    .where(
-      and(eq(salesReturns.businessId, ctx.businessId), eq(salesReturns.invoiceId, invoiceId)),
-    )
+    .where(and(eq(salesReturns.businessId, ctx.businessId), eq(salesReturns.invoiceId, invoiceId)))
     .orderBy(desc(salesReturns.createdAt));
 
   if (heads.length === 0) return [];
@@ -222,34 +218,40 @@ export type ReturnsSummaryRow = {
   taxableValue: string;
   taxTotal: string;
   grandTotal: string;
+  cogsTotal: string;
 };
 
 /**
- * Returns per day, for the reports page.
+ * Returns per day or month, for the reports page.
  *
  * Mirrors `getSalesSummary` column for column on purpose: the two are read
- * side by side, and net sales is one minus the other.
+ * side by side, and net sales/profit is one minus the other.
  */
 export async function getReturnsSummary(
   ctx: TenantCtx,
   range: { from: string; to: string },
+  groupBy: 'day' | 'month' = 'day',
 ): Promise<ReturnsSummaryRow[]> {
   const { sql } = await import('drizzle-orm');
+  const isMonth = groupBy === 'month';
+  const dateExpr = isMonth ? sql`substr(r.return_date, 1, 7)` : sql`r.return_date`;
+
   const rows = await getDb().execute<ReturnsSummaryRow>(sql`
-    select r.return_date as "date",
+    select ${dateExpr} as "date",
            count(distinct r.id)::int as "returnCount",
            coalesce(sum(l.taxable_value), 0)::numeric(12,2)::text as "taxableValue",
            coalesce(sum(l.cgst_amount + l.sgst_amount + l.igst_amount + l.cess_amount), 0)
              ::numeric(12,2)::text as "taxTotal",
-           -- Line amounts, not r.total_amount: the join to lines would
-           -- multiply the head total by the number of lines on it.
-           coalesce(sum(l.amount), 0)::numeric(12,2)::text as "grandTotal"
+           coalesce(sum(l.amount), 0)::numeric(12,2)::text as "grandTotal",
+           coalesce(sum(case when l.restock = 'yes' then l.qty * coalesce(p.purchase_price, 0) else 0 end), 0)
+             ::numeric(12,2)::text as "cogsTotal"
     from sales_returns r
     left join sales_return_lines l on l.return_id = r.id
+    left join products p on p.id = l.product_id
     where r.business_id = ${ctx.businessId}::uuid
       and r.return_date between ${range.from} and ${range.to}
-    group by r.return_date
-    order by r.return_date
+    group by ${dateExpr}
+    order by ${dateExpr} desc
   `);
   return [...rows];
 }

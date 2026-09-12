@@ -4,11 +4,12 @@ import { buttonVariants, cn } from '@billwise/ui';
 import { Download } from 'lucide-react';
 
 const EXPORTS = [
-  { kind: 'products', label: 'Products' },
-  { kind: 'stock', label: 'Stock' },
-  { kind: 'parties', label: 'Outstanding' },
+  { kind: 'profit-loss', label: 'Profit & Loss' },
   { kind: 'invoices', label: 'Sales' },
-  { kind: 'returns', label: 'Sales returns' },
+  { kind: 'returns', label: 'Returns' },
+  { kind: 'stock', label: 'Stock & Margin' },
+  { kind: 'parties', label: 'Outstanding' },
+  { kind: 'products', label: 'Products' },
 ] as const;
 
 /**

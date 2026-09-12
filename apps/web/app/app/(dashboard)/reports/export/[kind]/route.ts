@@ -1,4 +1,5 @@
 import {
+  getProfitLossSummary,
   getStockSummary,
   listInvoiceLinesForExport,
   listPartyBalances,
@@ -18,7 +19,7 @@ import { csvResponse, datedFilename, indianDate, toCsv, type CsvColumn } from '@
  * layout guard.
  */
 
-const EXPORTS = ['products', 'parties', 'invoices', 'stock', 'returns'] as const;
+const EXPORTS = ['products', 'parties', 'invoices', 'stock', 'returns', 'profit-loss'] as const;
 type ExportKind = (typeof EXPORTS)[number];
 
 /**
@@ -128,9 +129,12 @@ export async function GET(
         { header: 'HSN', value: (r) => r.hsnCode, text: true },
         { header: 'Quantity', value: (r) => r.qty },
         { header: 'Unit', value: (r) => r.unit },
-        { header: 'Rate', value: (r) => r.rate },
+        { header: 'Sale rate', value: (r) => r.rate },
+        { header: 'Cost price', value: (r) => r.costPrice },
         { header: 'GST %', value: (r) => r.taxRate },
         { header: 'Taxable value', value: (r) => r.taxableValue },
+        { header: 'COGS (Cost)', value: (r) => r.cogs },
+        { header: 'Gross profit', value: (r) => r.profit },
         { header: 'CGST', value: (r) => r.cgstAmount },
         { header: 'SGST', value: (r) => r.sgstAmount },
         { header: 'IGST', value: (r) => r.igstAmount },
@@ -191,11 +195,36 @@ export async function GET(
         { header: 'Unit', value: (r) => r.unit },
         { header: 'Current stock', value: (r) => r.currentStock },
         { header: 'Low stock alert', value: (r) => r.lowStockAlert },
+        { header: 'Cost price', value: (r) => r.purchasePrice },
         { header: 'Sale price', value: (r) => r.salePrice },
+        { header: 'Stock cost at purchase price', value: (r) => r.stockCost },
         { header: 'Stock value at sale price', value: (r) => r.stockValue },
+        { header: 'Potential profit', value: (r) => r.potentialProfit },
+        { header: 'Potential margin %', value: (r) => r.potentialMarginPct },
         { header: 'Low', value: (r) => (r.isLow ? 'Yes' : 'No') },
       ];
       return csvResponse(datedFilename('stock'), toCsv(rows, columns));
+    }
+
+    case 'profit-loss': {
+      const from = url.searchParams.get('from') || '2000-01-01';
+      const to = url.searchParams.get('to') || '2099-12-31';
+      const groupBy = (url.searchParams.get('groupBy') as 'day' | 'month') || 'month';
+      const rows = await getProfitLossSummary(ctx, { from, to }, groupBy);
+      const columns: CsvColumn<(typeof rows)[number]>[] = [
+        { header: 'Period', value: (r) => r.date, text: true },
+        { header: 'Invoices', value: (r) => r.invoiceCount },
+        { header: 'Returns count', value: (r) => r.returnCount },
+        { header: 'Gross sales', value: (r) => r.grossSales },
+        { header: 'Taxable sales', value: (r) => r.taxableSales },
+        { header: 'Returned value', value: (r) => r.returnedValue },
+        { header: 'Net taxable revenue', value: (r) => r.netRevenue },
+        { header: 'Cost of goods sold (COGS)', value: (r) => r.netCogs },
+        { header: 'Gross profit', value: (r) => r.grossProfit },
+        { header: 'Profit margin %', value: (r) => r.marginPct },
+        { header: 'Net tax liability', value: (r) => r.netTaxTotal },
+      ];
+      return csvResponse(datedFilename('profit-loss'), toCsv(rows, columns));
     }
   }
 }

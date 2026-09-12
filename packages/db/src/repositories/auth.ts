@@ -88,6 +88,19 @@ export async function emailExists(email: string): Promise<boolean> {
   return row !== undefined;
 }
 
+export async function updateUserPassword(
+  email: string,
+  passwordHash: string,
+): Promise<{ success: boolean; userId?: string }> {
+  const [updated] = await getDb()
+    .update(users)
+    .set({ passwordHash })
+    .where(eq(users.email, email.trim().toLowerCase()))
+    .returning({ id: users.id });
+  return { success: updated !== undefined, userId: updated?.id };
+}
+
+
 export type RegisterOwnerInput = {
   name: string;
   email: string;
