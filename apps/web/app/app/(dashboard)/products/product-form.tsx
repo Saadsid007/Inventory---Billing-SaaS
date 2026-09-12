@@ -1,6 +1,6 @@
 'use client';
 
-import { productWarnings } from '@billwise/shared';
+import { DRUG_SCHEDULES, DRUG_SCHEDULE_LABELS, productWarnings } from '@billwise/shared';
 import {
   Button,
   Card,
@@ -61,6 +61,12 @@ export type ProductFormValues = {
   description: string;
   showInCatalog: boolean;
   customFields: Record<string, unknown>;
+  /** Pharmacy detail. Always present on the shape, only rendered for a chemist. */
+  saltComposition: string;
+  genericName: string;
+  manufacturer: string;
+  packSize: string;
+  drugSchedule: string;
 };
 
 export const EMPTY_PRODUCT: ProductFormValues = {
@@ -80,6 +86,11 @@ export const EMPTY_PRODUCT: ProductFormValues = {
   description: '',
   showInCatalog: true,
   customFields: {},
+  saltComposition: '',
+  genericName: '',
+  manufacturer: '',
+  packSize: '',
+  drugSchedule: '',
 };
 
 export function ProductForm({
@@ -89,6 +100,8 @@ export function ProductForm({
   units,
   taxRates,
   customFieldDefs,
+  pharmacyFields = false,
+  itemLabel = 'Product',
 }: {
   productId?: string;
   initial: ProductFormValues;
@@ -96,6 +109,13 @@ export function ProductForm({
   units: readonly FormOption[];
   taxRates: readonly FormOption[];
   customFieldDefs: readonly CustomFieldDefView[];
+  /**
+   * Show the medicine section. Off for every trade but a chemist — see
+   * `features.pharmacyFields` in BUSINESS_PROFILES.
+   */
+  pharmacyFields?: boolean;
+  /** "Product" or "Medicine", from the business profile. */
+  itemLabel?: string;
 }) {
   const router = useRouter();
   const [values, setValues] = React.useState(initial);
@@ -165,7 +185,7 @@ export function ProductForm({
       <FormError>{state.formError}</FormError>
 
       <Card className="space-y-4 p-5">
-        <Field label="Product name" htmlFor="name" error={err('name')} required>
+        <Field label={`${itemLabel} name`} htmlFor="name" error={err('name')} required>
           <Input
             id="name"
             // Only when creating. On a product's own page this form sits below
@@ -253,6 +273,92 @@ export function ProductForm({
           </div>
         )}
       </Card>
+
+      {/*
+        A chemist's section, and only a chemist's.
+        A kirana store never renders this, never sends these values, and its
+        rows keep them null — which is the whole reason they are nullable.
+      */}
+      {pharmacyFields && (
+        <Card className="space-y-4 p-5">
+          <h2 className="text-xs font-semibold tracking-widest text-muted-foreground uppercase">
+            Medicine details
+          </h2>
+
+          <Field
+            label="Salt / composition"
+            htmlFor="saltComposition"
+            error={err('saltComposition')}
+            hint="What the prescription is written in. Searchable, so this is usually the fastest way to find a medicine."
+          >
+            <Input
+              id="saltComposition"
+              placeholder="Paracetamol 500mg + Caffeine 30mg"
+              value={values.saltComposition}
+              onChange={set('saltComposition')}
+            />
+          </Field>
+
+          <div className="grid gap-4 sm:grid-cols-2">
+            <Field
+              label="Generic name"
+              htmlFor="genericName"
+              error={err('genericName')}
+              hint="The non-branded name. Also searchable."
+            >
+              <Input
+                id="genericName"
+                placeholder="Paracetamol"
+                value={values.genericName}
+                onChange={set('genericName')}
+              />
+            </Field>
+
+            <Field label="Manufacturer" htmlFor="manufacturer" error={err('manufacturer')}>
+              <Input
+                id="manufacturer"
+                placeholder="Cipla"
+                value={values.manufacturer}
+                onChange={set('manufacturer')}
+              />
+            </Field>
+
+            <Field
+              label="Pack size"
+              htmlFor="packSize"
+              error={err('packSize')}
+              hint="What one unit is."
+            >
+              <Input
+                id="packSize"
+                placeholder="Strip of 15 tablets"
+                value={values.packSize}
+                onChange={set('packSize')}
+              />
+            </Field>
+
+            <Field
+              label="Drug schedule"
+              htmlFor="drugSchedule"
+              error={err('drugSchedule')}
+              hint="Shown at the counter. Nothing is blocked."
+            >
+              <Select
+                id="drugSchedule"
+                value={values.drugSchedule}
+                onChange={set('drugSchedule')}
+              >
+                <option value="">Not specified</option>
+                {DRUG_SCHEDULES.filter((d) => d !== 'none').map((d) => (
+                  <option key={d} value={d}>
+                    {DRUG_SCHEDULE_LABELS[d]}
+                  </option>
+                ))}
+              </Select>
+            </Field>
+          </div>
+        </Card>
+      )}
 
       <Card className="space-y-4 p-5">
         <h2 className="text-xs font-semibold tracking-widest text-muted-foreground uppercase">

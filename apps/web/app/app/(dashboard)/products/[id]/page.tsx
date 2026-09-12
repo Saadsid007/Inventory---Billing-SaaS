@@ -1,4 +1,4 @@
-import { getProduct, listMovements } from '@billwise/db';
+import { getProduct, listBatches, listMovements } from '@billwise/db';
 import { PageBody, PageHeader, Section, TBody, TD, TH, THead, TR, Table } from '@billwise/ui';
 import { ArrowLeft } from 'lucide-react';
 import type { Metadata } from 'next';
@@ -8,6 +8,7 @@ import { requireBusiness } from '@/lib/auth/require-business';
 import { loadProductFormData } from '../_form-data';
 import { ProductForm } from '../product-form';
 import { ProductImages } from '../product-images';
+import { BatchPanel } from './batch-panel';
 
 export const metadata: Metadata = { title: 'Edit product' };
 
@@ -18,6 +19,10 @@ const REASON_LABELS: Record<string, string> = {
   stock_out: 'Stock out',
   adjustment: 'Adjustment',
   sale_cancelled: 'Sale cancelled',
+  sale_return: 'Returned by customer',
+  purchase: 'Purchase',
+  purchase_return: 'Returned to supplier',
+  expired: 'Expired — written off',
 };
 
 export default async function EditProductPage({
@@ -34,6 +39,9 @@ export default async function EditProductPage({
   if (!product) notFound();
 
   const movements = product.trackInventory ? await listMovements(ctx, id, 25) : [];
+  // Empty for every business that does not track batches, so the panel below
+  // simply never renders for them.
+  const batches = data.pharmacyFields ? await listBatches(ctx, id, { includeEmpty: true }) : [];
 
   return (
     <PageBody className="mx-auto max-w-2xl space-y-8">
@@ -43,7 +51,7 @@ export default async function EditProductPage({
             href="/app/products"
             className="inline-flex items-center gap-1.5 transition-colors hover:text-foreground"
           >
-            <ArrowLeft className="size-3.5" /> All products
+            <ArrowLeft className="size-3.5" /> All {data.itemLabel.toLowerCase()}s
           </Link>
         }
         title={product.name}
@@ -58,6 +66,10 @@ export default async function EditProductPage({
         productId={product.id}
         initialUrls={Array.isArray(product.imageUrls) ? product.imageUrls : []}
       />
+
+      {data.pharmacyFields && (
+        <BatchPanel productId={product.id} batches={batches} itemLabel={data.itemLabel} />
+      )}
 
       <ProductForm
         productId={product.id}
@@ -78,6 +90,11 @@ export default async function EditProductPage({
           description: product.description ?? '',
           showInCatalog: product.showInCatalog,
           customFields: product.customFields,
+          saltComposition: product.saltComposition ?? '',
+          genericName: product.genericName ?? '',
+          manufacturer: product.manufacturer ?? '',
+          packSize: product.packSize ?? '',
+          drugSchedule: product.drugSchedule ?? '',
         }}
         {...data}
       />

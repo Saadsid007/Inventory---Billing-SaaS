@@ -63,11 +63,29 @@ export type ProductOption = {
   salePrice: string;
   taxRate: string | null;
   cessRate: string | null;
+  /**
+   * The lots on the shelf, soonest expiry first. Empty for every business that
+   * does not track batches, which is what keeps the picker below off a shop's
+   * billing form entirely.
+   */
+  batches?: readonly BatchOption[];
+};
+
+export type BatchOption = {
+  id: string;
+  batchNo: string;
+  expiryDate: string | null;
+  mrp: string | null;
+  quantity: string;
 };
 
 type LineRow = {
   key: string;
   productId: string;
+  /** Which lot. Empty unless the business tracks batches. */
+  batchId: string;
+  batchNo: string;
+  expiryDate: string;
   name: string;
   hsnCode: string;
   unit: string;
@@ -81,6 +99,9 @@ type LineRow = {
 const newLine = (): LineRow => ({
   key: Math.random().toString(36).slice(2),
   productId: '',
+  batchId: '',
+  batchNo: '',
+  expiryDate: '',
   name: '',
   hsnCode: '',
   unit: 'PCS',
@@ -101,6 +122,7 @@ export function InvoiceForm({
   defaultTerms,
   parties,
   products,
+  batchTracking = false,
 }: {
   business?: BusinessProfile | null | undefined;
   supplierStateCode: string;
@@ -109,6 +131,8 @@ export function InvoiceForm({
   defaultTerms: string;
   parties: readonly PartyOption[];
   products: readonly ProductOption[];
+  /** Show the batch picker. False for every trade but a chemist. */
+  batchTracking?: boolean;
 }) {
   const router = useRouter();
 
@@ -154,14 +178,39 @@ export function InvoiceForm({
 
   /** Picking a product fills the line from its master data */
   function pickProduct(key: string, p: ProductOption) {
+    /*
+     * First expiry, first out — the list arrives ordered by expiry, so the
+     * first entry is the lot that should leave the shelf next.
+     *
+     * The rate follows the batch's printed MRP when it has one. Two lots of
+     * the same strip genuinely carry different MRPs, and billing the product's
+     * default at a customer holding the pack is an argument at the counter.
+     */
+    const batch = p.batches?.[0];
     setLine(key, {
       productId: p.id,
+      batchId: batch?.id ?? '',
+      batchNo: batch?.batchNo ?? '',
+      expiryDate: batch?.expiryDate ?? '',
       name: p.name,
       hsnCode: p.hsnCode ?? '',
       unit: p.unitShortName ?? 'PCS',
-      rate: p.salePrice,
+      rate: batch?.mrp ?? p.salePrice,
       taxRate: p.taxRate ?? '0',
       cessRate: p.cessRate ?? '0',
+    });
+  }
+
+  /** Switching lots re-prices the line at that lot's MRP. */
+  function pickBatch(key: string, productId: string, batchId: string) {
+    const batch = products
+      .find((p) => p.id === productId)
+      ?.batches?.find((b) => b.id === batchId);
+    setLine(key, {
+      batchId,
+      batchNo: batch?.batchNo ?? '',
+      expiryDate: batch?.expiryDate ?? '',
+      ...(batch?.mrp ? { rate: batch.mrp } : {}),
     });
   }
 
@@ -245,6 +294,9 @@ export function InvoiceForm({
         .filter((l) => l.name.trim())
         .map((l) => ({
           productId: l.productId,
+          batchId: l.batchId,
+          batchNo: l.batchNo,
+          expiryDate: l.expiryDate,
           name: l.name,
           hsnCode: l.hsnCode,
           unit: l.unit,
@@ -777,6 +829,20 @@ export function InvoiceForm({
                           products={products}
                           error={Boolean(err(`lines.${i}.name`))}
                         />
+                        {/*
+                          Under the name rather than in a column of its own: the
+                          table is already nine columns wide on a laptop, and a
+                          tenth would push the money off the right edge on the
+                          screens this is actually used on. A chemist reads the
+                          batch as part of the item, not as a separate fact.
+                        */}
+                        {batchTracking && line.productId && (
+                          <BatchPicker
+                            line={line}
+                            product={products.find((p) => p.id === line.productId)}
+                            onPick={(batchId) => pickBatch(line.key, line.productId, batchId)}
+                          />
+                        )}
                       </td>
                       <td className="px-2 py-2">
                         <Input
@@ -1582,6 +1648,70 @@ function ProductSearchInput({
           </div>,
           document.body,
         )}
+    </div>
+  );
+}
+
+/** "03/2027", as printed on the strip. */
+function expiryLabel(iso: string | null): string {
+  if (!iso) return 'no expiry';
+  const [y, m] = iso.slice(0, 10).split('-');
+  return `${m}/${y}`;
+}
+
+/**
+ * Which lot this line is selling from.
+ *
+ * ## Why it is a select and not a search
+ *
+ * Because one medicine rarely has more than three or four lots on the shelf,
+ * and the right one is almost always the default. This exists for the case
+ * where it is not — a customer returning for the same batch they had before, or
+ * a lot being cleared before it turns.
+ *
+ * ## Why it says something when there is nothing
+ *
+ * A batched medicine with no usable lot is out of stock, and that has to be
+ * visible at the moment of billing rather than discovered when the save fails.
+ * Expired lots are deliberately absent from the list: selling one should take a
+ * deliberate act, not a default.
+ */
+function BatchPicker({
+  line,
+  product,
+  onPick,
+}: {
+  line: LineRow;
+  product: ProductOption | undefined;
+  onPick: (batchId: string) => void;
+}) {
+  const batches = product?.batches ?? [];
+
+  if (batches.length === 0) {
+    return (
+      <p className="mt-1 text-[11px] font-medium text-destructive">
+        No batch in stock — add one before billing this.
+      </p>
+    );
+  }
+
+  return (
+    <div className="mt-1 flex items-center gap-1.5">
+      <span className="text-[10px] font-semibold tracking-wide text-muted-foreground uppercase">
+        Batch
+      </span>
+      <select
+        value={line.batchId}
+        onChange={(e) => onPick(e.target.value)}
+        aria-label={`Batch for ${line.name}`}
+        className="h-6 max-w-[13rem] flex-1 truncate rounded-md border border-input bg-card px-1.5 text-[11px] outline-none focus:border-primary"
+      >
+        {batches.map((b) => (
+          <option key={b.id} value={b.id}>
+            {b.batchNo} · exp {expiryLabel(b.expiryDate)} · {Number(b.quantity)} left
+          </option>
+        ))}
+      </select>
     </div>
   );
 }

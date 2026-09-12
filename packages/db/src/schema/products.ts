@@ -2,6 +2,7 @@ import { PRODUCT_TYPES, STOCK_REASONS } from '@billwise/shared';
 import { relations, sql } from 'drizzle-orm';
 import {
   boolean,
+  date,
   index,
   jsonb,
   numeric,
@@ -30,7 +31,10 @@ export const products = pgTable(
     businessId: uuid()
       .notNull()
       .references(() => businesses.id, { onDelete: 'cascade' }),
-    /** 'simple' today. 'variant' | 'batch' | 'serial' are reserved for Phase 3. */
+    /**
+     * 'simple' for a shop. 'batch' for a medicine held per lot with an expiry —
+     * see `productBatches` below. 'variant' and 'serial' are still reserved.
+     */
     type: text({ enum: enumValues(PRODUCT_TYPES) })
       .notNull()
       .default('simple'),
@@ -58,6 +62,27 @@ export const products = pgTable(
     /** false for services, which have no stock to track. */
     trackInventory: boolean().notNull().default(true),
 
+    /*
+     * ---- Pharmacy fields. Null for every other kind of business. ----
+     *
+     * Real columns rather than entries in `customFields`, for one reason: a
+     * chemist handed a prescription searches by salt far more often than by
+     * brand, and a search has to be indexable. A jsonb key is not, without
+     * reaching for GIN indexes to store five strings.
+     *
+     * They stay null for a kirana store, cost it nothing, and are only rendered
+     * when `features.pharmacyFields` says so.
+     */
+    /** "Paracetamol 500mg + Caffeine 30mg" — what a prescription is written in. */
+    saltComposition: text(),
+    /** The non-branded name, e.g. Paracetamol for Crocin. */
+    genericName: text(),
+    manufacturer: text(),
+    /** "10 tablets", "100ml", "1 strip of 15". */
+    packSize: text(),
+    /** See DRUG_SCHEDULES. Recorded for the counter to see, never enforced. */
+    drugSchedule: text(),
+
     description: text(),
     imageUrls: jsonb().$type<string[]>().notNull().default(sql`'[]'::jsonb`),
     customFields: jsonb().$type<Record<string, unknown>>().notNull().default(sql`'{}'::jsonb`),
@@ -78,6 +103,80 @@ export const products = pgTable(
 );
 
 /**
+ * One lot of one medicine: a batch number, an expiry date, and what is left.
+ *
+ * ## Why a table and not columns on `products`
+ *
+ * Because a pharmacy holds the same medicine in several batches at once, each
+ * bought on a different day at a different price and expiring on a different
+ * date. "Paracetamol, expiry 03/2027" is not a property of Paracetamol.
+ *
+ * ## How this stays out of everyone else's way
+ *
+ * `products.current_stock` remains the cached rollup it has always been. For a
+ * batched product it is the sum of `product_batches.quantity`, kept in step by
+ * the same transaction that already maintains it — see `recordMovement` in
+ * repositories/stock.ts, which is the only place either is written.
+ *
+ * The consequence is the point of the whole design: every existing query — the
+ * dashboard, the reports, the catalog, low stock — keeps reading
+ * `current_stock` and never learns that batches exist. A kirana store's tables
+ * stay empty here and nothing about its screens changes.
+ *
+ * ## Money on a batch
+ *
+ * `mrp` and `purchasePrice` live here rather than only on the product because
+ * they genuinely differ per lot: the same strip bought in January and in June
+ * carries two printed MRPs, and billing at the wrong one is the sort of thing a
+ * customer notices while standing at the counter.
+ */
+export const productBatches = pgTable(
+  'product_batches',
+  {
+    id: uuid().primaryKey().defaultRandom(),
+    businessId: uuid()
+      .notNull()
+      .references(() => businesses.id, { onDelete: 'cascade' }),
+    productId: uuid()
+      .notNull()
+      .references(() => products.id, { onDelete: 'cascade' }),
+    /** As printed on the strip. Free text — manufacturers agree on no format. */
+    batchNo: text().notNull(),
+    /**
+     * Usually printed as MM/YYYY. Stored as the LAST day of that month, which
+     * is what "EXP 03/2027" actually means — the medicine is good through
+     * March. Storing the first would expire every batch a month early.
+     */
+    expiryDate: date(),
+    mfgDate: date(),
+    /** Printed on the pack. What the customer is charged unless discounted. */
+    mrp: numeric({ precision: 12, scale: 2 }),
+    /** What this lot cost. Drives the real margin, not the product's default. */
+    purchasePrice: numeric({ precision: 12, scale: 2 }),
+    /** What is left of this lot. Never written except through recordMovement. */
+    quantity: numeric({ precision: 12, scale: 3 }).notNull().default('0'),
+    /** Set when the lot is exhausted or written off, so pickers can skip it. */
+    isActive: boolean().notNull().default(true),
+    note: text(),
+    createdAt: createdAt(),
+    updatedAt: updatedAt(),
+  },
+  (t) => [
+    // The FEFO picker's index: "oldest expiry still in stock, for this product".
+    index('product_batches_business_product_expiry_idx').on(
+      t.businessId,
+      t.productId,
+      t.expiryDate,
+    ),
+    // The expiry report scans by date across the whole shop.
+    index('product_batches_business_expiry_idx').on(t.businessId, t.expiryDate),
+    // One batch number per product. Receiving the same lot twice should add to
+    // the batch that exists, not create a second row that splits its quantity.
+    uniqueIndex('product_batches_product_batch_unq').on(t.businessId, t.productId, t.batchNo),
+  ],
+);
+
+/**
  * Append-only stock ledger. Build spec §5.4.
  *
  * Nothing is ever updated or deleted here. Cancelling an invoice writes equal
@@ -94,6 +193,11 @@ export const stockMovements = pgTable(
     productId: uuid()
       .notNull()
       .references(() => products.id),
+    /**
+     * Which lot moved. Null for every business that does not track batches,
+     * which is what makes this column free for them.
+     */
+    batchId: uuid().references(() => productBatches.id),
     /** Negative for outward movement. */
     qtyChange: numeric({ precision: 12, scale: 3 }).notNull(),
     reason: text({ enum: enumValues(STOCK_REASONS) }).notNull(),
@@ -125,9 +229,20 @@ export const productsRelations = relations(products, ({ one, many }) => ({
 
 export const stockMovementsRelations = relations(stockMovements, ({ one }) => ({
   product: one(products, { fields: [stockMovements.productId], references: [products.id] }),
+  batch: one(productBatches, {
+    fields: [stockMovements.batchId],
+    references: [productBatches.id],
+  }),
+}));
+
+export const productBatchesRelations = relations(productBatches, ({ one, many }) => ({
+  product: one(products, { fields: [productBatches.productId], references: [products.id] }),
+  movements: many(stockMovements),
 }));
 
 export type Product = typeof products.$inferSelect;
 export type NewProduct = typeof products.$inferInsert;
 export type StockMovement = typeof stockMovements.$inferSelect;
 export type NewStockMovement = typeof stockMovements.$inferInsert;
+export type ProductBatch = typeof productBatches.$inferSelect;
+export type NewProductBatch = typeof productBatches.$inferInsert;

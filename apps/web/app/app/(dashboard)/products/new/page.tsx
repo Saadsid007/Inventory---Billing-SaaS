@@ -20,10 +20,10 @@ export default async function NewProductPage() {
             href="/app/products"
             className="inline-flex items-center gap-1.5 transition-colors hover:text-foreground"
           >
-            <ArrowLeft className="size-3.5" /> All products
+            <ArrowLeft className="size-3.5" /> All {data.itemLabel.toLowerCase()}s
           </Link>
         }
-        title="Add product"
+        title={`Add ${data.itemLabel.toLowerCase()}`}
         description="Only the name and sale price are required. Everything else can wait."
       />
       <ProductForm initial={EMPTY_PRODUCT} {...data} />

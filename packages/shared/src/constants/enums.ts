@@ -68,8 +68,63 @@ export const STOCK_REASONS = [
   'adjustment',
   'sale_cancelled',
   'sale_return',
+  /** A supplier bill bringing goods in. Distinct from a manual `stock_in`. */
+  'purchase',
+  /** Goods sent back to the supplier. */
+  'purchase_return',
+  /**
+   * Written off because it passed its expiry date.
+   *
+   * Its own reason rather than an `adjustment`, because "how much did I lose to
+   * expiry last year" is a question a pharmacy owner genuinely asks, and an
+   * adjustment with a note is not an answer you can total.
+   */
+  'expired',
 ] as const;
 export type StockReason = (typeof STOCK_REASONS)[number];
+
+export const STOCK_REASON_LABELS: Record<StockReason, string> = {
+  opening: 'Opening stock',
+  sale: 'Sale',
+  stock_in: 'Stock in',
+  stock_out: 'Stock out',
+  adjustment: 'Adjustment',
+  sale_cancelled: 'Bill cancelled',
+  sale_return: 'Sales return',
+  purchase: 'Purchase',
+  purchase_return: 'Purchase return',
+  expired: 'Expired — written off',
+};
+
+/**
+ * Drug schedules that change how a medicine may be sold.
+ *
+ * Recorded so the counter can see it, not enforced. Refusing to bill a Schedule
+ * H item without a prescription field would be a compliance feature, and a
+ * half-built compliance feature is worse than none: it gives a shop the
+ * impression it is covered when the register the inspector asks for still does
+ * not exist.
+ */
+export const DRUG_SCHEDULES = ['none', 'H', 'H1', 'X', 'G', 'OTC'] as const;
+export type DrugSchedule = (typeof DRUG_SCHEDULES)[number];
+
+export const DRUG_SCHEDULE_LABELS: Record<DrugSchedule, string> = {
+  none: 'Not specified',
+  OTC: 'Over the counter',
+  G: 'Schedule G',
+  H: 'Schedule H — prescription only',
+  H1: 'Schedule H1 — prescription, register entry',
+  X: 'Schedule X — prescription, strict record',
+};
+
+/**
+ * How far ahead counts as "expiring soon".
+ *
+ * Ninety days because that is roughly the window in which a distributor will
+ * still take stock back. Closer than that and the alert is a notification of a
+ * loss rather than a chance to avoid one.
+ */
+export const EXPIRY_WARNING_DAYS = 90;
 
 export const CUSTOM_FIELD_ENTITIES = ['product', 'party'] as const;
 export type CustomFieldEntity = (typeof CUSTOM_FIELD_ENTITIES)[number];

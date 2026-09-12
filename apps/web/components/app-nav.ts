@@ -3,6 +3,7 @@ import type { NavItem } from '@billwise/ui';
 import {
   ArrowLeftRight,
   BarChart3,
+  CalendarClock,
   ClipboardList,
   CreditCard,
   FileText,
@@ -46,7 +47,7 @@ import {
  * fourth trade is a profile entry rather than a third copy of this array.
  */
 function retailNav(type: BusinessType | string | undefined): readonly NavItem[] {
-  const { terms } = businessProfile(type);
+  const { terms, features } = businessProfile(type);
   return [
     { href: '/app', label: 'Dashboard', icon: LayoutDashboard },
     { href: '/app/invoices', label: terms.documentPlural, icon: FileText, section: 'Billing' },
@@ -65,6 +66,19 @@ function retailNav(type: BusinessType | string | undefined): readonly NavItem[] 
       icon: ArrowLeftRight,
       section: terms.itemPlural,
     },
+    // A chemist's, and only a chemist's. `features.batchTracking` is false for
+    // every other trade, so this entry does not exist for them — and the page
+    // itself 404s rather than trusting the nav to be the only way in.
+    ...(features.batchTracking
+      ? [
+          {
+            href: '/app/expiry',
+            label: 'Expiry',
+            icon: CalendarClock,
+            section: terms.itemPlural,
+          } satisfies NavItem,
+        ]
+      : []),
     { href: '/app/catalog', label: 'Online catalog', icon: QrCode, section: terms.itemPlural },
     {
       href: '/app/storefront',

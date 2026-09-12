@@ -16,6 +16,9 @@ export * from './masters';
 export * from './numbering';
 export * from './products';
 export * from './stock';
+// Batch and expiry tracking. Empty for every business without
+// `features.batchTracking`, so these are safe to export unconditionally.
+export * from './batches';
 export * from './parties';
 export * from './invoices';
 export * from './catalog';

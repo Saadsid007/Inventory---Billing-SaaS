@@ -1,5 +1,6 @@
 import { listCategories, listCustomFieldDefs, listTaxRates, listUnits } from '@billwise/db';
 import type { TenantCtx } from '@billwise/shared';
+import { requireMembership } from '@/lib/auth/require-business';
 import type { CategoryFormOption, CustomFieldDefView, FormOption } from './product-form';
 
 /**
@@ -13,15 +14,23 @@ export async function loadProductFormData(ctx: TenantCtx): Promise<{
   units: FormOption[];
   taxRates: FormOption[];
   customFieldDefs: CustomFieldDefView[];
+  pharmacyFields: boolean;
+  itemLabel: string;
 }> {
-  const [categories, units, taxRates, defs] = await Promise.all([
+  const [categories, units, taxRates, defs, { profile }] = await Promise.all([
     listCategories(ctx),
     listUnits(ctx),
     listTaxRates(ctx),
     listCustomFieldDefs(ctx, 'product'),
+    // React-cached, so this is the same read the layout's guard already did.
+    // Loaded here rather than in each page so the new and edit forms cannot
+    // end up disagreeing about whether this business is a chemist.
+    requireMembership(),
   ]);
 
   return {
+    pharmacyFields: profile.features.pharmacyFields,
+    itemLabel: profile.terms.item,
     categories: categories.map((c) => ({
       id: c.id,
       label: c.name,

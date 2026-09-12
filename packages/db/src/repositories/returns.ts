@@ -16,6 +16,8 @@ import { recordMovement } from './stock';
 
 export type ReturnLineInput = {
   productId: string | null;
+  /** Which lot came back. Null unless the business tracks batches. */
+  batchId?: string | null;
   invoiceLineId: string | null;
   name: string;
   qty: string;
@@ -98,6 +100,9 @@ export async function recordSalesReturn(
       if (line.restock && line.productId) {
         await recordMovement(ctx, tx, {
           productId: line.productId,
+          // Back onto the shelf it left. A chemist taking a strip back has to
+          // put it in the lot it belongs to, or its expiry date is lost.
+          batchId: line.batchId ?? null,
           qtyChange: line.qty,
           reason: 'sale_return',
           refType: 'sales_return',

@@ -42,6 +42,14 @@ const listColumns = {
   showInCatalog: products.showInCatalog,
   isActive: products.isActive,
   imageUrls: products.imageUrls,
+  // Null unless the business is a chemist. Carried on the list so the billing
+  // form can show the salt under a brand name without a second query.
+  type: products.type,
+  saltComposition: products.saltComposition,
+  genericName: products.genericName,
+  manufacturer: products.manufacturer,
+  packSize: products.packSize,
+  drugSchedule: products.drugSchedule,
 };
 
 export async function listProducts(ctx: TenantCtx, filters: ProductFilters = {}) {
@@ -53,12 +61,21 @@ export async function listProducts(ctx: TenantCtx, filters: ProductFilters = {})
   if (filters.search) {
     // Shopkeepers search by whatever is to hand: a partial name, the SKU
     // printed on the shelf label, or a scanned barcode.
+    //
+    // The last three are for a chemist. A prescription is written in salt —
+    // "Amoxicillin 500" — and the customer asks for it by that or by whatever
+    // brand they had last time, so searching brand names alone finds nothing
+    // half the time. Null for every other trade, which costs them an ILIKE
+    // against a column of nulls and nothing else.
     const term = `%${filters.search.trim()}%`;
     where.push(
       or(
         ilike(products.name, term),
         ilike(products.sku, term),
         ilike(products.barcode, term),
+        ilike(products.saltComposition, term),
+        ilike(products.genericName, term),
+        ilike(products.manufacturer, term),
       )!,
     );
   }
@@ -151,6 +168,15 @@ export type ProductInput = {
   imageUrls?: string[];
   customFields?: Record<string, unknown>;
   showInCatalog?: boolean;
+
+  /** Pharmacy detail. Null for every trade but the chemist. */
+  saltComposition?: string | null;
+  genericName?: string | null;
+  manufacturer?: string | null;
+  packSize?: string | null;
+  drugSchedule?: string | null;
+  /** 'batch' when stock is held per lot. See productBatches in the schema. */
+  type?: 'simple' | 'variant' | 'batch' | 'serial';
 };
 
 /**
@@ -186,6 +212,12 @@ export async function createProduct(ctx: TenantCtx, input: ProductInput) {
         imageUrls: input.imageUrls ?? [],
         customFields: input.customFields ?? {},
         showInCatalog: input.showInCatalog ?? true,
+        saltComposition: input.saltComposition?.trim() || null,
+        genericName: input.genericName?.trim() || null,
+        manufacturer: input.manufacturer?.trim() || null,
+        packSize: input.packSize?.trim() || null,
+        drugSchedule: input.drugSchedule || null,
+        type: input.type ?? 'simple',
       })
       .returning();
 

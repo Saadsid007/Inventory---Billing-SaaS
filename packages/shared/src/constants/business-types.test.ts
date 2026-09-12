@@ -45,6 +45,31 @@ describe('business types', () => {
     expect(medical.terms.itemPlural).not.toBe(BUSINESS_PROFILES.retail.terms.itemPlural);
   });
 
+  /**
+   * The "do not disturb the other verticals" requirement, as a test.
+   *
+   * Pharmacy work is gated entirely on these three flags. If one of them ever
+   * turns true for `retail` or `jan_seva`, a kirana store gets a batch picker
+   * on its billing form and a Jan Seva Kendra gets an expiry report — which is
+   * exactly the failure this design exists to prevent, and exactly the kind
+   * that ships quietly because nothing errors.
+   */
+  it('keeps pharmacy features off for every other trade', () => {
+    for (const type of ['retail', 'jan_seva'] as const) {
+      const { features } = BUSINESS_PROFILES[type];
+      expect(features.batchTracking, `${type} must not track batches`).toBe(false);
+      expect(features.purchases, `${type} must not have purchases`).toBe(false);
+      expect(features.pharmacyFields, `${type} must not have pharmacy fields`).toBe(false);
+    }
+  });
+
+  it('gives a medical store the pharmacy features', () => {
+    const { features } = BUSINESS_PROFILES.medical;
+    expect(features.batchTracking).toBe(true);
+    expect(features.purchases).toBe(true);
+    expect(features.pharmacyFields).toBe(true);
+  });
+
   it('falls back to a shop rather than to nothing', () => {
     // Every business that existed before this column did was a shop, and an
     // unknown value must never mean "no screens".

@@ -8,7 +8,7 @@ import {
 } from '@billwise/db';
 import { productSchema } from '@billwise/shared';
 import { revalidatePath } from 'next/cache';
-import { requireBusiness } from '@/lib/auth/require-business';
+import { requireBusiness, requireMembership } from '@/lib/auth/require-business';
 
 /**
  * Product mutations. Build spec Phase 1b.
@@ -36,6 +36,8 @@ export async function saveProductAction(
   productId?: string,
 ): Promise<ProductActionResult> {
   const ctx = await requireBusiness();
+  // Cached with the layout's guard, so this is not an extra round trip.
+  const { profile } = await requireMembership();
 
   const parsed = productSchema.safeParse(raw);
   if (!parsed.success) {
@@ -66,6 +68,11 @@ export async function saveProductAction(
         description: input.description ?? null,
         showInCatalog: input.showInCatalog,
         customFields: input.customFields,
+        saltComposition: input.saltComposition ?? null,
+        genericName: input.genericName ?? null,
+        manufacturer: input.manufacturer ?? null,
+        packSize: input.packSize ?? null,
+        drugSchedule: input.drugSchedule ?? null,
       });
 
       revalidatePath('/app/products');
@@ -90,6 +97,17 @@ export async function saveProductAction(
       description: input.description ?? null,
       showInCatalog: input.showInCatalog,
       customFields: input.customFields,
+      saltComposition: input.saltComposition ?? null,
+      genericName: input.genericName ?? null,
+      manufacturer: input.manufacturer ?? null,
+      packSize: input.packSize ?? null,
+      drugSchedule: input.drugSchedule ?? null,
+      /*
+       * A chemist's stock lives in lots with expiry dates, so the product is
+       * marked 'batch' the moment it is created by a business that tracks them.
+       * Everyone else stays 'simple', which is what they have always been.
+       */
+      type: profile.features.batchTracking ? 'batch' : 'simple',
     });
 
     revalidatePath('/app/products');

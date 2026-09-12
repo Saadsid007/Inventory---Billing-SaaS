@@ -25,8 +25,24 @@ export const invoiceLineInputSchema = z.object({
     .trim()
     .optional()
     .transform((v) => (v === '' ? undefined : v)),
+  /**
+   * Which lot is being sold. Only ever sent by a business that tracks batches;
+   * the server checks it belongs to the product before moving any stock.
+   */
+  batchId: z
+    .string()
+    .trim()
+    .optional()
+    .transform((v) => (v === '' ? undefined : v)),
   /** Snapshotted onto the line. Ad-hoc lines with no product are allowed. */
   name: z.string().trim().min(1, 'Enter an item name').max(120),
+  /** Snapshots of the batch, for the printed bill. */
+  batchNo: optionalText(60),
+  expiryDate: z
+    .string()
+    .trim()
+    .optional()
+    .transform((v) => (v === '' ? undefined : v)),
   hsnCode: optionalText(8),
   unit: optionalText(6),
   qty: quantitySchema,

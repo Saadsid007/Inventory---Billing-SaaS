@@ -13,7 +13,8 @@
     "clean": "node -e \"require('node:fs').rmSync('.next', { recursive: true, force: true })\"",
     "seed:demo": "tsx scripts/seed-demo.ts",
     "seed:admin": "tsx scripts/seed-admin.ts",
-    "seed:janseva": "tsx scripts/seed-janseva.ts"
+    "seed:janseva": "tsx scripts/seed-janseva.ts",
+    "seed:medical": "tsx scripts/seed-medical.ts"
   },
   "dependencies": {
     "@billwise/core": "workspace:*",

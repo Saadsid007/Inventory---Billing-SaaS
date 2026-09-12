@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { DRUG_SCHEDULES } from '../constants/enums';
 import { hsnSchema, moneySchema, quantitySchema, uuidSchema } from './primitives';
 
 /**
@@ -19,6 +20,14 @@ const optionalMoney = z
   .optional()
   .transform((v) => (v === '' || v === undefined ? undefined : v))
   .pipe(moneySchema.optional());
+
+const optionalText = (max: number) =>
+  z
+    .string()
+    .trim()
+    .max(max)
+    .optional()
+    .transform((v) => (v === '' || v === undefined ? undefined : v));
 
 const optionalQty = z
   .string()
@@ -65,6 +74,22 @@ export const productSchema = z
       .optional()
       .transform((v) => (v === '' ? undefined : v)),
     showInCatalog: z.boolean().default(true),
+
+    /*
+     * Pharmacy detail. Optional for every trade, filled in by none but the
+     * chemist — the form only renders these when `features.pharmacyFields` is
+     * on, and a shop that never sees the fields simply never sends them.
+     */
+    saltComposition: optionalText(200),
+    genericName: optionalText(120),
+    manufacturer: optionalText(120),
+    packSize: optionalText(60),
+    drugSchedule: z
+      .enum(DRUG_SCHEDULES)
+      .optional()
+      // 'none' is the picker's placeholder, not a value worth storing.
+      .transform((v) => (v === 'none' || v === undefined ? undefined : v)),
+
     customFields: z.record(z.string(), z.unknown()).default({}),
   })
   .refine((v) => !v.trackInventory || v.lowStockAlert === undefined || true, {
@@ -123,3 +148,42 @@ export const stockAdjustmentSchema = z.object({
 });
 
 export type StockAdjustmentInput = z.infer<typeof stockAdjustmentSchema>;
+
+/**
+ * A batch, as entered on the medicine's page or received on a purchase bill.
+ *
+ * `quantity` is optional and defaults to nothing: a lot can be created before
+ * its stock arrives, and the stock itself is recorded as a movement rather than
+ * set here. See `addBatchAction`.
+ *
+ * Expiry is the only field with a real rule — a batch dated in the past is
+ * almost always a typo in the year, and accepting it silently puts stock on the
+ * shelf that the expiry report will flag as already dead.
+ */
+export const batchSchema = z.object({
+  productId: uuidSchema,
+  batchNo: z.string().trim().min(1, 'Enter the batch number').max(60),
+  expiryDate: z
+    .string()
+    .trim()
+    .optional()
+    .transform((v) => (v === '' || v === undefined ? undefined : v))
+    .pipe(z.iso.date('Enter a valid expiry date').optional()),
+  mfgDate: z
+    .string()
+    .trim()
+    .optional()
+    .transform((v) => (v === '' || v === undefined ? undefined : v))
+    .pipe(z.iso.date('Enter a valid manufacturing date').optional()),
+  mrp: optionalMoney,
+  purchasePrice: optionalMoney,
+  quantity: optionalQty,
+  note: z
+    .string()
+    .trim()
+    .max(200)
+    .optional()
+    .transform((v) => (v === '' ? undefined : v)),
+});
+
+export type BatchFormInput = z.infer<typeof batchSchema>;

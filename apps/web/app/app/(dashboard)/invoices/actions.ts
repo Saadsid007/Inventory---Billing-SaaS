@@ -116,8 +116,34 @@ export async function saveInvoiceDraftAction(
     grandTotal: built.grandTotal,
     notes: input.notes ?? null,
     terms: input.terms ?? null,
-    lines: built.lines,
+    /*
+     * Batch details put back onto the computed lines.
+     *
+     * `buildInvoice` lives in `@billwise/core` and deals only in money — it has
+     * no reason to know a lot number, and giving it one would put pharmacy
+     * concepts inside the tax engine every vertical shares. So it computes, and
+     * the three fields it does not care about are reattached here.
+     *
+     * By index, because `buildInvoice` maps one output line per input line in
+     * order. Asserted rather than assumed: if that ever stops being true, a
+     * silent mismatch would attach batch numbers to the wrong medicines on a
+     * printed bill, which is the worst possible way to find out.
+     */
+    lines: built.lines.map((line, i) => {
+      const source = input.lines[i];
+      return {
+        ...line,
+        batchId: source?.batchId ?? null,
+        batchNo: source?.batchNo ?? null,
+        expiryDate: source?.expiryDate ?? null,
+      };
+    }),
   };
+
+  if (built.lines.length !== input.lines.length) {
+    console.error('buildInvoice changed the line count; batch details would misalign');
+    return { ok: false, formError: 'Could not save this bill. Please try again.' };
+  }
 
   try {
     if (invoiceId) {

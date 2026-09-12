@@ -26,7 +26,7 @@ import {
 import { createdAt, enumValues, updatedAt } from './_shared';
 import { businesses } from './businesses';
 import { parties } from './parties';
-import { products } from './products';
+import { productBatches, products } from './products';
 import { users } from './users';
 
 /**
@@ -157,11 +157,24 @@ export const invoiceLines = pgTable(
     lineNo: integer().notNull(),
     /** Nullable: ad-hoc lines that were never a catalogued product are allowed. */
     productId: uuid().references(() => products.id),
+    /**
+     * Which lot was sold. Null unless the business tracks batches.
+     *
+     * Kept so a customer holding a strip can be traced back to the bill that
+     * sold it — the question a manufacturer's recall notice asks. The batch
+     * number itself is snapshotted onto `batchNo` below, because a batch row
+     * can be tidied away once it is empty and a printed bill must still say
+     * what it said.
+     */
+    batchId: uuid().references(() => productBatches.id),
 
     // ---- SNAPSHOT FIELDS. Never join to products for printing. ----
     name: text().notNull(),
     hsnCode: text(),
     unit: text(),
+    /** Snapshot of the batch number and its expiry, printed on the bill. */
+    batchNo: text(),
+    expiryDate: date(),
     qty: numeric({ precision: 12, scale: 3 }).notNull(),
     rate: numeric({ precision: 12, scale: 2 }).notNull(),
     discountPct: numeric({ precision: 5, scale: 2 }).notNull().default('0'),

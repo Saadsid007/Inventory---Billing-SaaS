@@ -32,8 +32,16 @@ import { recordMovement } from './stock';
 
 export type InvoiceLineInput = {
   productId?: string | null;
+  /**
+   * Which lot is being sold. Null unless the business tracks batches, which is
+   * why every existing caller compiles unchanged.
+   */
+  batchId?: string | null;
   /** Snapshot. Never re-read from `products` when printing. */
   name: string;
+  /** Snapshot of the batch, printed on the bill. See the schema for why. */
+  batchNo?: string | null;
+  expiryDate?: string | null;
   hsnCode?: string | null;
   unit?: string | null;
   qty: string;
@@ -207,7 +215,13 @@ async function insertLines(
       invoiceId,
       lineNo: i + 1,
       productId: l.productId ?? null,
+      batchId: l.batchId ?? null,
       name: l.name,
+      // Snapshotted beside the name for the same reason the name is: a batch
+      // row can be tidied away once empty, and a printed bill must keep saying
+      // which lot it sold.
+      batchNo: l.batchNo ?? null,
+      expiryDate: l.expiryDate ?? null,
       hsnCode: l.hsnCode ?? null,
       unit: l.unit ?? null,
       qty: l.qty,
@@ -357,7 +371,11 @@ export async function issueInvoice(
     // would have shopkeepers chasing stock that never left.
     if (!NON_ACCOUNTING_INVOICE_KINDS.includes(head.kind)) {
       const lines = await tx
-        .select({ productId: invoiceLines.productId, qty: invoiceLines.qty })
+        .select({
+          productId: invoiceLines.productId,
+          batchId: invoiceLines.batchId,
+          qty: invoiceLines.qty,
+        })
         .from(invoiceLines)
         .where(eq(invoiceLines.invoiceId, args.invoiceId));
 
@@ -365,6 +383,8 @@ export async function issueInvoice(
         if (!line.productId) continue; // ad-hoc line, nothing to decrement
         await recordMovement(ctx, tx, {
           productId: line.productId,
+          // Null for a shop, which is the same call it has always made.
+          batchId: line.batchId,
           qtyChange: `-${line.qty}`,
           reason: 'sale',
           refType: 'invoice',
@@ -420,7 +440,11 @@ export async function cancelInvoice(
     // if a line was somehow skipped on issue, un-skipping it now would put
     // stock back that never left.
     const original = await tx
-      .select({ productId: stockMovements.productId, qtyChange: stockMovements.qtyChange })
+      .select({
+        productId: stockMovements.productId,
+        batchId: stockMovements.batchId,
+        qtyChange: stockMovements.qtyChange,
+      })
       .from(stockMovements)
       .where(
         and(
@@ -434,6 +458,9 @@ export async function cancelInvoice(
     for (const m of original) {
       await recordMovement(ctx, tx, {
         productId: m.productId,
+        // Back into the lot it came out of. Reversing "exactly what was
+        // recorded" has to include which shelf it left.
+        batchId: m.batchId,
         qtyChange: negate(m.qtyChange),
         reason: 'sale_cancelled',
         refType: 'invoice',

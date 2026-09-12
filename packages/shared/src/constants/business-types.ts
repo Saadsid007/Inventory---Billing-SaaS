@@ -42,6 +42,17 @@ export type BusinessProfile = {
     /** What `purchase_price` means here. For a CSC it is the government fee. */
     cost: string;
   };
+  /**
+   * Which modules this trade gets.
+   *
+   * Every flag here is read at the point of use — a nav entry, a form section,
+   * a report block — rather than being branched on once somewhere central.
+   * That is what lets a vertical gain a whole module without any other vertical
+   * seeing a pixel of it: the code is behind the flag, and the flag is false.
+   *
+   * Adding a flag must never change behaviour for a trade that has it off. If
+   * it does, it is not a flag, it is a rewrite wearing one.
+   */
   features: {
     /** Stock ledger, low-stock alerts, stock in/out. */
     inventory: boolean;
@@ -49,6 +60,18 @@ export type BusinessProfile = {
     gstFields: boolean;
     /** Applications with a status that runs for days — PAN, Aadhaar, certificates. */
     applications: boolean;
+    /**
+     * Stock is held per batch, with an expiry date.
+     *
+     * Turns on the batches table under a product, the expiry screens, and the
+     * batch picker on a billing line. `products.current_stock` stays the truth
+     * for everything else, so nothing outside these screens changes.
+     */
+    batchTracking: boolean;
+    /** Supplier bills that bring stock in and create an amount payable. */
+    purchases: boolean;
+    /** Salt, generic name, manufacturer, pack, drug schedule on an item. */
+    pharmacyFields: boolean;
   };
   /** Default document kind for a new bill. */
   defaultInvoiceKind: 'tax_invoice' | 'cash_memo';
@@ -67,7 +90,18 @@ export const BUSINESS_PROFILES: Record<BusinessType, BusinessProfile> = {
       documentPlural: 'Invoices',
       cost: 'Purchase price',
     },
-    features: { inventory: true, gstFields: true, applications: true },
+    features: {
+      inventory: true,
+      gstFields: true,
+      applications: true,
+      // A kirana store buys in cartons and sells them; nothing it stocks has a
+      // batch number anybody asks about. Purchases are off only because that
+      // module is new — it is useful here and flipping this is a one-line
+      // change with no migration behind it.
+      batchTracking: false,
+      purchases: false,
+      pharmacyFields: false,
+    },
     defaultInvoiceKind: 'tax_invoice',
   },
 
@@ -85,7 +119,16 @@ export const BUSINESS_PROFILES: Record<BusinessType, BusinessProfile> = {
       // `purchase_price` and every margin figure keeps working untouched.
       cost: 'Government fee',
     },
-    features: { inventory: false, gstFields: false, applications: true },
+    features: {
+      inventory: false,
+      gstFields: false,
+      applications: true,
+      // No stock at all at this counter, so none of the three can mean
+      // anything here.
+      batchTracking: false,
+      purchases: false,
+      pharmacyFields: false,
+    },
     // Most CSCs are under the GST threshold. One that is registered switches to
     // tax invoices simply by saving a GSTIN in settings.
     defaultInvoiceKind: 'cash_memo',
@@ -106,13 +149,13 @@ export const BUSINESS_PROFILES: Record<BusinessType, BusinessProfile> = {
    * somebody else. That is the whole difference, and it is the right size of
    * difference: `jan_seva` earned its own routes by having no stock at all.
    *
-   * ## What is deliberately not claimed
+   * ## Where it stops sharing
    *
-   * Batch numbers, expiry dates and schedule H registers are what a pharmacy
-   * eventually needs, and none of them exist yet. Nothing on the pricing page
-   * or in the plan features mentions them. Selling a chemist an expiry tracker
-   * that is not built is how a shop discovers on day three that it has to keep
-   * the paper register anyway.
+   * Three things a chemist needs that a kirana store has no use for: stock held
+   * per batch with an expiry date, supplier bills that bring that stock in, and
+   * the salt and manufacturer somebody searches by when they are handed a
+   * prescription. Those are the `features` flags below, and they are the only
+   * reason this vertical has code of its own.
    */
   medical: {
     label: 'Medical store / pharmacy',
@@ -126,7 +169,16 @@ export const BUSINESS_PROFILES: Record<BusinessType, BusinessProfile> = {
       documentPlural: 'Invoices',
       cost: 'Purchase price',
     },
-    features: { inventory: true, gstFields: true, applications: false },
+    features: {
+      inventory: true,
+      gstFields: true,
+      applications: false,
+      // The three that make this a pharmacy rather than a shop that happens to
+      // sell medicine.
+      batchTracking: true,
+      purchases: true,
+      pharmacyFields: true,
+    },
     // A medical store is registered in practice — the turnover threshold is far
     // below what one takes — so tax invoice is the honest default.
     defaultInvoiceKind: 'tax_invoice',
