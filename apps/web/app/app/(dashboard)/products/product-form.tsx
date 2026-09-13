@@ -125,10 +125,7 @@ export function ProductForm({
   }>({});
   const [pending, startTransition] = React.useTransition();
 
-  const mainCategories = React.useMemo(
-    () => categories.filter((c) => !c.parentId),
-    [categories],
-  );
+  const mainCategories = React.useMemo(() => categories.filter((c) => !c.parentId), [categories]);
 
   const availableSubcategories = React.useMemo(() => {
     if (!values.categoryId) return [];
@@ -165,15 +162,28 @@ export function ProductForm({
   function submit() {
     setState({});
     startTransition(async () => {
-      const result = await saveProductAction(values, productId);
-      if (result.ok) {
-        router.push('/app/products');
-        router.refresh();
-      } else {
-        setState({
-          ...(result.formError !== undefined && { formError: result.formError }),
-          ...(result.fieldErrors !== undefined && { fieldErrors: result.fieldErrors }),
-        });
+      try {
+        const result = await saveProductAction(values, productId);
+        if (result.ok) {
+          router.push('/app/products');
+          router.refresh();
+        } else {
+          const fieldErrors = result.fieldErrors;
+          const formError =
+            result.formError ||
+            (fieldErrors && Object.keys(fieldErrors).length > 0
+              ? 'Please check the highlighted fields.'
+              : 'Could not save the product.');
+          setState({
+            formError,
+            fieldErrors,
+          });
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+      } catch (err) {
+        console.error('Failed to save product:', err);
+        setState({ formError: 'Could not save the product. Please try again.' });
+        window.scrollTo({ top: 0, behavior: 'smooth' });
       }
     });
   }
@@ -343,11 +353,7 @@ export function ProductForm({
               error={err('drugSchedule')}
               hint="Shown at the counter. Nothing is blocked."
             >
-              <Select
-                id="drugSchedule"
-                value={values.drugSchedule}
-                onChange={set('drugSchedule')}
-              >
+              <Select id="drugSchedule" value={values.drugSchedule} onChange={set('drugSchedule')}>
                 <option value="">Not specified</option>
                 {DRUG_SCHEDULES.filter((d) => d !== 'none').map((d) => (
                   <option key={d} value={d}>

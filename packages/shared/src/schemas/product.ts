@@ -10,15 +10,17 @@ import { hsnSchema, moneySchema, quantitySchema, uuidSchema } from './primitives
 const optionalId = z
   .string()
   .trim()
+  .nullable()
   .optional()
-  .transform((v) => (v === '' || v === undefined ? undefined : v))
+  .transform((v) => (v === '' || v === null || v === undefined ? undefined : v))
   .pipe(uuidSchema.optional());
 
 const optionalMoney = z
   .string()
   .trim()
+  .nullable()
   .optional()
-  .transform((v) => (v === '' || v === undefined ? undefined : v))
+  .transform((v) => (v === '' || v === null || v === undefined ? undefined : v))
   .pipe(moneySchema.optional());
 
 const optionalText = (max: number) =>
@@ -26,15 +28,26 @@ const optionalText = (max: number) =>
     .string()
     .trim()
     .max(max)
+    .nullable()
     .optional()
-    .transform((v) => (v === '' || v === undefined ? undefined : v));
+    .transform((v) => (v === '' || v === null || v === undefined ? undefined : v));
 
 const optionalQty = z
   .string()
   .trim()
+  .nullable()
   .optional()
-  .transform((v) => (v === '' || v === undefined ? undefined : v))
+  .transform((v) => (v === '' || v === null || v === undefined ? undefined : v))
   .pipe(quantitySchema.optional());
+
+const optionalDrugSchedule = z
+  .string()
+  .trim()
+  .nullable()
+  .optional()
+  .transform((v) => (v === '' || v === 'none' || v === null || v === undefined ? undefined : v))
+  .pipe(z.enum(DRUG_SCHEDULES).optional())
+  .transform((v) => (v === 'none' || v === undefined ? undefined : v));
 
 export const productSchema = z
   .object({
@@ -43,22 +56,25 @@ export const productSchema = z
       .string()
       .trim()
       .max(40)
+      .nullable()
       .optional()
-      .transform((v) => (v === '' ? undefined : v)),
+      .transform((v) => (v === '' || v === null ? undefined : v)),
     barcode: z
       .string()
       .trim()
       .max(60)
+      .nullable()
       .optional()
-      .transform((v) => (v === '' ? undefined : v)),
+      .transform((v) => (v === '' || v === null ? undefined : v)),
     categoryId: optionalId,
     subcategoryId: optionalId,
     unitId: optionalId,
     hsnCode: z
       .string()
       .trim()
+      .nullable()
       .optional()
-      .transform((v) => (v === '' || v === undefined ? undefined : v))
+      .transform((v) => (v === '' || v === null || v === undefined ? undefined : v))
       .pipe(hsnSchema.optional()),
     taxRateId: optionalId,
     salePrice: moneySchema,
@@ -71,8 +87,9 @@ export const productSchema = z
       .string()
       .trim()
       .max(2000)
+      .nullable()
       .optional()
-      .transform((v) => (v === '' ? undefined : v)),
+      .transform((v) => (v === '' || v === null ? undefined : v)),
     showInCatalog: z.boolean().default(true),
 
     /*
@@ -84,11 +101,7 @@ export const productSchema = z
     genericName: optionalText(120),
     manufacturer: optionalText(120),
     packSize: optionalText(60),
-    drugSchedule: z
-      .enum(DRUG_SCHEDULES)
-      .optional()
-      // 'none' is the picker's placeholder, not a value worth storing.
-      .transform((v) => (v === 'none' || v === undefined ? undefined : v)),
+    drugSchedule: optionalDrugSchedule,
 
     customFields: z.record(z.string(), z.unknown()).default({}),
   })

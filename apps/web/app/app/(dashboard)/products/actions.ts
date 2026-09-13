@@ -1,11 +1,6 @@
 'use server';
 
-import {
-  createProduct,
-  deactivateProduct,
-  getProduct,
-  updateProduct,
-} from '@billwise/db';
+import { createProduct, deactivateProduct, getProduct, updateProduct } from '@billwise/db';
 import { productSchema } from '@billwise/shared';
 import { revalidatePath } from 'next/cache';
 import { requireBusiness, requireMembership } from '@/lib/auth/require-business';
@@ -41,7 +36,11 @@ export async function saveProductAction(
 
   const parsed = productSchema.safeParse(raw);
   if (!parsed.success) {
-    return { ok: false, fieldErrors: fieldErrorsFrom(parsed.error.issues) };
+    return {
+      ok: false,
+      formError: 'Please check the highlighted fields.',
+      fieldErrors: fieldErrorsFrom(parsed.error.issues),
+    };
   }
   const input = parsed.data;
 
