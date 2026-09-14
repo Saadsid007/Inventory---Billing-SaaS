@@ -18,6 +18,7 @@ import {
   ArrowRight,
   BellRing,
   ClipboardList,
+  Eye,
   IndianRupee,
   Plus,
   Receipt,
@@ -184,6 +185,7 @@ export default async function SevaDashboard() {
                   <TH>Work</TH>
                   <TH>Customer</TH>
                   <TH numeric>Balance</TH>
+                  <TH className="text-right">Action</TH>
                 </TR>
               </THead>
               <TBody>
@@ -197,6 +199,15 @@ export default async function SevaDashboard() {
                     <TD>{a.partyName ?? '—'}</TD>
                     <TD numeric className={Number(a.balance) > 0 ? 'text-warning' : undefined}>
                       {Number(a.balance) > 0 ? inr(a.balance) : '—'}
+                    </TD>
+                    <TD>
+                      <div className="flex justify-end">
+                        <Link href={`/app/seva/deliveries?q=${encodeURIComponent(a.partyName ?? a.serviceName)}`}>
+                          <Button size="sm" variant="outline" className="h-7 px-2.5 text-xs gap-1 font-medium border-primary/30 text-primary hover:bg-primary/10 shadow-2xs">
+                            <span>Deliver</span>
+                          </Button>
+                        </Link>
+                      </div>
                     </TD>
                   </TR>
                 ))}
@@ -233,6 +244,7 @@ export default async function SevaDashboard() {
                   <TH>Customer</TH>
                   <TH numeric>Total</TH>
                   <TH>Status</TH>
+                  <TH className="text-right">Action</TH>
                 </TR>
               </THead>
               <TBody>
@@ -261,6 +273,16 @@ export default async function SevaDashboard() {
                             ? 'Part paid'
                             : 'Unpaid'}
                       </Badge>
+                    </TD>
+                    <TD>
+                      <div className="flex justify-end">
+                        <Link href={`/app/seva/receipts/${r.id}`}>
+                          <Button size="sm" variant="outline" className="h-7 px-2.5 text-xs gap-1 font-medium border-primary/30 text-primary hover:bg-primary/10 shadow-2xs">
+                            <Eye className="size-3" />
+                            <span>View</span>
+                          </Button>
+                        </Link>
+                      </div>
                     </TD>
                   </TR>
                 ))}

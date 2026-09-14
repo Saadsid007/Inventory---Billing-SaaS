@@ -1,16 +1,23 @@
 'use server';
 
+import { buildInvoice, formatInvoiceNumber } from '@billwise/core';
 import {
   createApplication,
+  createDraft,
+  createParty,
   deleteApplication,
   getApplication,
   getBusiness,
+  issueInvoice,
+  recordPayment,
   setApplicationStatus,
   updateApplication,
 } from '@billwise/db';
 import {
   APPLICATION_STATUSES,
   type ApplicationStatus,
+  PAYMENT_METHODS,
+  type PaymentMethod,
   applicationPatchSchema,
   applicationSchema,
 } from '@billwise/shared';
@@ -152,3 +159,167 @@ export async function readyMessageAction(
 
   return { ok: true, message: lines.join('\n'), phone: row.partyPhone };
 }
+
+export type GenerateReceiptForWorkInput = {
+  applicationId: string;
+  rate: string;
+  amountReceived: string;
+  method: PaymentMethod;
+  receiptDate?: string;
+  notes?: string;
+};
+
+export type GenerateReceiptResult =
+  | { ok: true; invoiceId: string; invoiceNo: string; balance: string }
+  | { ok: false; error: string };
+
+/**
+ * Generate a cash memo / receipt directly from a work row, and optionally
+ * record the initial payment.
+ */
+export async function generateReceiptForWorkAction(
+  input: GenerateReceiptForWorkInput,
+): Promise<GenerateReceiptResult> {
+  const ctx = await requireBusiness();
+
+  const rateNum = Number(input.rate);
+  if (!Number.isFinite(rateNum) || rateNum < 0) {
+    return { ok: false, error: 'Enter a valid fee for this work.' };
+  }
+
+  const receivedNum = Number(input.amountReceived || 0);
+  if (!Number.isFinite(receivedNum) || receivedNum < 0) {
+    return { ok: false, error: 'Enter a valid amount received.' };
+  }
+
+  if (receivedNum > rateNum) {
+    return { ok: false, error: 'Amount received cannot exceed the work fee.' };
+  }
+
+  if (!(PAYMENT_METHODS as readonly string[]).includes(input.method)) {
+    return { ok: false, error: 'Choose how the money was paid.' };
+  }
+
+  const row = await getApplication(ctx, input.applicationId);
+  if (!row) {
+    return { ok: false, error: 'This work record was not found.' };
+  }
+  if (row.invoiceId) {
+    return { ok: false, error: 'This work already has a receipt attached.' };
+  }
+
+  const business = await getBusiness(ctx);
+  const supplierState = business?.stateCode ?? '09';
+  const receiptDate = input.receiptDate || new Date().toISOString().slice(0, 10);
+
+  let partyId = row.partyId ?? null;
+  const partyName = row.partyName?.trim() || 'Walk-in customer';
+  const partyPhone = row.partyPhone?.trim() || null;
+
+  if (!partyId && row.partyName) {
+    try {
+      const created = await createParty(ctx, {
+        type: 'customer',
+        name: row.partyName.trim(),
+        phone: partyPhone,
+        stateCode: supplierState,
+      });
+      partyId = created?.id ?? null;
+    } catch (err) {
+      console.error('quick party create failed', err);
+    }
+  }
+
+  const built = buildInvoice({
+    kind: business?.gstin ? 'tax_invoice' : 'cash_memo',
+    invoiceDate: receiptDate,
+    taxMode: 'exclusive',
+    supplierStateCode: supplierState,
+    partyStateCode: supplierState,
+    lines: [
+      {
+        productId: row.serviceId,
+        name: row.serviceName,
+        qty: '1',
+        rate: input.rate,
+        taxRate: '0',
+      },
+    ],
+  });
+
+  try {
+    const draft = await createDraft(ctx, {
+      kind: business?.gstin ? 'tax_invoice' : 'cash_memo',
+      fy: built.fy,
+      invoiceDate: receiptDate,
+      partyId,
+      partyName,
+      partyPhone,
+      supplierStateCode: supplierState,
+      placeOfSupply: built.placeOfSupply,
+      isInterstate: built.isInterstate,
+      taxMode: 'exclusive',
+      subtotal: built.subtotal,
+      discountTotal: built.discountTotal,
+      cgstTotal: built.cgstTotal,
+      sgstTotal: built.sgstTotal,
+      igstTotal: built.igstTotal,
+      cessTotal: built.cessTotal,
+      otherCharges: built.otherCharges,
+      roundOff: built.roundOff,
+      grandTotal: built.grandTotal,
+      notes: input.notes ?? row.note ?? null,
+      lines: built.lines.map((l) => ({
+        productId: l.productId,
+        name: l.name,
+        qty: l.qty,
+        rate: l.rate,
+        taxableValue: l.taxableValue,
+        taxRate: l.taxRate,
+        cgstAmount: l.cgstAmount,
+        sgstAmount: l.sgstAmount,
+        igstAmount: l.igstAmount,
+        cessAmount: l.cessAmount,
+        lineTotal: l.lineTotal,
+      })),
+    });
+
+    const { invoiceNo } = await issueInvoice(ctx, {
+      invoiceId: draft.id,
+      formatNumber: formatInvoiceNumber,
+    });
+
+    if (receivedNum > 0) {
+      await recordPayment(ctx, {
+        invoiceId: draft.id,
+        partyId,
+        amount: Math.min(receivedNum, Number(built.grandTotal)).toFixed(2),
+        direction: 'in',
+        method: input.method,
+        paidOn: receiptDate,
+      });
+    }
+
+    await updateApplication(ctx, row.id, {
+      invoiceId: draft.id,
+    });
+
+    const balance = Math.max(0, Number(built.grandTotal) - receivedNum).toFixed(2);
+
+    revalidatePath('/app/seva/work');
+    revalidatePath('/app/seva/receipts');
+    revalidatePath('/app/seva/deliveries');
+    revalidatePath('/app/seva');
+
+    return {
+      ok: true,
+      invoiceId: draft.id,
+      invoiceNo,
+      balance,
+    };
+  } catch (error) {
+    console.error('generateReceiptForWork failed', error);
+    return { ok: false, error: 'Could not generate receipt. Please try again.' };
+  }
+}
+

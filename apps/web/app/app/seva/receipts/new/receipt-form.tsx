@@ -6,6 +6,7 @@ import { Button, Field, FormError, Input, Select, Switch } from '@billwise/ui';
 import { Plus, Trash2, X } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import * as React from 'react';
+import { CustomerCombobox } from '@/components/customer-combobox';
 import { startNavProgress } from '@/components/nav-progress';
 import { createReceiptAction } from '../actions';
 
@@ -66,15 +67,27 @@ const inr = (v: number) => `₹${v.toFixed(2)}`;
 export function ReceiptForm({
   services,
   parties,
+  initialPartyId = '',
 }: {
   services: SevaService[];
   parties: Party[];
+  initialPartyId?: string;
 }) {
   const router = useRouter();
   const [lines, setLines] = React.useState<Line[]>(() => [blankLine()]);
-  const [partyId, setPartyId] = React.useState('');
-  const [partyName, setPartyName] = React.useState('');
-  const [partyPhone, setPartyPhone] = React.useState('');
+  const [partyId, setPartyId] = React.useState(initialPartyId);
+  const [partyName, setPartyName] = React.useState(() => {
+    if (initialPartyId) {
+      return parties.find((p) => p.id === initialPartyId)?.name || '';
+    }
+    return '';
+  });
+  const [partyPhone, setPartyPhone] = React.useState(() => {
+    if (initialPartyId) {
+      return parties.find((p) => p.id === initialPartyId)?.phone || '';
+    }
+    return '';
+  });
   const [receiptDate, setReceiptDate] = React.useState(today);
   const [method, setMethod] = React.useState<PaymentMethod>('cash');
   const [amountReceived, setAmountReceived] = React.useState('');
@@ -98,12 +111,10 @@ export function ReceiptForm({
   /** Choosing from the rate list fills the price and the tracking defaults. */
   function chooseService(key: number, serviceId: string) {
     const service = services.find((s) => s.id === serviceId);
-    if (!service) {
-      patch(key, { serviceId: '', tracked: false, expectedOn: '' });
-      return;
-    }
+    if (!service) return;
+
     patch(key, {
-      serviceId,
+      serviceId: service.id,
       name: service.name,
       rate: service.price,
       tracked: service.tracked,
@@ -167,20 +178,28 @@ export function ReceiptForm({
     <div className="space-y-4">
       {/* Customer. One row, and skippable — most counter work is a walk-in. */}
       <div className="grid gap-3 rounded-lg border p-4 sm:grid-cols-3">
-        <Field label="Customer" htmlFor="r-party" hint="Leave blank for a walk-in.">
-          <Select
+        <Field label="Customer" htmlFor="r-party" hint="Search existing customer by name or mobile, or choose walk-in.">
+          <CustomerCombobox
             id="r-party"
             value={partyId}
-            onChange={(e) => setPartyId(e.target.value)}
-          >
-            <option value="">Walk-in / new</option>
-            {parties.map((p) => (
-              <option key={p.id} value={p.id}>
-                {p.name}
-                {p.phone ? ` · ${p.phone}` : ''}
-              </option>
-            ))}
-          </Select>
+            onChange={(val) => {
+              setPartyId(val);
+              if (val) {
+                const found = parties.find((p) => p.id === val);
+                if (found) {
+                  setPartyName(found.name);
+                  setPartyPhone(found.phone || '');
+                }
+              } else {
+                setPartyName('');
+                setPartyPhone('');
+              }
+            }}
+            customers={parties}
+            onCustomerCreated={(newId) => {
+              setPartyId(newId);
+            }}
+          />
         </Field>
 
         {!partyId && (

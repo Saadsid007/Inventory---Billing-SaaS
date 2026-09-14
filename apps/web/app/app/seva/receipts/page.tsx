@@ -134,7 +134,19 @@ export default async function SevaReceiptsPage({
                       </Link>
                     </TD>
                     <TD className="tabular text-muted-foreground">{shortDate(row.invoiceDate)}</TD>
-                    <TD className="truncate">{row.partyName}</TD>
+                    <TD className="truncate">
+                      {row.partyId ? (
+                        <Link
+                          href={`/app/seva/customers/${row.partyId}`}
+                          className="font-medium text-primary hover:underline"
+                          title={`View profile for ${row.partyName}`}
+                        >
+                          {row.partyName}
+                        </Link>
+                      ) : (
+                        <span>{row.partyName}</span>
+                      )}
+                    </TD>
                     <TD numeric>{inr(row.grandTotal)}</TD>
                     <TD
                       numeric
@@ -169,9 +181,7 @@ export default async function SevaReceiptsPage({
                     </TD>
                     <TD>
                       <RowActions>
-                        {/* Only when there is something to take. A "take
-                            payment" button on a settled receipt is a button
-                            whose only outcome is an error message. */}
+                        {/* Only when there is something to take */}
                         {!cancelled && balance > 0 && (
                           <CollectDialog
                             invoiceId={row.id}
@@ -181,17 +191,21 @@ export default async function SevaReceiptsPage({
                             trigger="icon"
                           />
                         )}
-                        <Link
-                          href={`/app/seva/receipts/${row.id}`}
-                          title="Open"
-                          aria-label={`Open ${receiptNo}`}
-                          className={iconButtonClass}
-                        >
-                          <Eye className="size-4" />
+                        <Link href={`/app/seva/receipts/${row.id}`}>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            className="h-8 gap-1 text-xs font-semibold border-primary/30 text-primary hover:bg-primary/10 shadow-2xs"
+                            title={`View details for ${receiptNo}`}
+                            aria-label={`View details for ${receiptNo}`}
+                          >
+                            <Eye className="size-3.5" />
+                            <span>View</span>
+                          </Button>
                         </Link>
                         <Link
                           href={`/app/receipts/${row.id}/print`}
-                          title="Print"
+                          title="Print slip"
                           aria-label={`Print ${receiptNo}`}
                           className={iconButtonClass}
                         >

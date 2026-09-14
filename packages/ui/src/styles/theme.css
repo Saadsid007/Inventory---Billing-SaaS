@@ -26,6 +26,10 @@
 
 :root {
   --radius: 0.625rem;
+  --white: #ffffff;
+  --black: #000000;
+  --color-white: #ffffff;
+  --color-black: #000000;
 
   /* ------------------------------------------------------------ surfaces */
   --background: oklch(0.99 0.004 258);
@@ -132,6 +136,10 @@
 }
 
 .dark {
+  --white: #ffffff;
+  --black: #000000;
+  --color-white: #ffffff;
+  --color-black: #000000;
   --background: oklch(0.17 0.02 264);
   --foreground: oklch(0.96 0.005 258);
 
@@ -200,6 +208,8 @@
 }
 
 @theme inline {
+  --color-white: #ffffff;
+  --color-black: #000000;
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --color-card: var(--card);
@@ -408,6 +418,26 @@
       animation-duration: 0.01ms !important;
       animation-iteration-count: 1 !important;
       transition-duration: 0.01ms !important;
+    }
+  }
+
+  /* Table header styling - ensure crisp, high-contrast visible text on navy header */
+  thead tr th,
+  thead th {
+    color: #ffffff !important;
+  }
+
+  .slip th,
+  .slip thead th,
+  .invoice-print th,
+  .invoice-print thead th {
+    color: var(--ink-soft, #475569) !important;
+  }
+
+  @media print {
+    thead tr th,
+    thead th {
+      color: #000000 !important;
     }
   }
 

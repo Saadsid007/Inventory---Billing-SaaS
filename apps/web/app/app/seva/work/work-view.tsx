@@ -21,17 +21,33 @@ import {
   TR,
   Table,
 } from '@billwise/ui';
-import { ClipboardList, MessageCircle, Plus, Search, Trash2 } from 'lucide-react';
+import {
+  CheckCircle2,
+  ClipboardList,
+  MessageCircle,
+  Plus,
+  Printer,
+  Receipt as ReceiptIcon,
+  Search,
+  Trash2,
+  User,
+  Wallet,
+} from 'lucide-react';
+import Link from 'next/link';
 import * as React from 'react';
+import { CustomerCombobox } from '@/components/customer-combobox';
 import {
   addWorkAction,
   deleteWorkAction,
   readyMessageAction,
   setWorkStatusAction,
 } from './actions';
+import { WorkPayModal, type WorkModalTarget } from './work-pay-modal';
 
 type Row = {
   id: string;
+  partyId?: string | null;
+  serviceId?: string | null;
   serviceName: string;
   partyName: string | null;
   partyPhone: string | null;
@@ -87,13 +103,17 @@ export function WorkView({
   initialStatus: ApplicationStatus | '';
   initialQuery: string;
   parties: { id: string; name: string; phone: string | null }[];
-  services: { id: string; name: string }[];
+  services: { id: string; name: string; price?: string }[];
 }) {
   const [status, setStatus] = React.useState<ApplicationStatus | '' | 'open'>(
     initialStatus || 'open',
   );
   const [query, setQuery] = React.useState(initialQuery);
   const [adding, setAdding] = React.useState(false);
+  const [modalTarget, setModalTarget] = React.useState<{
+    work: WorkModalTarget;
+    mode: 'pay' | 'receipt';
+  } | null>(null);
   const [error, setError] = React.useState<string | undefined>();
   const [pending, startTransition] = React.useTransition();
 
@@ -248,19 +268,29 @@ export function WorkView({
               </datalist>
             </Field>
 
-            <Field label="Customer" htmlFor="w-party">
-              <Select
+            <Field label="Customer" htmlFor="w-party" hint="Search existing customer or leave for walk-in.">
+              <CustomerCombobox
                 id="w-party"
                 value={form.partyId}
-                onChange={(e) => setForm((f) => ({ ...f, partyId: e.target.value }))}
-              >
-                <option value="">Walk-in / not saved</option>
-                {parties.map((p) => (
-                  <option key={p.id} value={p.id}>
-                    {p.name}
-                  </option>
-                ))}
-              </Select>
+                onChange={(val) => {
+                  setForm((f) => {
+                    if (val) {
+                      const found = parties.find((p) => p.id === val);
+                      return {
+                        ...f,
+                        partyId: val,
+                        partyName: found?.name ?? f.partyName,
+                        partyPhone: found?.phone ?? f.partyPhone,
+                      };
+                    }
+                    return { ...f, partyId: '' };
+                  });
+                }}
+                customers={parties}
+                onCustomerCreated={(newId) => {
+                  setForm((f) => ({ ...f, partyId: newId }));
+                }}
+              />
             </Field>
 
             {!form.partyId && (
@@ -358,90 +388,296 @@ export function WorkView({
               <TH>Reference</TH>
               <TH>Dates</TH>
               <TH numeric>Balance</TH>
+              <TH>Payment & Receipt</TH>
               <TH>Status</TH>
-              <TH> </TH>
+              <TH className="text-right">Actions</TH>
             </TR>
           </THead>
           <TBody>
-            {visible.map((r) => (
-              <TR key={r.id} className={r.isOverdue ? 'bg-warning/5' : undefined}>
-                <TD>
-                  <span className="font-medium">{r.serviceName}</span>
-                  {r.documentsHeld && (
-                    <span className="block text-xs text-muted-foreground">{r.documentsHeld}</span>
-                  )}
-                </TD>
-                <TD>
-                  {r.partyName ?? '—'}
-                  {r.partyPhone && (
-                    <span className="block text-xs text-muted-foreground tabular">
-                      {r.partyPhone}
-                    </span>
-                  )}
-                </TD>
-                <TD className="tabular text-xs">{r.referenceNo ?? '—'}</TD>
-                <TD className="text-xs">
-                  <span className="block">Applied {shortDate(r.appliedOn)}</span>
-                  {r.expectedOn && (
-                    <span className={r.isOverdue ? 'block font-medium text-warning' : 'block text-muted-foreground'}>
-                      {r.isOverdue ? 'Late — due ' : 'Due '}
-                      {shortDate(r.expectedOn)}
-                    </span>
-                  )}
-                </TD>
-                <TD numeric className={Number(r.balance) > 0 ? 'text-warning' : undefined}>
-                  {Number(r.balance) > 0 ? `₹${Number(r.balance).toFixed(2)}` : '—'}
-                </TD>
-                <TD>
-                  <Select
-                    className="h-8 min-w-32 text-xs"
-                    value={r.status}
-                    disabled={pending}
-                    aria-label={`Status for ${r.serviceName}`}
-                    onChange={(e) =>
-                      run(() => setWorkStatusAction([r.id], e.target.value as ApplicationStatus))
-                    }
-                  >
-                    {APPLICATION_STATUSES.map((s) => (
-                      <option key={s} value={s}>
-                        {APPLICATION_STATUS_LABELS[s]}
-                      </option>
-                    ))}
-                  </Select>
-                  <Badge variant={STATUS_TONE[r.status]} className="mt-1 hidden">
-                    {APPLICATION_STATUS_LABELS[r.status]}
-                  </Badge>
-                </TD>
-                <TD>
-                  <div className="flex justify-end gap-1">
-                    {r.status === 'ready' && (
+            {visible.map((r) => {
+              const balanceNum = Number(r.balance);
+              return (
+                <TR key={r.id} className={r.isOverdue ? 'bg-warning/5' : undefined}>
+                  <TD>
+                    <span className="font-medium">{r.serviceName}</span>
+                    {r.documentsHeld && (
+                      <span className="block text-xs text-muted-foreground">{r.documentsHeld}</span>
+                    )}
+                  </TD>
+                  <TD>
+                    {r.partyId ? (
+                      <Link
+                        href={`/app/seva/customers/${r.partyId}`}
+                        className="font-semibold text-primary hover:underline block truncate"
+                        title={`View profile for ${r.partyName}`}
+                      >
+                        {r.partyName}
+                      </Link>
+                    ) : (
+                      <span className="font-medium">{r.partyName ?? '—'}</span>
+                    )}
+                    {r.partyPhone && (
+                      <span className="block text-xs text-muted-foreground tabular">
+                        {r.partyPhone}
+                      </span>
+                    )}
+                  </TD>
+                  <TD className="tabular text-xs">{r.referenceNo ?? '—'}</TD>
+                  <TD className="text-xs">
+                    <span className="block">Applied {shortDate(r.appliedOn)}</span>
+                    {r.expectedOn && (
+                      <span
+                        className={
+                          r.isOverdue
+                            ? 'block font-medium text-warning'
+                            : 'block text-muted-foreground'
+                        }
+                      >
+                        {r.isOverdue ? 'Late — due ' : 'Due '}
+                        {shortDate(r.expectedOn)}
+                      </span>
+                    )}
+                  </TD>
+                  <TD numeric className={balanceNum > 0 ? 'text-warning font-semibold' : undefined}>
+                    {r.invoiceId ? (
+                      balanceNum > 0 ? (
+                        `₹${balanceNum.toFixed(2)}`
+                      ) : (
+                        <span className="inline-flex items-center gap-1 text-xs font-semibold text-emerald-600 dark:text-emerald-400">
+                          <CheckCircle2 className="size-3" /> Paid
+                        </span>
+                      )
+                    ) : (
+                      <span className="text-xs text-muted-foreground">Unbilled</span>
+                    )}
+                  </TD>
+                  <TD>
+                    <div className="flex items-center gap-1.5 flex-wrap">
+                      {/* Pay Button */}
+                      {r.invoiceId ? (
+                        balanceNum > 0 ? (
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            className="h-8 gap-1.5 text-xs font-semibold border-warning/40 bg-warning/10 text-warning hover:bg-warning/20 shadow-2xs"
+                            title={`Collect payment of ₹${balanceNum.toFixed(2)}`}
+                            aria-label={`Pay ₹${balanceNum.toFixed(2)} for ${r.serviceName}`}
+                            disabled={pending}
+                            onClick={() =>
+                              setModalTarget({
+                                work: {
+                                  id: r.id,
+                                  serviceName: r.serviceName,
+                                  partyName: r.partyName,
+                                  partyPhone: r.partyPhone,
+                                  referenceNo: r.referenceNo,
+                                  invoiceId: r.invoiceId,
+                                  invoiceNo: r.invoiceNo,
+                                  balance: r.balance,
+                                },
+                                mode: 'pay',
+                              })
+                            }
+                          >
+                            <Wallet className="size-3.5" /> Pay ₹{balanceNum.toFixed(0)}
+                          </Button>
+                        ) : (
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            className="h-8 gap-1 text-xs text-emerald-600 dark:text-emerald-400 font-medium hover:bg-emerald-500/10"
+                            title="Fully paid — Click for receipt options"
+                            aria-label={`Paid — View receipt for ${r.serviceName}`}
+                            disabled={pending}
+                            onClick={() =>
+                              setModalTarget({
+                                work: {
+                                  id: r.id,
+                                  serviceName: r.serviceName,
+                                  partyName: r.partyName,
+                                  partyPhone: r.partyPhone,
+                                  referenceNo: r.referenceNo,
+                                  invoiceId: r.invoiceId,
+                                  invoiceNo: r.invoiceNo,
+                                  balance: r.balance,
+                                },
+                                mode: 'receipt',
+                              })
+                            }
+                          >
+                            <CheckCircle2 className="size-3.5" /> Paid
+                          </Button>
+                        )
+                      ) : (
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="h-8 gap-1.5 text-xs font-medium border-primary/30 text-primary hover:bg-primary/10"
+                          title="Add payment & generate receipt"
+                          aria-label={`Pay and generate receipt for ${r.serviceName}`}
+                          disabled={pending}
+                          onClick={() =>
+                            setModalTarget({
+                              work: {
+                                id: r.id,
+                                serviceName: r.serviceName,
+                                partyName: r.partyName,
+                                partyPhone: r.partyPhone,
+                                referenceNo: r.referenceNo,
+                                invoiceId: r.invoiceId,
+                                invoiceNo: r.invoiceNo,
+                                balance: r.balance,
+                              },
+                              mode: 'pay',
+                            })
+                          }
+                        >
+                          <Wallet className="size-3.5" /> Pay / Bill
+                        </Button>
+                      )}
+
+                      {/* Receipt Option Button */}
+                      {r.invoiceId ? (
+                        <div className="inline-flex items-center gap-1">
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            className="h-8 gap-1 text-xs font-mono px-2 text-foreground/80 hover:text-foreground"
+                            title="Open receipt options"
+                            aria-label={`Receipt ${r.invoiceNo}`}
+                            disabled={pending}
+                            onClick={() =>
+                              setModalTarget({
+                                work: {
+                                  id: r.id,
+                                  serviceName: r.serviceName,
+                                  partyName: r.partyName,
+                                  partyPhone: r.partyPhone,
+                                  referenceNo: r.referenceNo,
+                                  invoiceId: r.invoiceId,
+                                  invoiceNo: r.invoiceNo,
+                                  balance: r.balance,
+                                },
+                                mode: 'receipt',
+                              })
+                            }
+                          >
+                            <ReceiptIcon className="size-3.5 text-muted-foreground" />
+                            <span className="hidden xl:inline">{r.invoiceNo}</span>
+                            <span className="xl:hidden">Receipt</span>
+                          </Button>
+
+                          <a
+                            href={`/app/receipts/${r.invoiceId}/print`}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="inline-flex items-center justify-center size-8 rounded-lg border border-input bg-background hover:bg-muted text-muted-foreground hover:text-foreground transition-colors"
+                            title="Print receipt slip"
+                            aria-label={`Print receipt ${r.invoiceNo}`}
+                          >
+                            <Printer className="size-3.5" />
+                          </a>
+                        </div>
+                      ) : (
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          className="h-8 gap-1 text-xs text-muted-foreground hover:text-foreground px-2"
+                          title="Generate receipt for this work"
+                          aria-label={`Generate receipt for ${r.serviceName}`}
+                          disabled={pending}
+                          onClick={() =>
+                            setModalTarget({
+                              work: {
+                                id: r.id,
+                                serviceName: r.serviceName,
+                                partyName: r.partyName,
+                                partyPhone: r.partyPhone,
+                                referenceNo: r.referenceNo,
+                                invoiceId: r.invoiceId,
+                                invoiceNo: r.invoiceNo,
+                                balance: r.balance,
+                              },
+                              mode: 'pay',
+                            })
+                          }
+                        >
+                          <ReceiptIcon className="size-3.5" />
+                          <span>+ Receipt</span>
+                        </Button>
+                      )}
+                    </div>
+                  </TD>
+                  <TD>
+                    <Select
+                      className="h-8 min-w-32 text-xs"
+                      value={r.status}
+                      disabled={pending}
+                      aria-label={`Status for ${r.serviceName}`}
+                      onChange={(e) =>
+                        run(() => setWorkStatusAction([r.id], e.target.value as ApplicationStatus))
+                      }
+                    >
+                      {APPLICATION_STATUSES.map((s) => (
+                        <option key={s} value={s}>
+                          {APPLICATION_STATUS_LABELS[s]}
+                        </option>
+                      ))}
+                    </Select>
+                    <Badge variant={STATUS_TONE[r.status]} className="mt-1 hidden">
+                      {APPLICATION_STATUS_LABELS[r.status]}
+                    </Badge>
+                  </TD>
+                  <TD>
+                    <div className="flex justify-end items-center gap-1">
+                      {r.partyId && (
+                        <Link
+                          href={`/app/seva/customers/${r.partyId}`}
+                          className="inline-flex items-center justify-center size-8 rounded-lg border border-input bg-card text-muted-foreground hover:text-foreground hover:border-primary/40 hover:bg-primary/5 transition-colors"
+                          title={`View customer profile for ${r.partyName}`}
+                          aria-label={`View profile for ${r.partyName}`}
+                        >
+                          <User className="size-3.5 text-primary" />
+                        </Link>
+                      )}
+                      {r.status === 'ready' && (
+                        <Button
+                          variant="ghost"
+                          className="h-8 px-2"
+                          title="Tell the customer it is ready"
+                          aria-label={`Tell ${r.partyName ?? 'the customer'} it is ready`}
+                          disabled={pending}
+                          onClick={() => tellReady(r.id)}
+                        >
+                          <MessageCircle className="size-4" />
+                        </Button>
+                      )}
                       <Button
                         variant="ghost"
-                        className="h-8 px-2"
-                        title="Tell the customer it is ready"
-                        aria-label={`Tell ${r.partyName ?? 'the customer'} it is ready`}
+                        className="h-8 px-2 text-muted-foreground"
+                        title="Remove from the register"
+                        aria-label={`Remove ${r.serviceName}`}
                         disabled={pending}
-                        onClick={() => tellReady(r.id)}
+                        onClick={() => run(() => deleteWorkAction(r.id))}
                       >
-                        <MessageCircle className="size-4" />
+                        <Trash2 className="size-4" />
                       </Button>
-                    )}
-                    <Button
-                      variant="ghost"
-                      className="h-8 px-2 text-muted-foreground"
-                      title="Remove from the register"
-                      aria-label={`Remove ${r.serviceName}`}
-                      disabled={pending}
-                      onClick={() => run(() => deleteWorkAction(r.id))}
-                    >
-                      <Trash2 className="size-4" />
-                    </Button>
-                  </div>
-                </TD>
-              </TR>
-            ))}
+                    </div>
+                  </TD>
+                </TR>
+              );
+            })}
           </TBody>
         </Table>
+      )}
+
+      {modalTarget && (
+        <WorkPayModal
+          work={modalTarget.work}
+          services={services}
+          initialMode={modalTarget.mode}
+          onClose={() => setModalTarget(null)}
+        />
       )}
     </div>
   );

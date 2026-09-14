@@ -37,6 +37,11 @@ export {
   type DropdownProps,
 } from './components/dropdown';
 export {
+  Combobox,
+  type ComboboxItem,
+  type ComboboxProps,
+} from './components/combobox';
+export {
   Checkbox,
   Switch,
   Textarea,

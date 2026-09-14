@@ -53,7 +53,13 @@ export async function createApplication(ctx: TenantCtx, input: ApplicationInput)
 export type ApplicationPatch = Partial<
   Pick<
     ApplicationInput,
-    'status' | 'referenceNo' | 'expectedOn' | 'documentsHeld' | 'note' | 'serviceName'
+    | 'status'
+    | 'referenceNo'
+    | 'expectedOn'
+    | 'documentsHeld'
+    | 'note'
+    | 'serviceName'
+    | 'invoiceId'
   >
 > & { deliveredOn?: string | null };
 
@@ -78,6 +84,7 @@ export async function updateApplication(
   }
   if (patch.note !== undefined) values['note'] = patch.note?.trim() || null;
   if (patch.serviceName !== undefined) values['serviceName'] = patch.serviceName.trim();
+  if (patch.invoiceId !== undefined) values['invoiceId'] = patch.invoiceId || null;
 
   if (patch.deliveredOn !== undefined) {
     values['deliveredOn'] = patch.deliveredOn || null;
@@ -111,6 +118,7 @@ export async function deleteApplication(ctx: TenantCtx, applicationId: string): 
 
 export type ApplicationRow = {
   id: string;
+  serviceId: string | null;
   serviceName: string;
   partyId: string | null;
   partyName: string | null;
@@ -141,6 +149,7 @@ export type ApplicationRow = {
  */
 const APPLICATION_SELECT = sql`
     select a.id::text                as "id",
+           a.service_id::text        as "serviceId",
            a.service_name            as "serviceName",
            a.party_id::text          as "partyId",
            coalesce(a.party_name, p.name) as "partyName",

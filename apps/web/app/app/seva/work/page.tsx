@@ -1,4 +1,4 @@
-import { listApplications, listParties, listProducts } from '@billwise/db';
+import { listApplications, listParties, listSevaServices } from '@billwise/db';
 import type { ApplicationStatus } from '@billwise/shared';
 import { PageBody, PageHeader } from '@billwise/ui';
 import type { Metadata } from 'next';
@@ -25,9 +25,7 @@ export default async function WorkPage({
   const [rows, parties, services] = await Promise.all([
     listApplications(ctx, { limit: 500 }),
     listParties(ctx, { type: 'customer', limit: 500 }),
-    // The service master, so adding work can pick a name instead of typing it
-    // — and so the row can point back at what was charged.
-    listProducts(ctx, { limit: 500 }),
+    listSevaServices(ctx, { includeInactive: false }),
   ]);
 
   return (
@@ -41,7 +39,7 @@ export default async function WorkPage({
         initialStatus={(status ?? '') as ApplicationStatus | ''}
         initialQuery={q ?? ''}
         parties={parties.map((p) => ({ id: p.id, name: p.name, phone: p.phone }))}
-        services={services.map((s) => ({ id: s.id, name: s.name }))}
+        services={services.map((s) => ({ id: s.id, name: s.name, price: s.price }))}
       />
     </PageBody>
   );

@@ -249,7 +249,7 @@ export function ServicesView({ services }: { services: SevaService[] }) {
               <TH numeric>Govt. fee</TH>
               <TH numeric>You keep</TH>
               <TH>Takes days?</TH>
-              <TH> </TH>
+              <TH className="text-right">Actions</TH>
             </TR>
           </THead>
           <TBody>
@@ -278,14 +278,16 @@ export function ServicesView({ services }: { services: SevaService[] }) {
                   )}
                 </TD>
                 <TD>
-                  <div className="flex justify-end gap-1">
+                  <div className="flex justify-end items-center gap-1.5">
                     <Button
-                      variant="ghost"
-                      className="h-8 px-2"
+                      variant="outline"
+                      size="sm"
+                      className="h-7 px-2.5 text-xs gap-1 font-medium border-primary/30 text-primary hover:bg-primary/10 shadow-2xs"
                       aria-label={`Edit ${s.name}`}
                       onClick={() => openEdit(s)}
                     >
-                      <Pencil className="size-4" />
+                      <Pencil className="size-3" />
+                      <span>Edit</span>
                     </Button>
                     <Button
                       variant="ghost"

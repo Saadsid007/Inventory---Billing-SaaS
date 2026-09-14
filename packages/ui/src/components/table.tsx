@@ -22,7 +22,7 @@ export function Table({ className, ...props }: React.ComponentProps<'table'>) {
   );
 }
 
-export function THead({ className, ...props }: React.ComponentProps<'thead'>) {
+export function THead({ className, style, ...props }: React.ComponentProps<'thead'>) {
   return (
     <thead
       className={cn(
@@ -30,8 +30,10 @@ export function THead({ className, ...props }: React.ComponentProps<'thead'>) {
         'bg-[oklch(0.28_0.055_255)] text-white border-b border-border/80',
         '[&_tr]:border-0 [&_tr]:bg-transparent [&_tr]:even:bg-transparent',
         '[&_tr]:hover:!bg-transparent dark:bg-[oklch(0.22_0.05_255)]',
+        '[&_th]:text-white [&_th]:opacity-100',
         className,
       )}
+      style={{ color: '#ffffff', ...style }}
       {...props}
     />
   );
@@ -61,6 +63,7 @@ export function TH({
   numeric,
   icon: Icon,
   children,
+  style,
   ...props
 }: React.ComponentProps<'th'> & {
   numeric?: boolean;
@@ -69,14 +72,18 @@ export function TH({
   return (
     <th
       className={cn(
-        'h-9 px-3.5 text-left align-middle text-[0.68rem] font-bold tracking-[0.08em] text-white/95 uppercase select-none',
+        'h-9 px-3.5 text-left align-middle text-[0.72rem] font-bold tracking-[0.08em] text-white uppercase select-none',
         numeric && 'text-right',
         className,
       )}
+      style={{ color: '#ffffff', ...style }}
       {...props}
     >
-      <span className={cn('inline-flex items-center gap-1.5', numeric && 'justify-end')}>
-        {Icon && <Icon className="size-3 shrink-0 opacity-80" aria-hidden />}
+      <span
+        className={cn('inline-flex items-center gap-1.5 text-white font-bold', numeric && 'justify-end')}
+        style={{ color: '#ffffff' }}
+      >
+        {Icon && <Icon className="size-3 shrink-0 text-white" aria-hidden />}
         {children}
       </span>
     </th>

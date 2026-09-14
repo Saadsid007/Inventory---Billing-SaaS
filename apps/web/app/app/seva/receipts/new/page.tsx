@@ -8,8 +8,13 @@ import { ReceiptForm } from './receipt-form';
 
 export const metadata: Metadata = { title: 'New receipt' };
 
-export default async function NewReceiptPage() {
+export default async function NewReceiptPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ partyId?: string }>;
+}) {
   const ctx = await requireBusiness();
+  const { partyId } = await searchParams;
 
   const [services, parties] = await Promise.all([
     listSevaServices(ctx),
@@ -33,6 +38,7 @@ export default async function NewReceiptPage() {
       <ReceiptForm
         services={services}
         parties={parties.map((p) => ({ id: p.id, name: p.name, phone: p.phone }))}
+        initialPartyId={partyId}
       />
     </PageBody>
   );
