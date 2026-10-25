@@ -1,4 +1,5 @@
 import { getAdminStats, listAllBusinesses } from '@billwise/db';
+import { evaluateAccess } from '@billwise/shared';
 import {
   Badge,
   EmptyState,
@@ -109,26 +110,12 @@ export default async function AdminPage({
                   <span className="text-xs text-muted-foreground">{b.ownerEmail}</span>
                 </TD>
                 <TD>
-                  {b.status === 'active' ? (
-                    <Badge variant="success" dot>
-                      Paying
-                    </Badge>
-                  ) : b.status === 'suspended' ? (
-                    <Badge variant="destructive" dot>
-                      Suspended
-                    </Badge>
-                  ) : b.status === 'trial' ? (
-                    <>
-                      <Badge variant="warning" dot>
-                        Trial
-                      </Badge>
-                      <span className="mt-0.5 block text-xs text-muted-foreground">
-                        ends {fmtDate(b.trialEndsAt)}
-                      </span>
-                    </>
-                  ) : (
-                    <Badge variant="outline">{b.status}</Badge>
-                  )}
+                  <AccessBadge
+                    status={b.status}
+                    trialEndsAt={b.trialEndsAt}
+                    paidUntil={b.paidUntil}
+                    fmtDate={fmtDate}
+                  />
                 </TD>
                 <TD numeric>{b.invoiceCount}</TD>
                 <TD numeric>{b.productCount}</TD>
@@ -155,4 +142,101 @@ export default async function AdminPage({
       </Section>
     </PageBody>
   );
+}
+
+/**
+ * What this business's access actually is, not what its status column says.
+ *
+ * ## The bug this replaces
+ *
+ * The badge used to read `status` alone, so anything `active` showed a green
+ * "Paying" — including a shop whose paid month ran out five weeks ago. The
+ * owner was being bounced to /app/billing while this screen said they were
+ * fine, which is the worst possible split: the one place you go to check is
+ * the one place that cannot tell you.
+ *
+ * ## Why `evaluateAccess` rather than a comparison here
+ *
+ * Because it is the same function the app guard uses. A second opinion written
+ * on this page would drift from the first one, and then the admin panel would
+ * be confidently wrong in a new way. One rule, read in two places.
+ */
+function AccessBadge({
+  status,
+  trialEndsAt,
+  paidUntil,
+  fmtDate,
+}: {
+  status: string;
+  trialEndsAt: string | null;
+  paidUntil: string | null;
+  fmtDate: (iso: string | null) => string;
+}) {
+  const access = evaluateAccess({
+    status: status as 'active' | 'trial' | 'suspended' | 'rejected' | 'pending',
+    trialEndsAt: trialEndsAt ? new Date(trialEndsAt) : null,
+    paidUntil: paidUntil ? new Date(paidUntil) : null,
+  });
+
+  if (access === 'ok' && status === 'active') {
+    return (
+      <>
+        <Badge variant="success" dot>
+          Paying
+        </Badge>
+        <span className="mt-0.5 block text-xs text-muted-foreground">
+          {paidUntil ? `until ${fmtDate(paidUntil)}` : 'no end date'}
+        </span>
+      </>
+    );
+  }
+
+  if (access === 'ok') {
+    return (
+      <>
+        <Badge variant="warning" dot>
+          Trial
+        </Badge>
+        <span className="mt-0.5 block text-xs text-muted-foreground">
+          ends {fmtDate(trialEndsAt)}
+        </span>
+      </>
+    );
+  }
+
+  if (access === 'payment_due') {
+    return (
+      <>
+        <Badge variant="destructive" dot>
+          Payment due
+        </Badge>
+        <span className="mt-0.5 block text-xs text-muted-foreground">
+          ended {fmtDate(paidUntil)}
+        </span>
+      </>
+    );
+  }
+
+  if (access === 'trial_expired') {
+    return (
+      <>
+        <Badge variant="destructive" dot>
+          Trial over
+        </Badge>
+        <span className="mt-0.5 block text-xs text-muted-foreground">
+          ended {fmtDate(trialEndsAt)}
+        </span>
+      </>
+    );
+  }
+
+  if (access === 'suspended') {
+    return (
+      <Badge variant="destructive" dot>
+        Suspended
+      </Badge>
+    );
+  }
+
+  return <Badge variant="outline">{access === 'rejected' ? 'Rejected' : status}</Badge>;
 }
