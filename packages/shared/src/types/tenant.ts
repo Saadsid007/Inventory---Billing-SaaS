@@ -66,6 +66,21 @@ export function evaluateAccess(
       if (!paidUntil) return 'ok';
       return paidUntil.getTime() > now.getTime() ? 'ok' : 'payment_due';
     case 'trial':
+      /*
+       * A paid month outranks the trial clock.
+       *
+       * These two were treated as unrelated, so a business sitting at
+       * `status = 'trial'` with a live `paid_until` was locked out the moment
+       * its trial date passed — money taken, access refused. It looked
+       * unreachable because both payment paths set `status = 'active'`, right
+       * up until `extendTrial` turned out to write 'trial' over whatever was
+       * there.
+       *
+       * Checking the money first makes that whole class of bug impossible:
+       * however the status got there, somebody inside a month they paid for
+       * gets in.
+       */
+      if (paidUntil && paidUntil.getTime() > now.getTime()) return 'ok';
       // A missing end date means the trial was never stamped. Treat that as
       // open rather than locking someone out over a data bug.
       if (!trialEndsAt) return 'ok';

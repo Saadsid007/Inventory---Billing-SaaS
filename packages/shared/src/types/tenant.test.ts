@@ -34,6 +34,34 @@ describe('evaluateAccess', () => {
     expect(evaluateAccess({ status: 'trial', trialEndsAt: null }, NOW)).toBe('ok');
   });
 
+  /**
+   * Money outranks the status column.
+   *
+   * The bug these pin down: a business can end up at `status = 'trial'` with a
+   * live `paid_until` — `extendTrial` used to write 'trial' over whatever was
+   * there, including over a paying customer. The trial branch ignored
+   * `paid_until` entirely, so that customer was locked out the day the trial
+   * date passed, having paid. Access was refused while the money was on the
+   * row.
+   */
+  it('lets a paid business in even if its status still says trial', () => {
+    expect(
+      evaluateAccess({ status: 'trial', trialEndsAt: days(-30), paidUntil: days(10) }, NOW),
+    ).toBe('ok');
+  });
+
+  it('still expires a trial whose paid month has also run out', () => {
+    expect(
+      evaluateAccess({ status: 'trial', trialEndsAt: days(-30), paidUntil: days(-1) }, NOW),
+    ).toBe('trial_expired');
+  });
+
+  it('keeps an open trial open when there is no payment at all', () => {
+    expect(
+      evaluateAccess({ status: 'trial', trialEndsAt: days(3), paidUntil: null }, NOW),
+    ).toBe('ok');
+  });
+
   it('reports suspension and rejection distinctly, so the screen can explain', () => {
     expect(evaluateAccess({ status: 'suspended', trialEndsAt: days(5) }, NOW)).toBe('suspended');
     expect(evaluateAccess({ status: 'rejected', trialEndsAt: null }, NOW)).toBe('rejected');

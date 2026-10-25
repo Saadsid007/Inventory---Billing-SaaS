@@ -149,11 +149,32 @@ export async function setBusinessSuspended(
 }
 
 /** Extend a trial. For a shop that asks for a few more days. */
+/**
+ * Give a business more trial days.
+ *
+ * ## Why an ACTIVE business keeps its status
+ *
+ * This used to set 'trial' unconditionally. Clicking "give 7 more days" on a
+ * customer who had paid therefore demoted them to a trial — and because the
+ * trial branch of `evaluateAccess` ignored paid_until, they were locked out
+ * the moment those 7 days ran out, with a paid month still sitting on the row.
+ * Money taken, access refused.
+ *
+ * Worse for a grandfathered row whose paid_until is null, which means
+ * permanent access: the same click handed it an expiry date.
+ *
+ * Extending a trial is for a business on one. For anyone else this moves the
+ * date and leaves their access exactly as it was.
+ *
+ * Note the comment lives here and not inside the SQL below. A backtick in a
+ * tagged template literal ends the template, and `paid_until` in prose is how
+ * that happens.
+ */
 export async function extendTrial(businessId: string, days: number): Promise<void> {
   const capped = Math.max(1, Math.min(days, 90));
   await getDb().execute(sql`
     update businesses
-    set status = 'trial',
+    set status = case when status = 'active' then status else 'trial'::business_status end,
         trial_ends_at = greatest(coalesce(trial_ends_at, now()), now())
                         + (${capped} || ' days')::interval
     where id = ${businessId}::uuid
